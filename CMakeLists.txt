@@ -13,6 +13,7 @@ target_sources (sat
     PUBLIC 
     ${CMAKE_CURRENT_LIST_DIR}/src/sat_uuid.c
     ${CMAKE_CURRENT_LIST_DIR}/src/sat_file.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/sat_time.c
     )
 target_include_directories (sat
     PUBLIC 
