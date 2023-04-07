@@ -12,6 +12,7 @@ target_link_libraries (sat uuid)
 target_sources (sat
     PUBLIC 
     ${CMAKE_CURRENT_LIST_DIR}/src/sat_uuid.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/sat_file.c
     )
 target_include_directories (sat
     PUBLIC 
