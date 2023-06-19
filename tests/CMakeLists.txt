@@ -13,3 +13,7 @@ add_test (NAME test_sat_time COMMAND test_sat_time)
 add_executable (test_sat_status ${CMAKE_CURRENT_LIST_DIR}/test_sat_status.c)
 target_link_libraries (test_sat_status PUBLIC sat)
 add_test (NAME test_sat_status COMMAND test_sat_status)
+
+add_executable (test_sat_log ${CMAKE_CURRENT_LIST_DIR}/test_sat_log.c)
+target_link_libraries (test_sat_log PUBLIC sat)
+add_test (NAME test_sat_log COMMAND test_sat_log)
