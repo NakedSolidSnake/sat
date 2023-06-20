@@ -6,5 +6,6 @@
 #include <sat_time.h>
 #include <sat_status.h>
 #include <sat_log.h>
+#include <sat_validation.h>
 
 #endif/* SAT_H */
