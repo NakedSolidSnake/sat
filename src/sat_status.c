@@ -4,11 +4,11 @@
 
 sat_status_t sat_status_set (sat_status_t *object, bool result, char *motive)
 {
-    if (object != NULL)
-    {
-        object->result = result;
-        object->motive = (motive == NULL || strlen (motive) == 0) ? "No error" : motive;
-    }
+
+    assert (object);
+
+    object->result = result;
+    object->motive = (motive == NULL || strlen (motive) == 0) ? "No error" : motive;
 
     return *object;
 }
