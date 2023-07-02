@@ -43,6 +43,8 @@ bool sat_file_write (sat_file_t *object, const void *buffer, uint32_t size)
     {
         write_size = fwrite (buffer, 1, size, object->handle);
 
+        fflush (object->handle);
+
         status = write_size == size ? true : false;
     }
 
