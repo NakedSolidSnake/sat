@@ -9,5 +9,6 @@
 #include <sat_validation.h>
 #include <sat_event.h>
 #include <sat_stack.h>
+#include <sat_array.h>
 
 #endif/* SAT_H */
