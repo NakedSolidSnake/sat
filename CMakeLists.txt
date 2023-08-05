@@ -18,6 +18,7 @@ target_sources (sat
     ${CMAKE_CURRENT_LIST_DIR}/src/sat_log.c
     ${CMAKE_CURRENT_LIST_DIR}/src/sat_validation.c
     ${CMAKE_CURRENT_LIST_DIR}/src/sat_event.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/sat_stack.c
     )
 target_include_directories (sat
     PUBLIC 

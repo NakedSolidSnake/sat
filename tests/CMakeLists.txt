@@ -25,3 +25,7 @@ add_test (NAME test_sat_validation COMMAND test_sat_validation)
 add_executable (test_sat_event ${CMAKE_CURRENT_LIST_DIR}/test_sat_event.c)
 target_link_libraries (test_sat_event PUBLIC sat)
 add_test (NAME test_sat_event COMMAND test_sat_event)
+
+add_executable (test_sat_stack ${CMAKE_CURRENT_LIST_DIR}/test_sat_stack.c)
+target_link_libraries (test_sat_stack PUBLIC sat)
+add_test (NAME test_sat_stack COMMAND test_sat_stack)
