@@ -7,5 +7,6 @@
 #include <sat_status.h>
 #include <sat_log.h>
 #include <sat_validation.h>
+#include <sat_event.h>
 
 #endif/* SAT_H */
