@@ -10,5 +10,6 @@
 #include <sat_event.h>
 #include <sat_stack.h>
 #include <sat_array.h>
+#include <sat_udp.h>
 
 #endif/* SAT_H */

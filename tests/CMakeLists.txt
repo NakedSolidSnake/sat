@@ -33,3 +33,7 @@ add_test (NAME test_sat_stack COMMAND test_sat_stack)
 add_executable (test_sat_array ${CMAKE_CURRENT_LIST_DIR}/test_sat_array.c)
 target_link_libraries (test_sat_array PUBLIC sat)
 add_test (NAME test_sat_array COMMAND test_sat_array)
+
+add_executable (test_sat_udp ${CMAKE_CURRENT_LIST_DIR}/test_sat_udp.c)
+target_link_libraries (test_sat_udp PUBLIC sat pthread)
+add_test (NAME test_sat_udp COMMAND test_sat_udp)
