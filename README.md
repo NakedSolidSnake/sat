@@ -22,3 +22,4 @@ This library has the purpose of making it easier to use some resources frequentl
 ### Datastructures
 * Array
 * Stack
+* Linked List
