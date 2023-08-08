@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #define BUFFER_SIZE     1024
 
@@ -35,6 +36,9 @@ int main (int argc, char *argv[])
     pthread_t client;
 
     pthread_create (&server, NULL, server_thread, NULL);
+
+    usleep (5000);
+
     pthread_create (&client, NULL, client_thread, NULL);
 
     pthread_join (server, NULL);
