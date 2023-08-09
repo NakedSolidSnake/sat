@@ -24,6 +24,7 @@ target_sources (sat
     ${CMAKE_CURRENT_LIST_DIR}/src/sat_udp_server.c
     ${CMAKE_CURRENT_LIST_DIR}/src/sat_udp_client.c
     ${CMAKE_CURRENT_LIST_DIR}/src/sat_linked_list.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/sat_queue.c
     )
 target_include_directories (sat
     PUBLIC 

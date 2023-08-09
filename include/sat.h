@@ -12,5 +12,6 @@
 #include <sat_array.h>
 #include <sat_udp.h>
 #include <sat_linked_list.h>
+#include <sat_queue.h>
 
 #endif/* SAT_H */

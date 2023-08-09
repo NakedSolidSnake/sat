@@ -23,3 +23,4 @@ This library has the purpose of making it easier to use some resources frequentl
 * Array
 * Stack
 * Linked List
+* Queue
