@@ -15,17 +15,22 @@ This library has the purpose of making it easier to use some resources frequentl
 * Validation
 
 ### Databases
-- [ ] MySQL
-- [ ] Posgres
-- [ ] SQLite
+
 ### Communications
 * UDP
-- [ ] TCP
-- [ ] MQTT
-- [ ] Kafka
 
-### Datastructures
+### Data structures
 * Array
 * Stack
 * Linked List
 * Queue
+
+### Next 
+* Map
+* Tree
+* TCP
+* MQTT
+* Kafka
+* MySQL
+* Posgres
+* SQLite
