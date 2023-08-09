@@ -15,9 +15,14 @@ This library has the purpose of making it easier to use some resources frequentl
 * Validation
 
 ### Databases
-
+- [ ] MySQL
+- [ ] Posgres
+- [ ] SQLite
 ### Communications
 * UDP
+- [ ] TCP
+- [ ] MQTT
+- [ ] Kafka
 
 ### Datastructures
 * Array
