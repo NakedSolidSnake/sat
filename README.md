@@ -34,3 +34,12 @@ This library has the purpose of making it easier to use some resources frequentl
 * MySQL
 * Posgres
 * SQLite
+* SDL
+* GTK
+* Ini
+* curl
+* redis
+* IPC Shared Memory System V
+* IPC Queue System V
+* IPC Semaphore System V
+
