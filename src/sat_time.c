@@ -1,6 +1,11 @@
 #include <sat_time.h>
 #include <string.h>
 
+#define SAT_TIME_NANO_TO_SECONDS_FACTOR     1000000000L
+
+static double sat_time_get_seconds (sat_time_t *object);
+static double sat_time_get_seconds_from_nanoseconds (sat_time_t *object);
+
 time_t sat_time_get_epoch_now (void)
 {
     time_t now = time (NULL);
@@ -51,4 +56,51 @@ bool sat_time_get_date_by_epoch (char *buffer, uint8_t size, const char *format,
     }   
 
     return status;
+}
+
+bool sat_time_mark_start (sat_time_t *object)
+{
+    bool status = false;
+
+    if (object != NULL)
+    {
+        status = clock_gettime (CLOCK_REALTIME, &object->start) == 0 ? true : false;
+    }
+
+    return status;
+}
+
+bool sat_time_mark_stop (sat_time_t *object)
+{
+    bool status = false;
+
+    if (object != NULL)
+    {
+        status = clock_gettime (CLOCK_REALTIME, &object->stop) == 0 ? true : false;
+    }
+
+    return status;
+}
+
+bool sat_time_mark_time_elapsed (sat_time_t *object, double *time_elapsed)
+{
+     bool status = false;
+
+    if (object != NULL && time_elapsed != NULL)
+    {
+        *time_elapsed = sat_time_get_seconds (object) + sat_time_get_seconds_from_nanoseconds (object);
+        status = true;
+    }
+
+    return status;
+}
+
+static double sat_time_get_seconds (sat_time_t *object)
+{
+    return object->stop.tv_sec - object->start.tv_sec;
+}
+
+static double sat_time_get_seconds_from_nanoseconds (sat_time_t *object)
+{
+    return  (object->stop.tv_nsec - object->start.tv_nsec) / (double) SAT_TIME_NANO_TO_SECONDS_FACTOR;
 }

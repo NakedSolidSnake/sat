@@ -1,6 +1,7 @@
 #include <sat_file.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 static char *sat_file_get_mode_by (sat_file_mode_t mode);
 
@@ -32,6 +33,19 @@ bool sat_file_read (sat_file_t *object, void *buffer, uint32_t size)
     }
 
     return status;
+}
+
+bool sat_file_readline (sat_file_t *object, void *buffer, uint32_t size)
+{
+    bool status = false;
+
+    if (object != NULL && object->handle != NULL && buffer != NULL && size > 0)
+    {
+        memset (buffer, 0, size);
+        status = fgets (buffer, size - 1, object->handle) != NULL ? true : false;
+    }
+
+    return status; 
 }
 
 bool sat_file_write (sat_file_t *object, const void *buffer, uint32_t size)

@@ -24,5 +24,10 @@ int main (int argc, char *argv[])
 
     assert (size == 4);
 
+    assert (sat_file_open (&sat_file, "test", sat_file_mode_read) == true);
+    assert (sat_file_readline (&sat_file, buffer, sizeof (buffer)) == true);
+    assert (sat_file_readline (&sat_file, buffer, sizeof (buffer)) == false);
+    assert (sat_file_close (&sat_file) == true);
+
     return 0;
 }
