@@ -45,3 +45,7 @@ add_test (NAME test_sat_linked_list COMMAND test_sat_linked_list)
 add_executable (test_sat_queue ${CMAKE_CURRENT_LIST_DIR}/test_sat_queue.c)
 target_link_libraries (test_sat_queue PUBLIC sat)
 add_test (NAME test_sat_queue COMMAND test_sat_queue)
+
+add_executable (test_sat_map ${CMAKE_CURRENT_LIST_DIR}/test_sat_map.c)
+target_link_libraries (test_sat_map PUBLIC sat)
+add_test (NAME test_sat_map COMMAND test_sat_map)
