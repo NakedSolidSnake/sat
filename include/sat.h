@@ -14,5 +14,6 @@
 #include <sat_linked_list.h>
 #include <sat_queue.h>
 #include <sat_map.h>
+#include <sat_optionals.h>
 
 #endif/* SAT_H */
