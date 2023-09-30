@@ -6,6 +6,7 @@ set (LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
 set (CMAKE_BUILD_TYPE Debug)
 
 option (SAT_MYSQL "SAT_MYSQL support" OFF)
+option (SAT_POSTGRES "SAT_POSTGRES support" OFF)
 
 enable_testing ()
 
@@ -27,11 +28,14 @@ list (APPEND SAT_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/sat_uuid.c
 
 list (APPEND SAT_LIBRARIES uuid)
 
+list (APPEND SAT_INCLUDES ${CMAKE_CURRENT_LIST_DIR}/include)
+
 file (WRITE ${CMAKE_CURRENT_LIST_DIR}/include/sat_optionals.h "")
 
 list (APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 include (CMakeMySQLDependency)
+include (CMakePostgresDependency)
 
 add_library (sat "")
 target_link_libraries (sat ${SAT_LIBRARIES})
@@ -41,7 +45,7 @@ target_sources (sat
     )
 target_include_directories (sat
     PUBLIC 
-    ${CMAKE_CURRENT_LIST_DIR}/include
+    ${SAT_INCLUDES}
     )
 
 add_subdirectory (tests)
