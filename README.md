@@ -15,7 +15,9 @@ This library has the purpose of making it easier to use some resources frequentl
 * Validation
 
 ### Databases
-
+* SQLite
+* MySQL
+* Postgres
 ### Communications
 * UDP
 
@@ -31,9 +33,6 @@ This library has the purpose of making it easier to use some resources frequentl
 * TCP
 * MQTT
 * Kafka
-* MySQL
-* Posgres
-* SQLite
 * SDL
 * GTK
 * Ini

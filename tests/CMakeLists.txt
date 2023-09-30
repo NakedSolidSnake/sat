@@ -52,3 +52,4 @@ add_test (NAME test_sat_map COMMAND test_sat_map)
 
 add_subdirectory (test_mysql)
 add_subdirectory (test_postgres)
+add_subdirectory (test_sqlite)

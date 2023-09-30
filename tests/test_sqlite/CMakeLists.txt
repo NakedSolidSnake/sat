@@ -1,0 +1,5 @@
+if (${SAT_SQLITE})
+    add_executable (test_sat_sqlite ${CMAKE_CURRENT_LIST_DIR}/test_sat_sqlite.c)
+    target_link_libraries (test_sat_sqlite PUBLIC sat)
+    add_test (NAME test_sat_sqlite COMMAND test_sat_sqlite ${CMAKE_CURRENT_LIST_DIR})
+endif ()

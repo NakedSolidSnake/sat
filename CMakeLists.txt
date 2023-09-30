@@ -7,6 +7,8 @@ set (CMAKE_BUILD_TYPE Debug)
 
 option (SAT_MYSQL "SAT_MYSQL support" OFF)
 option (SAT_POSTGRES "SAT_POSTGRES support" OFF)
+option (SAT_SQLITE "SAT_SQLITE support" OFF)
+
 
 enable_testing ()
 
@@ -36,6 +38,7 @@ list (APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 include (CMakeMySQLDependency)
 include (CMakePostgresDependency)
+include (CMakeSQLiteDependency)
 
 add_library (sat "")
 target_link_libraries (sat ${SAT_LIBRARIES})
