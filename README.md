@@ -18,26 +18,25 @@ This library has the purpose of making it easier to use some resources frequentl
 * SQLite
 * MySQL
 * Postgres
+* redis
 ### Communications
 * UDP
-
+* Kafka
 ### Data structures
 * Array
 * Stack
 * Linked List
 * Queue
+* Map
 
 ### Next 
-* Map
 * Tree
 * TCP
 * MQTT
-* Kafka
 * SDL
 * GTK
 * Ini
 * curl
-* redis
 * IPC Shared Memory System V
 * IPC Queue System V
 * IPC Semaphore System V
