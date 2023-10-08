@@ -50,6 +50,10 @@ add_executable (test_sat_map ${CMAKE_CURRENT_LIST_DIR}/test_sat_map.c)
 target_link_libraries (test_sat_map PUBLIC sat)
 add_test (NAME test_sat_map COMMAND test_sat_map)
 
+add_executable (test_sat_tcp ${CMAKE_CURRENT_LIST_DIR}/test_sat_tcp.c)
+target_link_libraries (test_sat_tcp PUBLIC sat pthread)
+add_test (NAME test_sat_tcp COMMAND test_sat_tcp)
+
 add_subdirectory (test_mysql)
 add_subdirectory (test_postgres)
 add_subdirectory (test_sqlite)
