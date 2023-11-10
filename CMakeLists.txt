@@ -10,7 +10,7 @@ option (SAT_POSTGRES "SAT_POSTGRES support" OFF)
 option (SAT_SQLITE "SAT_SQLITE support" OFF)
 option (SAT_KAFKA "SAT_KAFKA support" OFF)
 option (SAT_REDIS "SAT_REDIS support" OFF)
-
+option (SAT_WEBSERVER "SAT_WEBSERVER support" OFF)
 
 enable_testing ()
 
@@ -46,6 +46,7 @@ include (CMakePostgresDependency)
 include (CMakeSQLiteDependency)
 include (CMakeKafkaDependency)
 include (CMakeRedisDependency)
+include (CMakeCivetwebDependency)
 
 add_library (sat "")
 target_link_libraries (sat ${SAT_LIBRARIES})
