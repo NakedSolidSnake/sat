@@ -16,14 +16,13 @@ int main (int argc, char *argv[])
     person_t person;
     sat_postgres_t postgres;
     sat_status_t status;
+    uint8_t retries = 0;
 
     char *docker_path = argv[1];
 
     chdir (docker_path);
 
     system ("docker compose up -d");
-
-    sleep (2);
 
     sat_postgres_args_t args = 
     {
@@ -37,7 +36,14 @@ int main (int argc, char *argv[])
     status = sat_postgres_init (&postgres);
     assert (sat_status_get_result (&status) == true);
 
-    status = sat_postgres_open (&postgres, &args);
+    do 
+    {
+        status = sat_postgres_open (&postgres, &args);
+        sleep (1);
+        retries ++;
+
+    } while (sat_status_get_result (&status) == false && retries < 20);
+    
     assert (sat_status_get_result (&status) == true);
 
     status = sat_postgres_execute (&postgres, "DELETE FROM persons_tb;");

@@ -2,12 +2,15 @@
 #include <assert.h>
 #include <string.h>
 #include <unistd.h>
+#include <pthread.h>
 
 static int hello_handler (struct mg_connection *connection, void *data);
 static int hello_handler2 (struct mg_connection *connection, void *data);
 static int hello_handler_json (struct mg_connection *connection, void *data);
 static int parameter_handler (struct mg_connection *connection, void *data);
+static int exit_handler (struct mg_connection *connection, void *data);
 
+static void *send_exit_thread (void *args);
 
 int main (int argc, char *argv[])
 {
@@ -15,10 +18,14 @@ int main (int argc, char *argv[])
 
     sat_webserver_args_t args = 
     {
-        .endpoint_amount = 5,
+        .endpoint_amount = 6,
         .folder = ".",
         .port = "1234"
     };
+
+    pthread_t send_exit;
+
+    pthread_create (&send_exit, NULL, send_exit_thread, NULL);
 
     sat_status_t status = sat_webserver_init (&webserver);
     assert (sat_status_get_result (&status) == true);
@@ -39,6 +46,9 @@ int main (int argc, char *argv[])
     assert (sat_status_get_result (&status) == true);
 
     status = sat_webserver_add_endpoint (&webserver, "/greetings", "GET", parameter_handler, NULL);
+    assert (sat_status_get_result (&status) == true);
+
+    status = sat_webserver_add_endpoint (&webserver, "/exit", "GET", exit_handler, NULL);
     assert (sat_status_get_result (&status) == true);
 
     sat_webserver_run (&webserver);
@@ -115,4 +125,25 @@ static int parameter_handler (struct mg_connection *connection, void *data)
     }
 
     return status;
+}
+
+static int exit_handler (struct mg_connection *connection, void *data)
+{
+    (void) data;
+    (void) connection;
+
+    exit (0);
+
+    return sat_webserver_http_status_ok;
+}
+
+static void *send_exit_thread (void *args)
+{
+    (void) args;
+
+    sleep (2);
+
+    system ("curl http://localhost:1234/exit");
+
+    return NULL;
 }

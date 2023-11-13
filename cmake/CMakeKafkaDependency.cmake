@@ -22,6 +22,12 @@ if (${SAT_KAFKA})
 
             add_definitions (${RDKAFKA_CFLAGS} ${RDKAFKA_CFLAGS_OTHER} ${GLIB_CFLAGS} ${GLIB_CFLAGS_OTHER})
 
+            install (FILES include/sat_kafka.h         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+            install (FILES include/sat_kafka_base.h    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+            install (FILES include/sat_kafka_groups.h  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+            install (FILES include/sat_kafka_topics.h  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+            install (FILES include/sat_kafka_message.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
             endif ()
         endif ()
     endif ()

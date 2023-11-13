@@ -5,6 +5,8 @@ set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set (LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
 set (CMAKE_BUILD_TYPE Debug)
 
+include (GNUInstallDirs)
+
 option (SAT_MYSQL "SAT_MYSQL support" OFF)
 option (SAT_POSTGRES "SAT_POSTGRES support" OFF)
 option (SAT_SQLITE "SAT_SQLITE support" OFF)
@@ -48,7 +50,7 @@ include (CMakeKafkaDependency)
 include (CMakeRedisDependency)
 include (CMakeCivetwebDependency)
 
-add_library (sat "")
+add_library (sat SHARED "")
 target_link_libraries (sat ${SAT_LIBRARIES})
 target_sources (sat
     PUBLIC 
@@ -60,3 +62,22 @@ target_include_directories (sat
     )
 
 add_subdirectory (tests)
+
+install (TARGETS sat LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
+install (FILES include/sat.h             DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install (FILES include/sat_uuid.h        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install (FILES include/sat_file.h        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install (FILES include/sat_time.h        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install (FILES include/sat_status.h      DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install (FILES include/sat_log.h         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install (FILES include/sat_validation.h  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install (FILES include/sat_event.h       DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install (FILES include/sat_stack.h       DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install (FILES include/sat_array.h       DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install (FILES include/sat_udp.h         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install (FILES include/sat_linked_list.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install (FILES include/sat_queue.h       DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install (FILES include/sat_map.h         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install (FILES include/sat_tcp.h         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install (FILES include/sat_optionals.h   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})

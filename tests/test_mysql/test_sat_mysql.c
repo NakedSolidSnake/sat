@@ -15,14 +15,13 @@ int main (int argc, char *argv[])
     person_t person;
     sat_mysql_t mysql;
     sat_status_t status;
+    uint8_t retries = 0;
 
     char *docker_path = argv[1];
 
     chdir (docker_path);
 
     system ("docker compose up -d");
-
-    sleep (2);
 
     sat_mysql_args_t args = 
     {
@@ -36,7 +35,14 @@ int main (int argc, char *argv[])
     status = sat_mysql_init (&mysql);
     assert (sat_status_get_result (&status) == true);
 
-    status = sat_mysql_open (&mysql, &args);
+    do 
+    {
+        status = sat_mysql_open (&mysql, &args);        
+        sleep (1);
+        retries ++;
+
+    } while (sat_status_get_result (&status) == false && retries < 20);
+
     assert (sat_status_get_result (&status) == true);
 
     status = sat_mysql_execute (&mysql, "DELETE FROM persons_tb;");

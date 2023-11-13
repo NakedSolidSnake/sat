@@ -19,6 +19,7 @@ void on_read (char *content, void *data)
 int main (int argc, char *argv[])
 {
     sat_redis_t redis;
+    uint8_t retries = 0;
 
     person_t person;
 
@@ -28,6 +29,8 @@ int main (int argc, char *argv[])
 
     system ("docker compose up -d");
 
+    sleep (2);
+
     memset (&person, 0, sizeof (person_t));
 
     sat_status_t status = sat_redis_init (&redis);
@@ -36,7 +39,15 @@ int main (int argc, char *argv[])
     status = sat_redis_open (&redis, &(sat_redis_args_t){.host = "localhost", .port = 6379});    
     assert (sat_status_get_result (&status) == true);
 
-    status = sat_redis_save (&redis, "name", "John Doe");
+    do
+    {
+        sat_redis_save (&redis, "name", "John Doe");
+        status = sat_redis_is_key_exists (&redis, "name");
+
+        retries ++;
+        sleep (1);
+    } while (sat_status_get_result (&status) == false && retries < 5);
+    
     assert (sat_status_get_result (&status) == true);
 
     status = sat_redis_get (&redis, "name", on_read, &person);

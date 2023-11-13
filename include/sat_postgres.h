@@ -2,7 +2,7 @@
 #define SAT_POSTGRES_H_
 
 #include <sat_status.h>
-#include <libpq-fe.h>
+#include <postgresql/libpq-fe.h>
 #include <stdint.h>
 
 typedef struct 

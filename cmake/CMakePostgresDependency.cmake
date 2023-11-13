@@ -5,4 +5,6 @@ if (${SAT_POSTGRES})
     file (APPEND ${CMAKE_SOURCE_DIR}/include/sat_optionals.h "#include <sat_postgres.h>\n")
     list (APPEND SAT_LIBRARIES pq)
     list (APPEND SAT_INCLUDES /usr/include/postgresql)
+
+    install (FILES include/sat_postgres.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 endif ()

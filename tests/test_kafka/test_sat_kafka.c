@@ -32,9 +32,6 @@ int main (int argc, char *argv[])
     pthread_join (producer, NULL);
     pthread_join (consumer, NULL);
 
-
-    system ("docker compose down");
-
     return 0;
 }
 
@@ -155,6 +152,8 @@ static bool consumer_on_record (void *object, sat_kafka_message_t *message)
                     (char *)message->payload.data);
 
     fflush (stdout);
+
+    system ("docker compose down");
 
     exit (0);
 

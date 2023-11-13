@@ -66,6 +66,25 @@ sat_status_t sat_redis_get (sat_redis_t *object, char *key, sat_redis_on_read_t 
     return status;
 }
 
+sat_status_t sat_redis_is_key_exists (sat_redis_t *object, char *key)
+{
+    sat_status_t status = sat_status_set (&status, false, "sat redis is key exists error");
+
+    if (object != NULL && key != NULL)
+    {
+        redisReply *reply = redisCommand (object->handle, "EXISTS %s", key);
+
+        if (reply->integer == 1)
+        {
+            sat_status_set (&status, true, "");
+        }
+
+        freeReplyObject (reply);
+    }
+
+    return status;
+}
+
 sat_status_t sat_redis_close (sat_redis_t *object)
 {
      sat_status_t status = sat_status_set (&status, false, "sat redis close error");
