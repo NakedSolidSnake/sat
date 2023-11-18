@@ -15,6 +15,7 @@
 #include <sat_queue.h>
 #include <sat_map.h>
 #include <sat_tcp.h>
+#include <sat_worker.h>
 
 #include <sat_optionals.h>
 

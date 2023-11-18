@@ -33,9 +33,10 @@ list (APPEND SAT_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/sat_uuid.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_map.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_tcp.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_tcp/sat_tcp_client.c
-                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_tcp/sat_tcp_server.c)
+                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_tcp/sat_tcp_server.c
+                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_worker.c)
 
-list (APPEND SAT_LIBRARIES uuid m)
+list (APPEND SAT_LIBRARIES uuid m pthread)
 
 list (APPEND SAT_INCLUDES ${CMAKE_CURRENT_LIST_DIR}/include ${CMAKE_CURRENT_LIST_DIR}/include/sat_tcp/)
 
@@ -80,4 +81,5 @@ install (FILES include/sat_linked_list.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 install (FILES include/sat_queue.h       DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install (FILES include/sat_map.h         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install (FILES include/sat_tcp.h         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install (FILES include/sat_worker.h      DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install (FILES include/sat_optionals.h   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})

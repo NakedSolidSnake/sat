@@ -35,7 +35,7 @@ target_link_libraries (test_sat_array PUBLIC sat)
 add_test (NAME test_sat_array COMMAND test_sat_array)
 
 add_executable (test_sat_udp ${CMAKE_CURRENT_LIST_DIR}/test_sat_udp.c)
-target_link_libraries (test_sat_udp PUBLIC sat pthread)
+target_link_libraries (test_sat_udp PUBLIC sat)
 add_test (NAME test_sat_udp COMMAND test_sat_udp)
 
 add_executable (test_sat_linked_list ${CMAKE_CURRENT_LIST_DIR}/test_sat_linked_list.c)
@@ -51,8 +51,12 @@ target_link_libraries (test_sat_map PUBLIC sat)
 add_test (NAME test_sat_map COMMAND test_sat_map)
 
 add_executable (test_sat_tcp ${CMAKE_CURRENT_LIST_DIR}/test_sat_tcp.c)
-target_link_libraries (test_sat_tcp PUBLIC sat pthread)
+target_link_libraries (test_sat_tcp PUBLIC sat)
 add_test (NAME test_sat_tcp COMMAND test_sat_tcp)
+
+add_executable (test_sat_worker ${CMAKE_CURRENT_LIST_DIR}/test_sat_worker.c)
+target_link_libraries (test_sat_worker PUBLIC sat)
+add_test (NAME test_sat_worker COMMAND test_sat_worker)
 
 add_subdirectory (test_mysql)
 add_subdirectory (test_postgres)
