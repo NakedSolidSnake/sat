@@ -13,6 +13,7 @@ option (SAT_SQLITE "SAT_SQLITE support" OFF)
 option (SAT_KAFKA "SAT_KAFKA support" OFF)
 option (SAT_REDIS "SAT_REDIS support" OFF)
 option (SAT_WEBSERVER "SAT_WEBSERVER support" OFF)
+option (SAT_JSON "SAT_JSON support" OFF)
 
 enable_testing ()
 
@@ -50,6 +51,7 @@ include (CMakeSQLiteDependency)
 include (CMakeKafkaDependency)
 include (CMakeRedisDependency)
 include (CMakeCivetwebDependency)
+include (CMakeJSONDependency)
 
 add_library (sat SHARED "")
 target_link_libraries (sat ${SAT_LIBRARIES})
