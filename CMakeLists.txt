@@ -14,6 +14,7 @@ option (SAT_KAFKA "SAT_KAFKA support" OFF)
 option (SAT_REDIS "SAT_REDIS support" OFF)
 option (SAT_WEBSERVER "SAT_WEBSERVER support" OFF)
 option (SAT_JSON "SAT_JSON support" OFF)
+option (SAT_CURL "SAT_CURL support" OFF)
 
 enable_testing ()
 
@@ -52,6 +53,7 @@ include (CMakeKafkaDependency)
 include (CMakeRedisDependency)
 include (CMakeCivetwebDependency)
 include (CMakeJSONDependency)
+include (CMakeCURLDependency)
 
 add_library (sat SHARED "")
 target_link_libraries (sat ${SAT_LIBRARIES})
