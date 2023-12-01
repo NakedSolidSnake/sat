@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <stdlib.h>
 
 static int hello_handler (struct mg_connection *connection, void *data);
 static int hello_handler2 (struct mg_connection *connection, void *data);
@@ -20,7 +21,8 @@ int main (int argc, char *argv[])
     {
         .endpoint_amount = 6,
         .folder = ".",
-        .port = "1234"
+        .port = "1234",
+        .threads_amount = "1"
     };
 
     pthread_t send_exit;
@@ -141,7 +143,7 @@ static void *send_exit_thread (void *args)
 {
     (void) args;
 
-    sleep (2);
+    sleep (10);
 
     system ("curl http://localhost:1234/exit");
 

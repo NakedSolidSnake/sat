@@ -74,6 +74,7 @@ typedef struct
     struct mg_callbacks mg_callbacks;
     char *port;
     char *folder;
+    char *threads_amount;
     sat_array_t *array;
 } sat_webserver_t;
 
@@ -81,6 +82,7 @@ typedef struct
 {
     char *port;
     char *folder;
+    char *threads_amount;
     uint16_t endpoint_amount;
 } sat_webserver_args_t;
 

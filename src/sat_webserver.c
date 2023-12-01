@@ -47,10 +47,11 @@ sat_status_t sat_webserver_open (sat_webserver_t *object, sat_webserver_args_t *
 {
     sat_status_t status = sat_status_set (&status, false, "sat webserver open error");
 
-    if (object != NULL && args != NULL && args->port != NULL && args->endpoint_amount > 0)
+    if (object != NULL && args != NULL && args->port != NULL && args->endpoint_amount > 0 && args->threads_amount != NULL)
     {
         object->port = args->port;
         object->folder = args->folder;
+        object->threads_amount = args->threads_amount;
 
         status = sat_array_create (&object->array, args->endpoint_amount, sizeof (sat_webserver_request_t));
 
@@ -102,8 +103,10 @@ sat_status_t sat_webserver_run (sat_webserver_t *object)
             "error.log",
             "enable_auth_domain_check",
             "no",
-            "document_root",
+            "document_root",            
             object->folder,
+            "num_threads",
+            object->threads_amount,
             0
         };
 
