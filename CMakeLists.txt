@@ -36,7 +36,8 @@ list (APPEND SAT_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/sat_uuid.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_tcp.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_tcp/sat_tcp_client.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_tcp/sat_tcp_server.c
-                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_worker.c)
+                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_worker.c
+                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_set.c)
 
 list (APPEND SAT_LIBRARIES uuid m pthread)
 
