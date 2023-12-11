@@ -62,6 +62,10 @@ add_executable (test_sat_set ${CMAKE_CURRENT_LIST_DIR}/test_sat_set.c)
 target_link_libraries (test_sat_set PUBLIC sat)
 add_test (NAME test_sat_set COMMAND test_sat_set)
 
+add_executable (test_sat_plugin ${CMAKE_CURRENT_LIST_DIR}/test_sat_plugin.c)
+target_link_libraries (test_sat_plugin PUBLIC sat)
+add_test (NAME test_sat_plugin COMMAND test_sat_plugin)
+
 add_subdirectory (test_mysql)
 add_subdirectory (test_postgres)
 add_subdirectory (test_sqlite)
