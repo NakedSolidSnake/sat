@@ -18,6 +18,7 @@
 #include <sat_worker.h>
 #include <sat_set.h>
 #include <sat_plugin.h>
+#include <sat_cache.h>
 
 #include <sat_optionals.h>
 
