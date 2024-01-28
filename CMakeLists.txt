@@ -15,6 +15,7 @@ option (SAT_REDIS "SAT_REDIS support" OFF)
 option (SAT_WEBSERVER "SAT_WEBSERVER support" OFF)
 option (SAT_JSON "SAT_JSON support" OFF)
 option (SAT_CURL "SAT_CURL support" OFF)
+option (SAT_MQTT "SAT_MQTT support" OFF)
 
 enable_testing ()
 
@@ -57,6 +58,7 @@ include (CMakeRedisDependency)
 include (CMakeCivetwebDependency)
 include (CMakeJSONDependency)
 include (CMakeCURLDependency)
+include (CMakeMQTTDependency)
 
 add_library (sat SHARED "")
 target_link_libraries (sat ${SAT_LIBRARIES})
