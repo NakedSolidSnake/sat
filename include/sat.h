@@ -20,6 +20,7 @@
 #include <sat_plugin.h>
 #include <sat_cache.h>
 #include <sat_scheduler.h>
+#include <sat_channel.h>
 
 #include <sat_optionals.h>
 
