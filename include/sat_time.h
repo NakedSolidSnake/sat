@@ -13,6 +13,8 @@ typedef struct
 
 time_t sat_time_get_epoch_now (void);
 time_t sat_time_get_utc_epoch_now (void);
+unsigned long long sat_time_get_epoch_now_ms (void);
+
 time_t sat_time_get_epoch_by_string (const char *time_string, const char *format);
 
 bool sat_time_get_date_by_epoch (char *buffer, uint8_t size, const char *format, time_t epoch);

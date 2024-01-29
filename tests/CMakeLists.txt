@@ -70,6 +70,10 @@ add_executable (test_sat_cache ${CMAKE_CURRENT_LIST_DIR}/test_sat_cache.c)
 target_link_libraries (test_sat_cache PUBLIC sat)
 add_test (NAME test_sat_cache COMMAND test_sat_cache)
 
+add_executable (test_sat_scheduler ${CMAKE_CURRENT_LIST_DIR}/test_sat_scheduler.c)
+target_link_libraries (test_sat_scheduler PUBLIC sat)
+add_test (NAME test_sat_scheduler COMMAND test_sat_scheduler)
+
 add_subdirectory (test_mysql)
 add_subdirectory (test_postgres)
 add_subdirectory (test_sqlite)

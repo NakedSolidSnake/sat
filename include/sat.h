@@ -19,6 +19,7 @@
 #include <sat_set.h>
 #include <sat_plugin.h>
 #include <sat_cache.h>
+#include <sat_scheduler.h>
 
 #include <sat_optionals.h>
 

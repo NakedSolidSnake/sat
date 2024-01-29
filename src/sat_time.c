@@ -1,5 +1,6 @@
 #include <sat_time.h>
 #include <string.h>
+#include <sys/time.h>
 
 #define SAT_TIME_NANO_TO_SECONDS_FACTOR     1000000000L
 
@@ -10,6 +11,19 @@ time_t sat_time_get_epoch_now (void)
 {
     time_t now = time (NULL);
     return now;
+}
+
+unsigned long long sat_time_get_epoch_now_ms (void)
+{
+    struct timeval tv;
+
+    gettimeofday (&tv, NULL);
+
+    unsigned long long miliseconds = (unsigned long long)(tv.tv_sec) * 1000
+                                     +
+                                     (unsigned long long)(tv.tv_usec) / 1000;
+
+    return miliseconds;
 }
 
 time_t sat_time_get_utc_epoch_now (void)
