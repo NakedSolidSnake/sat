@@ -16,6 +16,7 @@ option (SAT_WEBSERVER "SAT_WEBSERVER support" OFF)
 option (SAT_JSON "SAT_JSON support" OFF)
 option (SAT_CURL "SAT_CURL support" OFF)
 option (SAT_MQTT "SAT_MQTT support" OFF)
+option (SAT_PROPERTIES "SAT_PROPERTIES support" OFF)
 
 enable_testing ()
 
@@ -59,6 +60,7 @@ include (CMakeCivetwebDependency)
 include (CMakeJSONDependency)
 include (CMakeCURLDependency)
 include (CMakeMQTTDependency)
+include (CMakeIniDependency)
 
 add_library (sat SHARED "")
 target_link_libraries (sat ${SAT_LIBRARIES})
