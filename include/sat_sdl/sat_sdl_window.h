@@ -12,6 +12,7 @@ typedef struct
 
 sat_status_t sat_sdl_window_create (sat_sdl_window_t *object, const char *title, uint16_t width, uint16_t height);
 sat_status_t sat_sdl_window_set_background (sat_sdl_window_t *object, sat_sdl_color_t color);
+void sat_sdl_window_set_bmp_image (sat_sdl_window_t *object, const char *file);
 void sat_sdl_window_refresh (sat_sdl_window_t *object);
 void sat_sdl_window_destroy (sat_sdl_window_t *object);
 

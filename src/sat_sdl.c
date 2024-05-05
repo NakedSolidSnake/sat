@@ -59,6 +59,20 @@ sat_status_t sat_sdl_set_background (sat_sdl_t *object, sat_sdl_color_t color)
     return status; 
 }
 
+sat_status_t sat_sdl_set_bmp_image (sat_sdl_t *object, const char *file)
+{
+    sat_status_t status = sat_status_set (&status, false, "sat sdl set bmp image error");
+
+    if (object != NULL && object->initialized == true && file != NULL)
+    {
+        sat_sdl_window_set_bmp_image (&object->window, file);
+
+        sat_status_set (&status, true, "");
+    }
+
+    return status;
+}
+
 sat_status_t sat_sdl_refresh (sat_sdl_t *object)
 {
     sat_status_t status = sat_status_set (&status, false, "sat sdl refresh error");
