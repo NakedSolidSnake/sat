@@ -17,6 +17,7 @@ option (SAT_JSON "SAT_JSON support" OFF)
 option (SAT_CURL "SAT_CURL support" OFF)
 option (SAT_MQTT "SAT_MQTT support" OFF)
 option (SAT_PROPERTIES "SAT_PROPERTIES support" OFF)
+option (SAT_SDL "SAT_SDL support" OFF)
 
 enable_testing ()
 
@@ -63,6 +64,7 @@ include (CMakeJSONDependency)
 include (CMakeCURLDependency)
 include (CMakeMQTTDependency)
 include (CMakeIniDependency)
+include (CMakeSDLDependency)
 
 add_library (sat SHARED "")
 target_link_libraries (sat ${SAT_LIBRARIES})
