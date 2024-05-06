@@ -10,6 +10,13 @@ struct sat_sdl_t
     uint16_t height;
     bool running;
     bool initialized;
+
+    struct 
+    {
+        sat_sdl_event_on_key_pressed_t on_key_pressed;
+    } events;
+
+    void *context;
 }; 
 
 sat_status_t sat_sdl_init (sat_sdl_t **object, const char *title, uint16_t width, uint16_t height)
@@ -73,6 +80,35 @@ sat_status_t sat_sdl_set_bmp_image (sat_sdl_t *object, const char *file)
     return status;
 }
 
+sat_status_t sat_sdl_set_event_key_pressed (sat_sdl_t *object, sat_sdl_event_on_key_pressed_t on_key_pressed)
+{
+    sat_status_t status = sat_status_set (&status, false, "sat sdl set event key error");
+
+    if (object != NULL && object->initialized == true && on_key_pressed != NULL)
+    {
+        object->events.on_key_pressed = on_key_pressed;
+
+        sat_status_set (&status, true, "");
+    }
+
+    return status;
+}
+
+sat_status_t sat_sdl_set_context (sat_sdl_t *object, void *context)
+{
+    sat_status_t status = sat_status_set (&status, false, "sat sdl set context error");
+
+    if (object != NULL && object->initialized == true && context != NULL)
+    {
+        object->context = context;
+
+        sat_status_set (&status, true, "");
+    }
+
+    return status;
+}
+
+
 sat_status_t sat_sdl_refresh (sat_sdl_t *object)
 {
     sat_status_t status = sat_status_set (&status, false, "sat sdl refresh error");
@@ -100,6 +136,15 @@ sat_status_t sat_sdl_run (sat_sdl_t *object)
             {
                 if (event.type == SDL_QUIT)
                     object->running = false;
+
+                else if (event.type == SDL_KEYDOWN)
+                {
+                    if (object->events.on_key_pressed != NULL)
+                    {
+                        object->events.on_key_pressed (object->context,
+                                                       sat_sdl_key_get_by (event.key.keysym.sym));
+                    }
+                }
             }
         }
 
@@ -107,6 +152,20 @@ sat_status_t sat_sdl_run (sat_sdl_t *object)
     }
 
     return status;
+}
+
+sat_status_t sat_sdl_stop (sat_sdl_t *object)
+{
+    sat_status_t status = sat_status_set (&status, false, "sat sdl stop error");
+
+    if (object != NULL && object->initialized == true)
+    {
+        object->running = false;
+
+        sat_status_set (&status, true, "");
+    }
+
+    return status; 
 }
 
 sat_status_t sat_sdl_close (sat_sdl_t *object)

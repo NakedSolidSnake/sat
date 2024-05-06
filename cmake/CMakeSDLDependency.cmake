@@ -3,7 +3,8 @@ if (${SAT_SDL})
     message (STATUS "SAT_SDL support enable")
 
     list (APPEND SAT_SOURCES ${CMAKE_SOURCE_DIR}/src/sat_sdl.c
-                             ${CMAKE_SOURCE_DIR}/src/sat_sdl/sat_sdl_window.c)
+                             ${CMAKE_SOURCE_DIR}/src/sat_sdl/sat_sdl_window.c
+                             ${CMAKE_SOURCE_DIR}/src/sat_sdl/sat_sdl_keys.c)
 
     list (APPEND SAT_INCLUDES ${CMAKE_SOURCE_DIR}/include/sat_sdl)
     file (APPEND ${CMAKE_SOURCE_DIR}/include/sat_optionals.h "#include <sat_sdl.h>\n")
