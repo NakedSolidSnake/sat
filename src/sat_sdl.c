@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <sat_sdl_window.h>
 #include <sat_sdl_image.h>
+#include <SDL2/SDL_image.h>
 
 #define SAT_SDL_IMAGES_SIZE     20
 
@@ -26,7 +27,10 @@ struct sat_sdl_t
     } images;
 
     void *context;
-}; 
+};
+
+static sat_status_t sat_sdl_init_api (void);
+static void sat_sdl_close_api (void);
 
 sat_status_t sat_sdl_init (sat_sdl_t **object, const char *title, uint16_t width, uint16_t height)
 {
@@ -38,8 +42,9 @@ sat_status_t sat_sdl_init (sat_sdl_t **object, const char *title, uint16_t width
         sat_sdl_t *__object = NULL;
         do 
         {
-
-            if (SDL_Init (SDL_INIT_EVERYTHING) < 0)
+            
+            status = sat_sdl_init_api ();
+            if (sat_status_get_result (&status) == false)
             {
                 break;
             }
@@ -113,7 +118,8 @@ sat_status_t sat_sdl_image_add (sat_sdl_t *object, char *name, const char *file,
     {
         sat_sdl_image_t image = 
         {
-            .name = name
+            .name = name,
+            .type = type
         };
 
         status = sat_sdl_image_load (&image, file);
@@ -232,10 +238,31 @@ sat_status_t sat_sdl_close (sat_sdl_t *object)
 
         free (object);
 
-        SDL_Quit ();
+        sat_sdl_close_api ();
 
         sat_status_set (&status, true, "");
     }
 
     return status;
+}
+
+static sat_status_t sat_sdl_init_api (void)
+{
+    sat_status_t status = sat_status_set (&status, false, "sat sdl init api error");
+
+    int image_flag = IMG_INIT_PNG;
+
+    if (SDL_Init (SDL_INIT_EVERYTHING) >= 0 &&
+        (IMG_Init (image_flag) & image_flag) != 0)
+    {
+        sat_status_set (&status, true, "");
+    }
+
+    return status;
+}
+
+static void sat_sdl_close_api (void)
+{
+    SDL_Quit ();
+    IMG_Quit ();
 }

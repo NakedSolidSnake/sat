@@ -8,6 +8,7 @@ typedef struct
 {
     char *name;
     void *handle;
+    sat_sdl_image_type_t type;
 } sat_sdl_image_t;
 
 sat_status_t sat_sdl_image_load (sat_sdl_image_t *object, const char *file);

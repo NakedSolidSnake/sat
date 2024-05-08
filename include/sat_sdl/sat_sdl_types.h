@@ -13,6 +13,7 @@ typedef struct
 typedef enum 
 {
     sat_sdl_image_type_bmp,
+    sat_sdl_image_type_png,
 } sat_sdl_image_type_t;
 
 #endif/* SAT_SDL_TYPES_H_ */

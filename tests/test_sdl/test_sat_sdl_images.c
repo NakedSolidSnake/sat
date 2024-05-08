@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <string.h>
 #include <stdio.h>
+#include <unistd.h>
 
 int main (int argc, char *argv[])
 {
@@ -17,7 +18,21 @@ int main (int argc, char *argv[])
     status = sat_sdl_image_add (sdl, "hello", filename, sat_sdl_image_type_bmp);
     assert (sat_status_get_result (&status) == true);
 
+    memset (filename, 0, sizeof (filename));
+    snprintf (filename, 1024 - 1, "%s/%s", argv [1], "test.png");
+
+    status = sat_sdl_image_add (sdl, "test", filename, sat_sdl_image_type_png);
+    assert (sat_status_get_result (&status) == true);
+
     status = sat_sdl_set_image (sdl, "hello");
+    assert (sat_status_get_result (&status) == true);
+
+    status = sat_sdl_refresh (sdl);
+    assert (sat_status_get_result (&status) == true);
+
+    sleep (5);
+
+    status = sat_sdl_set_image (sdl, "test");
     assert (sat_status_get_result (&status) == true);
 
     status = sat_sdl_refresh (sdl);
