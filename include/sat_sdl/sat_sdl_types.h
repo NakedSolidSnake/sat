@@ -10,4 +10,9 @@ typedef struct
     uint8_t blue;
 } sat_sdl_color_t;
 
+typedef enum 
+{
+    sat_sdl_image_type_bmp,
+} sat_sdl_image_type_t;
+
 #endif/* SAT_SDL_TYPES_H_ */

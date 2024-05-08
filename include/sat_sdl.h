@@ -9,7 +9,8 @@ typedef struct sat_sdl_t sat_sdl_t;
 
 sat_status_t sat_sdl_init (sat_sdl_t **object, const char *title, uint16_t width, uint16_t height);
 sat_status_t sat_sdl_set_background (sat_sdl_t *object, sat_sdl_color_t color);
-sat_status_t sat_sdl_set_bmp_image (sat_sdl_t *object, const char *file);
+sat_status_t sat_sdl_set_image (sat_sdl_t *object, const char *name);
+sat_status_t sat_sdl_image_add (sat_sdl_t *object, char *name, const char *file, sat_sdl_image_type_t type);
 sat_status_t sat_sdl_set_event_key_pressed (sat_sdl_t *object, sat_sdl_event_on_key_pressed_t on_key_pressed);
 sat_status_t sat_sdl_set_context (sat_sdl_t *object, void *context);
 sat_status_t sat_sdl_refresh (sat_sdl_t *object);

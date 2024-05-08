@@ -14,7 +14,10 @@ int main (int argc, char *argv[])
 
     snprintf (filename, 1024 - 1, "%s/%s", argv [1], "hello.bmp");
     
-    status = sat_sdl_set_bmp_image (sdl, filename);
+    status = sat_sdl_image_add (sdl, "hello", filename, sat_sdl_image_type_bmp);
+    assert (sat_status_get_result (&status) == true);
+
+    status = sat_sdl_set_image (sdl, "hello");
     assert (sat_status_get_result (&status) == true);
 
     status = sat_sdl_refresh (sdl);

@@ -32,10 +32,9 @@ sat_status_t sat_sdl_window_set_background (sat_sdl_window_t *object, sat_sdl_co
     return status;
 }
 
-void sat_sdl_window_set_bmp_image (sat_sdl_window_t *object, const char *file)
+void sat_sdl_window_set_image (sat_sdl_window_t *object, SDL_Surface *image)
 {
     SDL_Surface *surface = SDL_GetWindowSurface (object->window);
-    SDL_Surface *image = SDL_LoadBMP (file);
 
     SDL_BlitSurface (image, NULL, surface, NULL);
 }

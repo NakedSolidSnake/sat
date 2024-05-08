@@ -2,6 +2,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <sat_sdl_window.h>
+#include <sat_sdl_image.h>
+
+#define SAT_SDL_IMAGES_SIZE     20
 
 struct sat_sdl_t
 {
@@ -16,6 +19,12 @@ struct sat_sdl_t
         sat_sdl_event_on_key_pressed_t on_key_pressed;
     } events;
 
+    struct 
+    {
+        sat_sdl_image_t list [SAT_SDL_IMAGES_SIZE];
+        uint8_t amount;
+    } images;
+
     void *context;
 }; 
 
@@ -25,6 +34,8 @@ sat_status_t sat_sdl_init (sat_sdl_t **object, const char *title, uint16_t width
 
     if (object != NULL && title != NULL && width > 0 && height > 0)
     {
+
+        sat_sdl_t *__object = NULL;
         do 
         {
 
@@ -33,18 +44,24 @@ sat_status_t sat_sdl_init (sat_sdl_t **object, const char *title, uint16_t width
                 break;
             }
 
-            *object = calloc (1, sizeof (struct sat_sdl_t));
-            if (*object == NULL)
+            __object = calloc (1, sizeof (struct sat_sdl_t));
+            if (__object == NULL)
             {
                 break;
             }
 
-            status = sat_sdl_window_create (&(*object)->window, title, width, height);
+            status = sat_sdl_window_create (&__object->window, title, width, height);
+            if (sat_status_get_result (&status) == false)
+            {
+                break;
+            }
 
-            (*object)->running = true;
-            (*object)->height = height;
-            (*object)->width = width;
-            (*object)->initialized = true;
+            __object->running = true;
+            __object->height = height;
+            __object->width = width;
+            __object->initialized = true;
+
+            *object = __object;
 
         } while (false);
     }
@@ -66,15 +83,47 @@ sat_status_t sat_sdl_set_background (sat_sdl_t *object, sat_sdl_color_t color)
     return status; 
 }
 
-sat_status_t sat_sdl_set_bmp_image (sat_sdl_t *object, const char *file)
+sat_status_t sat_sdl_set_image (sat_sdl_t *object, const char *name)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat sdl set bmp image error");
+    sat_status_t status = sat_status_set (&status, false, "sat sdl set image error");
 
-    if (object != NULL && object->initialized == true && file != NULL)
+    if (object != NULL && object->initialized == true && name != NULL)
     {
-        sat_sdl_window_set_bmp_image (&object->window, file);
+        for (uint8_t i = 0; i < object->images.amount; i++)
+        {
+            if (strcmp (object->images.list [i].name, name) == 0)
+            {
+                sat_sdl_window_set_image (&object->window, object->images.list [i].handle);
 
-        sat_status_set (&status, true, "");
+                sat_status_set (&status, true, "");
+
+                break;
+            }
+        }
+    }
+
+    return status;
+}
+
+sat_status_t sat_sdl_image_add (sat_sdl_t *object, char *name, const char *file, sat_sdl_image_type_t type)
+{
+    sat_status_t status = sat_status_set (&status, false, "sat sdl image add error");
+
+    if (object != NULL && object->initialized == true && name != NULL && file != NULL && object->images.amount < SAT_SDL_IMAGES_SIZE)
+    {
+        sat_sdl_image_t image = 
+        {
+            .name = name
+        };
+
+        status = sat_sdl_image_load (&image, file);
+
+        if (sat_status_get_result (&status) == true)
+        {
+            memcpy (&object->images.list [object->images.amount], &image, sizeof (sat_sdl_image_t));
+
+            object->images.amount ++;
+        }
     }
 
     return status;
@@ -175,6 +224,11 @@ sat_status_t sat_sdl_close (sat_sdl_t *object)
     if (object != NULL && object->initialized == true)
     {
         sat_sdl_window_destroy (&object->window);
+
+        for (uint8_t i = 0; i < object->images.amount; i++)
+        {
+            sat_sdl_image_unload (&object->images.list [i]);
+        }
 
         free (object);
 
