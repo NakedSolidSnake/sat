@@ -46,5 +46,5 @@ void sat_sdl_window_refresh (sat_sdl_window_t *object)
 
 void sat_sdl_window_destroy (sat_sdl_window_t *object)
 {
-    SDL_UpdateWindowSurface (object->window);
+    SDL_DestroyWindow (object->window);
 }
