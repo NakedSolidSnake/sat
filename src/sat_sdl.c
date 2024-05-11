@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <sat_sdl_window.h>
+#include <sat_sdl_render.h>
 #include <sat_sdl_image.h>
 #include <SDL2/SDL_image.h>
 
@@ -10,6 +11,7 @@
 struct sat_sdl_t
 {
     sat_sdl_window_t window;
+    sat_sdl_render_t render;
     uint16_t width;
     uint16_t height;
     bool running;
@@ -61,6 +63,12 @@ sat_status_t sat_sdl_init (sat_sdl_t **object, const char *title, uint16_t width
                 break;
             }
 
+            status = sat_sdl_render_create (&__object->render, &__object->window);
+            if (sat_status_get_result (&status) == false)
+            {
+                break;
+            }
+
             __object->running = true;
             __object->height = height;
             __object->width = width;
@@ -80,7 +88,7 @@ sat_status_t sat_sdl_set_background (sat_sdl_t *object, sat_sdl_color_t color)
 
     if (object != NULL && object->initialized == true)
     {
-        sat_sdl_window_set_background (&object->window, color);
+        sat_sdl_render_set_color_background (&object->render, color);
 
         sat_status_set (&status, true, "");
     }
@@ -98,7 +106,7 @@ sat_status_t sat_sdl_set_image (sat_sdl_t *object, const char *name)
         {
             if (strcmp (object->images.list [i].name, name) == 0)
             {
-                sat_sdl_window_set_image (&object->window, object->images.list [i].handle);
+                sat_sdl_render_set_image (&object->render, object->images.list [i].handle);
 
                 sat_status_set (&status, true, "");
 
@@ -163,14 +171,27 @@ sat_status_t sat_sdl_set_context (sat_sdl_t *object, void *context)
     return status;
 }
 
-
-sat_status_t sat_sdl_refresh (sat_sdl_t *object)
+sat_status_t sat_sdl_clear (sat_sdl_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat sdl refresh error");
+    sat_status_t status = sat_status_set (&status, false, "sat sdl clear error");
 
     if (object != NULL && object->initialized == true)
     {
-        sat_sdl_window_refresh (&object->window);
+        sat_sdl_render_clear (&object->render);
+
+        sat_status_set (&status, true, "");
+    }
+
+    return status;
+}
+
+sat_status_t sat_sdl_draw (sat_sdl_t *object)
+{
+    sat_status_t status = sat_status_set (&status, false, "sat sdl draw error");
+
+    if (object != NULL && object->initialized == true)
+    {
+        sat_sdl_render_draw (&object->render);
 
         sat_status_set (&status, true, "");
     }
@@ -229,6 +250,7 @@ sat_status_t sat_sdl_close (sat_sdl_t *object)
 
     if (object != NULL && object->initialized == true)
     {
+        sat_sdl_render_destroy (&object->render);
         sat_sdl_window_destroy (&object->window);
 
         for (uint8_t i = 0; i < object->images.amount; i++)

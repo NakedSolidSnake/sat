@@ -13,7 +13,7 @@ int main (int argc, char *argv[])
     status = sat_sdl_set_background (sdl, (sat_sdl_color_t){.red = 0xFF, .green = 0xFF, .blue = 0xFF});
     assert (sat_status_get_result (&status) == true);
 
-    status = sat_sdl_refresh (sdl);
+    status = sat_sdl_draw (sdl);
     assert (sat_status_get_result (&status) == true);
 
     status = sat_sdl_run (sdl);

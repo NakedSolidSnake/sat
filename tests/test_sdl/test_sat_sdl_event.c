@@ -37,9 +37,10 @@ static void sat_sdl_event_on_key_pressed (void *object, sat_sdl_key_t key)
     {
         if (is_pressed [i].key == key)
         {
+            sat_sdl_clear (sdl);
             sat_sdl_set_image (sdl, is_pressed [i].command);
             is_pressed [i].pressed = true;
-            sat_sdl_refresh (sdl);
+            sat_sdl_draw (sdl);
         }
     }
 
@@ -74,7 +75,7 @@ int main (int argc, char *argv[])
     status = sat_sdl_set_image (sdl, "center");
     assert (sat_status_get_result (&status) == true);
 
-    status = sat_sdl_refresh (sdl);
+    status = sat_sdl_draw (sdl);
     assert (sat_status_get_result (&status) == true);
 
     status = sat_sdl_run (sdl);
