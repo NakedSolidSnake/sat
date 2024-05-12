@@ -4,9 +4,10 @@
 #include <sat_sdl_window.h>
 #include <sat_sdl_render.h>
 #include <sat_sdl_image.h>
+#include <sat_sdl_texture.h>
 #include <SDL2/SDL_image.h>
 
-#define SAT_SDL_IMAGES_SIZE     20
+#define SAT_SDL_TEXTURES_SIZE     20
 
 struct sat_sdl_t
 {
@@ -24,9 +25,9 @@ struct sat_sdl_t
 
     struct 
     {
-        sat_sdl_image_t list [SAT_SDL_IMAGES_SIZE];
+        sat_sdl_texture_t list [SAT_SDL_TEXTURES_SIZE];
         uint8_t amount;
-    } images;
+    } textures;
 
     void *context;
 };
@@ -102,11 +103,11 @@ sat_status_t sat_sdl_set_image (sat_sdl_t *object, const char *name)
 
     if (object != NULL && object->initialized == true && name != NULL)
     {
-        for (uint8_t i = 0; i < object->images.amount; i++)
+        for (uint8_t i = 0; i < object->textures.amount; i++)
         {
-            if (strcmp (object->images.list [i].name, name) == 0)
+            if (strcmp (object->textures.list [i].name, name) == 0)
             {
-                sat_sdl_render_set_image (&object->render, object->images.list [i].handle);
+                sat_sdl_render_set_texture (&object->render, object->textures.list [i].handle);
 
                 sat_status_set (&status, true, "");
 
@@ -122,11 +123,10 @@ sat_status_t sat_sdl_image_add (sat_sdl_t *object, char *name, const char *file,
 {
     sat_status_t status = sat_status_set (&status, false, "sat sdl image add error");
 
-    if (object != NULL && object->initialized == true && name != NULL && file != NULL && object->images.amount < SAT_SDL_IMAGES_SIZE)
+    if (object != NULL && object->initialized == true && name != NULL && file != NULL && object->textures.amount < SAT_SDL_TEXTURES_SIZE)
     {
         sat_sdl_image_t image = 
         {
-            .name = name,
             .type = type
         };
 
@@ -134,9 +134,18 @@ sat_status_t sat_sdl_image_add (sat_sdl_t *object, char *name, const char *file,
 
         if (sat_status_get_result (&status) == true)
         {
-            memcpy (&object->images.list [object->images.amount], &image, sizeof (sat_sdl_image_t));
+            sat_sdl_texture_t texture = 
+            {
+                .name = name
+            };
 
-            object->images.amount ++;
+            sat_sdl_texture_create (&texture, &object->render, &image);
+
+            memcpy (&object->textures.list [object->textures.amount], &texture, sizeof (sat_sdl_texture_t));
+
+            sat_sdl_image_unload (&image);
+
+            object->textures.amount ++;
         }
     }
 
@@ -253,9 +262,9 @@ sat_status_t sat_sdl_close (sat_sdl_t *object)
         sat_sdl_render_destroy (&object->render);
         sat_sdl_window_destroy (&object->window);
 
-        for (uint8_t i = 0; i < object->images.amount; i++)
+        for (uint8_t i = 0; i < object->textures.amount; i++)
         {
-            sat_sdl_image_unload (&object->images.list [i]);
+            sat_sdl_texture_destroy (&object->textures.list [i]);
         }
 
         free (object);

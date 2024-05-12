@@ -10,7 +10,7 @@ typedef struct
 
 sat_status_t sat_sdl_render_create (sat_sdl_render_t *object, sat_sdl_window_t *window);
 void sat_sdl_render_set_color_background (sat_sdl_render_t *object, sat_sdl_color_t color);
-void sat_sdl_render_set_image (sat_sdl_render_t *object, SDL_Surface *image);
+void sat_sdl_render_set_texture (sat_sdl_render_t *object, SDL_Texture *texture);
 void sat_sdl_render_clear (sat_sdl_render_t *object);
 void sat_sdl_render_draw (sat_sdl_render_t *object);
 void sat_sdl_render_destroy (sat_sdl_render_t *object);

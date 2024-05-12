@@ -6,7 +6,6 @@
 
 typedef struct 
 {
-    char *name;
     void *handle;
     sat_sdl_image_type_t type;
 } sat_sdl_image_t;
