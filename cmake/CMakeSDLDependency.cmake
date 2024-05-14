@@ -7,7 +7,8 @@ if (${SAT_SDL})
                              ${CMAKE_SOURCE_DIR}/src/sat_sdl/sat_sdl_keys.c
                              ${CMAKE_SOURCE_DIR}/src/sat_sdl/sat_sdl_image.c
                              ${CMAKE_SOURCE_DIR}/src/sat_sdl/sat_sdl_render.c
-                             ${CMAKE_SOURCE_DIR}/src/sat_sdl/sat_sdl_texture.c)
+                             ${CMAKE_SOURCE_DIR}/src/sat_sdl/sat_sdl_texture.c
+                             ${CMAKE_SOURCE_DIR}/src/sat_sdl/sat_sdl_geometry.c)
 
     list (APPEND SAT_INCLUDES ${CMAKE_SOURCE_DIR}/include/sat_sdl)
     file (APPEND ${CMAKE_SOURCE_DIR}/include/sat_optionals.h "#include <sat_sdl.h>\n")

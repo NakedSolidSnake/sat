@@ -5,6 +5,7 @@
 #include <sat_sdl_render.h>
 #include <sat_sdl_image.h>
 #include <sat_sdl_texture.h>
+#include <sat_sdl_geometry.h>
 #include <SDL2/SDL_image.h>
 
 #define SAT_SDL_TEXTURES_SIZE     20
@@ -192,6 +193,48 @@ sat_status_t sat_sdl_clear (sat_sdl_t *object)
     }
 
     return status;
+}
+
+sat_status_t sat_sdl_draw_point (sat_sdl_t *object, sat_sdl_point_t point)
+{
+    sat_status_t status = sat_status_set (&status, false, "sat sdl draw point error");
+
+    if (object != NULL && object->initialized == true)
+    {
+        sat_sdl_geometry_draw_point (&object->render, point);
+
+        sat_status_set (&status, true, "");
+    }
+
+    return status;  
+}
+
+sat_status_t sat_sdl_draw_line (sat_sdl_t *object, sat_sdl_line_t line)
+{
+    sat_status_t status = sat_status_set (&status, false, "sat sdl draw line error");
+
+    if (object != NULL && object->initialized == true)
+    {
+        sat_sdl_geometry_draw_line (&object->render, line);
+
+        sat_status_set (&status, true, "");
+    }
+
+    return status; 
+}
+
+sat_status_t sat_sdl_draw_rectangle (sat_sdl_t *object, sat_sdl_rectangle_t rectangle)
+{
+    sat_status_t status = sat_status_set (&status, false, "sat sdl draw rectangle error");
+
+    if (object != NULL && object->initialized == true)
+    {
+        sat_sdl_geometry_draw_rectangle (&object->render, rectangle);
+
+        sat_status_set (&status, true, "");
+    }
+
+    return status; 
 }
 
 sat_status_t sat_sdl_draw (sat_sdl_t *object)
