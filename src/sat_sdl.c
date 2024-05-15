@@ -181,6 +181,20 @@ sat_status_t sat_sdl_set_context (sat_sdl_t *object, void *context)
     return status;
 }
 
+sat_status_t sat_sdl_set_viewport (sat_sdl_t *object, sat_sdl_rectangle_t rectangle)
+{
+   sat_status_t status = sat_status_set (&status, false, "sat sdl set viewport error");
+
+    if (object != NULL && object->initialized == true)
+    {
+        sat_sdl_render_set_viewport (&object->render, rectangle);
+        
+        sat_status_set (&status, true, "");
+    }
+
+    return status; 
+}
+
 sat_status_t sat_sdl_clear (sat_sdl_t *object)
 {
     sat_status_t status = sat_status_set (&status, false, "sat sdl clear error");

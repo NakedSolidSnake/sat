@@ -26,6 +26,19 @@ void sat_sdl_render_set_texture (sat_sdl_render_t *object, SDL_Texture *texture)
     SDL_RenderCopy (object->render, texture, NULL, NULL);
 }
 
+void sat_sdl_render_set_viewport (sat_sdl_render_t *object, sat_sdl_rectangle_t rectangle)
+{
+    SDL_Rect __rectangle = 
+    {
+        .x = rectangle.coordinate.x,
+        .y = rectangle.coordinate.y,
+        .w = rectangle.dimension.width,
+        .h = rectangle.dimension.height
+    };
+
+    SDL_RenderSetViewport (object->render, &__rectangle);
+}
+
 void sat_sdl_render_clear (sat_sdl_render_t *object)
 {
     SDL_RenderClear (object->render);
