@@ -12,6 +12,7 @@ sat_status_t sat_sdl_set_background (sat_sdl_t *object, sat_sdl_color_t color);
 sat_status_t sat_sdl_set_image (sat_sdl_t *object, const char *name);
 sat_status_t sat_sdl_image_add (sat_sdl_t *object, char *name, const char *file, sat_sdl_image_type_t type);
 sat_status_t sat_sdl_set_event_key_pressed (sat_sdl_t *object, sat_sdl_event_on_key_pressed_t on_key_pressed);
+sat_status_t sat_sdl_set_event_mouse_event (sat_sdl_t *object, sat_sdl_event_on_mouse_event_t on_mouse_event);
 sat_status_t sat_sdl_set_context (sat_sdl_t *object, void *context);
 sat_status_t sat_sdl_set_viewport (sat_sdl_t *object, sat_sdl_rectangle_t rectangle);
 sat_status_t sat_sdl_clear (sat_sdl_t *object);

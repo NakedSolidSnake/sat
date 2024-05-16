@@ -6,6 +6,7 @@
 #include <sat_sdl_image.h>
 #include <sat_sdl_texture.h>
 #include <sat_sdl_geometry.h>
+#include <sat_sdl_mouse.h>
 #include <SDL2/SDL_image.h>
 
 #define SAT_SDL_TEXTURES_SIZE     20
@@ -22,6 +23,7 @@ struct sat_sdl_t
     struct 
     {
         sat_sdl_event_on_key_pressed_t on_key_pressed;
+        sat_sdl_event_on_mouse_event_t on_mouse_event;
     } events;
 
     struct 
@@ -167,6 +169,20 @@ sat_status_t sat_sdl_set_event_key_pressed (sat_sdl_t *object, sat_sdl_event_on_
     return status;
 }
 
+sat_status_t sat_sdl_set_event_mouse_event (sat_sdl_t *object, sat_sdl_event_on_mouse_event_t on_mouse_event)
+{
+    sat_status_t status = sat_status_set (&status, false, "sat sdl set event key error");
+
+    if (object != NULL && object->initialized == true && on_mouse_event != NULL)
+    {
+        object->events.on_mouse_event = on_mouse_event;
+
+        sat_status_set (&status, true, "");
+    }
+
+    return status;
+}
+
 sat_status_t sat_sdl_set_context (sat_sdl_t *object, void *context)
 {
     sat_status_t status = sat_status_set (&status, false, "sat sdl set context error");
@@ -279,13 +295,21 @@ sat_status_t sat_sdl_run (sat_sdl_t *object)
                 if (event.type == SDL_QUIT)
                     object->running = false;
 
-                else if (event.type == SDL_KEYDOWN)
+                else if (event.type == SDL_KEYDOWN && object->events.on_key_pressed != NULL)
                 {
-                    if (object->events.on_key_pressed != NULL)
-                    {
-                        object->events.on_key_pressed (object->context,
-                                                       sat_sdl_key_get_by (event.key.keysym.sym));
-                    }
+                    object->events.on_key_pressed (object->context,
+                                                    sat_sdl_key_get_by (event.key.keysym.sym));
+                }
+
+                else if ((event.type == SDL_MOUSEMOTION     ||
+                          event.type == SDL_MOUSEBUTTONDOWN ||
+                          event.type == SDL_MOUSEBUTTONUP)  &&
+                          object->events.on_mouse_event != NULL)
+                {
+                    sat_sdl_coordinate_t coordinate;
+                    SDL_GetMouseState (&coordinate.x, &coordinate.y);
+
+                    object->events.on_mouse_event (object->context, sat_sdl_mouse_event_get_type (event.type), coordinate);
                 }
             }
         }
