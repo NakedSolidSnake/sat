@@ -7,9 +7,12 @@
 #include <sat_sdl_texture.h>
 #include <sat_sdl_geometry.h>
 #include <sat_sdl_mouse.h>
+#include <sat_sdl_font.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_ttf.h>
 
 #define SAT_SDL_TEXTURES_SIZE     20
+#define SAT_SDL_FONTS_AMOUNT      20
 
 struct sat_sdl_t
 {
@@ -31,6 +34,12 @@ struct sat_sdl_t
         sat_sdl_texture_t list [SAT_SDL_TEXTURES_SIZE];
         uint8_t amount;
     } textures;
+
+    struct
+    {
+        sat_sdl_font_t list [SAT_SDL_FONTS_AMOUNT];
+        uint8_t amount;
+    } fonts;
 
     void *context;
 };
@@ -149,6 +158,71 @@ sat_status_t sat_sdl_image_add (sat_sdl_t *object, char *name, const char *file,
             sat_sdl_image_unload (&image);
 
             object->textures.amount ++;
+        }
+    }
+
+    return status;
+}
+
+sat_status_t sat_sdl_font_add (sat_sdl_t *object, char *name, const char *file, uint16_t size)
+{
+    sat_status_t status = sat_status_set (&status, false, "sat sdl font add error");
+
+    if (object != NULL && object->initialized == true && name != NULL && file != NULL && object->fonts.amount < SAT_SDL_FONTS_AMOUNT)
+    {
+        sat_sdl_font_t font = 
+        {
+            .name = name,
+            .size = size
+        };
+
+        status = sat_sdl_font_load (&font, size, file);
+
+        if (sat_status_get_result (&status) == true)
+        {
+
+            memcpy (&object->fonts.list [object->fonts.amount], &font, sizeof (sat_sdl_font_t));
+
+            object->fonts.amount ++;
+        }
+    }
+
+    return status;
+}
+
+sat_status_t sat_sdl_set_text (sat_sdl_t *object, char *font, char *text, sat_sdl_rectangle_t rectangle)
+{
+    sat_status_t status = sat_status_set (&status, false, "sat sdl set text error");
+
+    if (object != NULL && object->initialized == true && font != NULL && text != NULL)
+    {
+        for (uint8_t i = 0; i < object->fonts.amount; i++)
+        {
+            if (strcmp (object->fonts.list [i].name, font) == 0)
+            {
+
+                SDL_Color __color =
+                {
+                    .r = rectangle.color.red,
+                    .g = rectangle.color.green,
+                    .b = rectangle.color.blue,
+                    .a = rectangle.color.alpha,
+                };
+
+                SDL_Surface *surface = TTF_RenderText_Solid (object->fonts.list [i].handle, text, __color);
+
+                SDL_Texture *texture = SDL_CreateTextureFromSurface (object->render.render, surface);
+
+                SDL_FreeSurface (surface);
+
+                sat_sdl_render_set_texture (&object->render, texture);
+
+                SDL_DestroyTexture (texture);
+
+                sat_status_set (&status, true, "");
+
+                break;
+            }
         }
     }
 
@@ -365,7 +439,8 @@ static sat_status_t sat_sdl_init_api (void)
     int image_flag = IMG_INIT_PNG;
 
     if (SDL_Init (SDL_INIT_EVERYTHING) >= 0 &&
-        (IMG_Init (image_flag) & image_flag) != 0)
+        (IMG_Init (image_flag) & image_flag) != 0 &&
+        TTF_Init () >= 0)
     {
         sat_status_set (&status, true, "");
     }
@@ -375,6 +450,7 @@ static sat_status_t sat_sdl_init_api (void)
 
 static void sat_sdl_close_api (void)
 {
-    SDL_Quit ();
+    TTF_Quit ();
     IMG_Quit ();
+    SDL_Quit ();
 }
