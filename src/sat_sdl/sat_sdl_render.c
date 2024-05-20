@@ -21,9 +21,17 @@ void sat_sdl_render_set_color_background (sat_sdl_render_t *object, sat_sdl_colo
     sat_sdl_render_clear (object);
 }
 
-void sat_sdl_render_set_texture (sat_sdl_render_t *object, SDL_Texture *texture)
+void sat_sdl_render_set_texture (sat_sdl_render_t *object, SDL_Texture *texture, sat_sdl_rectangle_t rectangle)
 {
-    SDL_RenderCopy (object->render, texture, NULL, NULL);
+    SDL_Rect __rectangle = 
+    {
+        .x = rectangle.coordinate.x,
+        .y = rectangle.coordinate.y,
+        .w = rectangle.dimension.width,
+        .h = rectangle.dimension.height,
+    };
+
+    SDL_RenderCopyEx (object->render, texture, NULL, &__rectangle, 0, NULL, SDL_FLIP_NONE);
 }
 
 void sat_sdl_render_set_viewport (sat_sdl_render_t *object, sat_sdl_rectangle_t rectangle)

@@ -53,7 +53,20 @@ static void set_viewport (sat_sdl_t *sdl, char *image, sat_sdl_coordinate_t coor
                                                      });
     assert (sat_status_get_result (&status) == true);
 
-    status = sat_sdl_set_image (sdl, image);
+    status = sat_sdl_set_image (sdl, image, (sat_sdl_rectangle_t)
+                                            {
+                                                .coordinate = 
+                                                {
+                                                    .x = 0,
+                                                    .y = 0,
+                                                },
+                                                .dimension = 
+                                                {
+                                                    .width = 100,
+                                                    .height = 100,
+
+                                                }
+                                            });
     assert (sat_status_get_result (&status) == true);
 
     status = sat_sdl_draw (sdl);
@@ -103,7 +116,19 @@ int main (int argc, char *argv[])
 
     assert (sat_status_get_result (&status) == true);
 
-    status = sat_sdl_set_image (sdl, "center");
+    status = sat_sdl_set_image (sdl, "center", (sat_sdl_rectangle_t)
+                                               {
+                                                    .coordinate = 
+                                                    {
+                                                        .x = 0,
+                                                        .y = 0,
+                                                    },
+                                                    .dimension = 
+                                                    {
+                                                        .width = SAT_SDL_SCREEN_WIDTH,
+                                                        .height = SAT_SDL_SCREEN_HEIGHT,   
+                                                    }
+                                               });
     assert (sat_status_get_result (&status) == true);
 
     set_viewport (sdl, "center", (sat_sdl_coordinate_t)

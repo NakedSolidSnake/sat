@@ -9,6 +9,13 @@ typedef struct
 {
     char *name;
     void *handle;
+
+    struct 
+    {
+        uint16_t width;
+        uint16_t height;
+    } dimension;
+    
 } sat_sdl_texture_t;
 
 sat_status_t sat_sdl_texture_create (sat_sdl_texture_t *object, sat_sdl_render_t *render, sat_sdl_image_t *image);

@@ -9,6 +9,8 @@ sat_status_t sat_sdl_texture_create (sat_sdl_texture_t *object, sat_sdl_render_t
 
     if (object->handle != NULL)
     {
+        object->dimension.height = ((SDL_Surface *)image->handle)->h;
+        object->dimension.width  = ((SDL_Surface *)image->handle)->w;
         sat_status_set (&status, true, "");
     }
 

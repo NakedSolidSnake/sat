@@ -109,7 +109,7 @@ sat_status_t sat_sdl_set_background (sat_sdl_t *object, sat_sdl_color_t color)
     return status; 
 }
 
-sat_status_t sat_sdl_set_image (sat_sdl_t *object, const char *name)
+sat_status_t sat_sdl_set_image (sat_sdl_t *object, const char *name, sat_sdl_rectangle_t rectangle)
 {
     sat_status_t status = sat_status_set (&status, false, "sat sdl set image error");
 
@@ -119,7 +119,7 @@ sat_status_t sat_sdl_set_image (sat_sdl_t *object, const char *name)
         {
             if (strcmp (object->textures.list [i].name, name) == 0)
             {
-                sat_sdl_render_set_texture (&object->render, object->textures.list [i].handle);
+                sat_sdl_render_set_texture (&object->render, object->textures.list [i].handle, rectangle);
 
                 sat_status_set (&status, true, "");
 
@@ -215,7 +215,7 @@ sat_status_t sat_sdl_set_text (sat_sdl_t *object, char *font, char *text, sat_sd
 
                 SDL_FreeSurface (surface);
 
-                sat_sdl_render_set_texture (&object->render, texture);
+                sat_sdl_render_set_texture (&object->render, texture, rectangle);
 
                 SDL_DestroyTexture (texture);
 

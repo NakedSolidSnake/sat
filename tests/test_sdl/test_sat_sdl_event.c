@@ -3,12 +3,29 @@
 #include <string.h>
 #include <stdio.h>
 
+#define SAT_SDL_SCREEN_WIDTH        640
+#define SAT_SDL_SCREEN_HEIGHT       480
+
 typedef struct 
 {
     sat_sdl_key_t key;
     bool pressed;
     char *command;
 } key_is_pressed_t;
+
+static sat_sdl_rectangle_t rectangle = 
+{
+    .coordinate = 
+    {
+        .x = 0,
+        .y = 0
+    },
+    .dimension = 
+    {
+        .width = SAT_SDL_SCREEN_WIDTH,
+        .height = SAT_SDL_SCREEN_HEIGHT
+    }
+};
 
 static key_is_pressed_t is_pressed [4] = 
 {
@@ -38,7 +55,7 @@ static void sat_sdl_event_on_key_pressed (void *object, sat_sdl_key_t key)
         if (is_pressed [i].key == key)
         {
             sat_sdl_clear (sdl);
-            sat_sdl_set_image (sdl, is_pressed [i].command);
+            sat_sdl_set_image (sdl, is_pressed [i].command, rectangle);
             is_pressed [i].pressed = true;
             sat_sdl_draw (sdl);
         }
@@ -57,7 +74,7 @@ int main (int argc, char *argv[])
 {
     sat_sdl_t *sdl;
 
-    sat_status_t status = sat_sdl_init (&sdl, "Window Title", 640, 480);
+    sat_status_t status = sat_sdl_init (&sdl, "Window Title", SAT_SDL_SCREEN_WIDTH, SAT_SDL_SCREEN_HEIGHT);
     assert (sat_status_get_result (&status) == true);
 
     status = sat_sdl_set_event_key_pressed (sdl, sat_sdl_event_on_key_pressed);
@@ -72,7 +89,7 @@ int main (int argc, char *argv[])
     load_image (sdl, "down",   argv[1], "down.png");
     load_image (sdl, "up",     argv[1], "up.png");
 
-    status = sat_sdl_set_image (sdl, "center");
+    status = sat_sdl_set_image (sdl, "center", rectangle);
     assert (sat_status_get_result (&status) == true);
 
     status = sat_sdl_draw (sdl);

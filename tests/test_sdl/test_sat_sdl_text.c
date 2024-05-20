@@ -21,6 +21,16 @@ int main (int argc, char *argv[])
 
     status = sat_sdl_set_text (sdl, "ariana", "Hello World", (sat_sdl_rectangle_t)
                                                              {
+                                                                .coordinate = 
+                                                                {
+                                                                    .x = 0,
+                                                                    .y = 0
+                                                                },
+                                                                .dimension = 
+                                                                {
+                                                                    .width = SAT_SDL_SCREEN_WIDTH,
+                                                                    .height = SAT_SDL_SCREEN_HEIGHT
+                                                                },
                                                                 .color = 
                                                                 {
                                                                     .red = 0XAA,

@@ -9,7 +9,7 @@ typedef struct sat_sdl_t sat_sdl_t;
 
 sat_status_t sat_sdl_init (sat_sdl_t **object, const char *title, uint16_t width, uint16_t height);
 sat_status_t sat_sdl_set_background (sat_sdl_t *object, sat_sdl_color_t color);
-sat_status_t sat_sdl_set_image (sat_sdl_t *object, const char *name);
+sat_status_t sat_sdl_set_image (sat_sdl_t *object, const char *name, sat_sdl_rectangle_t rectangle);
 sat_status_t sat_sdl_image_add (sat_sdl_t *object, char *name, const char *file, sat_sdl_image_type_t type);
 sat_status_t sat_sdl_font_add (sat_sdl_t *object, char *name, const char *file, uint16_t size);
 sat_status_t sat_sdl_set_text (sat_sdl_t *object, char *font, char *text, sat_sdl_rectangle_t rectangle);
