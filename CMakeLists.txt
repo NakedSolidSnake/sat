@@ -18,6 +18,7 @@ option (SAT_CURL "SAT_CURL support" OFF)
 option (SAT_MQTT "SAT_MQTT support" OFF)
 option (SAT_PROPERTIES "SAT_PROPERTIES support" OFF)
 option (SAT_SDL "SAT_SDL support" OFF)
+option (SAT_GTK3 "SAT_GTK3 support" OFF)
 
 enable_testing ()
 
@@ -65,6 +66,7 @@ include (CMakeCURLDependency)
 include (CMakeMQTTDependency)
 include (CMakeIniDependency)
 include (CMakeSDLDependency)
+include (CMakeGTK3Dependency)
 
 add_library (sat SHARED "")
 target_link_libraries (sat ${SAT_LIBRARIES})
