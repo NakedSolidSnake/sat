@@ -3,6 +3,7 @@
 
 #include <sat_gtk3_window.h>
 #include <sat_gtk3_button.h>
+#include <sat_gtk3_label.h>
 
 typedef struct 
 {
