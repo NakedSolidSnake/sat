@@ -1,9 +1,9 @@
 #include <sat_gtk3_window.h>
 #include <gtk/gtk.h>
 
-static void sat_gtk3_window_close_event (GtkWidget *window, void *data);
+static void sat_gtk3_window_close_event (GtkWidget *widget, void *data);
 
-sat_status_t sat_gtk3_window_open (sat_gtk3_window_t *object)
+sat_status_t sat_gtk3_window_open (sat_gtk3_window_t *object, sat_gtk3_window_args_t *args)
 {
     sat_status_t status = sat_status_set (&status, false, "sat gtk3 window open error");
 
@@ -11,7 +11,13 @@ sat_status_t sat_gtk3_window_open (sat_gtk3_window_t *object)
 
     if (object->window != NULL)
     {
-        g_signal_connect (object->window, "delete_event", G_CALLBACK (sat_gtk3_window_close_event), NULL);
+        if (args->on_close != NULL)
+        {
+            object->on_close = args->on_close;
+            object->data = args->data;
+        }
+
+        g_signal_connect (object->window, "destroy", G_CALLBACK (sat_gtk3_window_close_event), object);
 
         sat_status_set (&status, true, "");
     }
@@ -30,10 +36,13 @@ void sat_gtk3_window_add_widget (sat_gtk3_window_t *object, sat_gtk3_widget_t *w
     gtk_container_add (GTK_CONTAINER (object->window), widget->widget);
 }
 
-static void sat_gtk3_window_close_event (GtkWidget *window, void *data)
+static void sat_gtk3_window_close_event (GtkWidget *widget, void *data)
 {
-    (void) window;
-    (void) data;
+    (void) widget;
+    sat_gtk3_window_t *window = (sat_gtk3_window_t *) data;
 
-    gtk_main_quit ();
+    if (window->on_close != NULL)
+    {
+        window->on_close (window, window->data);
+    }
 }

@@ -26,7 +26,13 @@ sat_status_t sat_gtk3_open (sat_gtk3_t *object, sat_gtk3_args_t *args)
     {
         gtk_init (&args->argc, &args->argv);
 
-        status = sat_gtk3_window_open (&object->window);
+        sat_gtk3_window_args_t window_args = 
+        {
+            .on_close = args->on_close,
+            .data = args->data,
+        };
+
+        status = sat_gtk3_window_open (&object->window, &window_args);
     }
 
     return status;
@@ -54,6 +60,7 @@ sat_status_t sat_gtk3_close (sat_gtk3_t *object)
 
     if (object != NULL && object->initialized == true)
     {
+        gtk_main_quit ();
 
         sat_status_set (&status, true, "");
     }

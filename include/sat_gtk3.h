@@ -15,6 +15,8 @@ typedef struct
 {
     int argc;
     char **argv;
+    sat_gtk_window_event_on_close_t on_close;
+    void *data;
 } sat_gtk3_args_t;
 
 sat_status_t sat_gtk3_init (sat_gtk3_t *object);
