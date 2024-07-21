@@ -25,6 +25,11 @@ void sat_gtk3_window_show (sat_gtk3_window_t *object)
     gtk_widget_show_all (object->window);
 }
 
+void sat_gtk3_window_add_widget (sat_gtk3_window_t *object, sat_gtk3_widget_t *widget)
+{
+    gtk_container_add (GTK_CONTAINER (object->window), widget->widget);
+}
+
 static void sat_gtk3_window_close_event (GtkWidget *window, void *data)
 {
     (void) window;

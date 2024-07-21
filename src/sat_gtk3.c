@@ -50,10 +50,24 @@ sat_status_t sat_gtk3_run (sat_gtk3_t *object)
 
 sat_status_t sat_gtk3_close (sat_gtk3_t *object)
 {
-     sat_status_t status = sat_status_set (&status, false, "sat gtk3 close error");
+    sat_status_t status = sat_status_set (&status, false, "sat gtk3 close error");
 
     if (object != NULL && object->initialized == true)
     {
+
+        sat_status_set (&status, true, "");
+    }
+
+    return status;
+}
+
+sat_status_t sat_gtk3_add_widget (sat_gtk3_t *object, sat_gtk3_widget_t *widget)
+{
+    sat_status_t status = sat_status_set (&status, false, "sat gtk3 close error");
+
+    if (object != NULL && object->initialized == true && widget != NULL && widget->widget != NULL)
+    {
+        sat_gtk3_window_add_widget (&object->window, widget);
 
         sat_status_set (&status, true, "");
     }

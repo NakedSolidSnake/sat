@@ -10,7 +10,8 @@ if (${SAT_GTK3})
             message ("GTK Found")
             list (APPEND SAT_SOURCES 
                 ${CMAKE_SOURCE_DIR}/src/sat_gtk3.c
-                ${CMAKE_SOURCE_DIR}/src/sat_gtk3/sat_gtk3_window.c)
+                ${CMAKE_SOURCE_DIR}/src/sat_gtk3/sat_gtk3_window.c
+                ${CMAKE_SOURCE_DIR}/src/sat_gtk3/sat_gtk3_button.c)
             
             file (APPEND ${CMAKE_SOURCE_DIR}/include/sat_optionals.h "#include <sat_gtk3.h>\n")
 
