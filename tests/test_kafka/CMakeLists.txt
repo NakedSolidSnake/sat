@@ -1,0 +1,5 @@
+if (${SAT_KAFKA})
+    add_executable (test_sat_kafka ${CMAKE_CURRENT_LIST_DIR}/test_sat_kafka.c)
+    target_link_libraries (test_sat_kafka PUBLIC sat pthread)
+    add_test (NAME test_sat_kafka COMMAND test_sat_kafka ${CMAKE_CURRENT_LIST_DIR} ${CMAKE_CURRENT_LIST_DIR}/getting-started.ini)
+endif ()

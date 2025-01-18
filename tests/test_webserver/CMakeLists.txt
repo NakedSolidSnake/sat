@@ -1,0 +1,5 @@
+if (${SAT_WEBSERVER})
+    add_executable (test_sat_webserver ${CMAKE_CURRENT_LIST_DIR}/test_sat_webserver.c)
+    target_link_libraries (test_sat_webserver PUBLIC sat)
+    add_test (NAME test_sat_webserver COMMAND test_sat_webserver ${CMAKE_CURRENT_LIST_DIR}/static)
+endif ()

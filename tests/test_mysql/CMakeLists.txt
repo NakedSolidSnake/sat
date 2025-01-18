@@ -1,0 +1,5 @@
+if (${SAT_MYSQL})
+    add_executable (test_sat_mysql ${CMAKE_CURRENT_LIST_DIR}/test_sat_mysql.c)
+    target_link_libraries (test_sat_mysql PUBLIC sat)
+    add_test (NAME test_sat_mysql COMMAND test_sat_mysql ${CMAKE_CURRENT_LIST_DIR})
+endif ()

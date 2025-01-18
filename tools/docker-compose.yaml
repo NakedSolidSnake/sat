@@ -1,0 +1,9 @@
+version: "3"
+services:
+  development:
+    image: codenotalk/development
+    container_name: development
+    volumes:
+    - .:/development
+    ports:
+    - "1234:1234"

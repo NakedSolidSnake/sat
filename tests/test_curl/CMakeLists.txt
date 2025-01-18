@@ -1,0 +1,5 @@
+if (${SAT_CURL})
+    add_executable (test_sat_curl ${CMAKE_CURRENT_LIST_DIR}/test_sat_curl.c)
+    target_link_libraries (test_sat_curl PUBLIC sat)
+    add_test (NAME test_sat_curl COMMAND test_sat_curl ${CMAKE_CURRENT_LIST_DIR})
+endif ()
