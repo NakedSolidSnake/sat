@@ -17,6 +17,7 @@ RUN apt-get update && \
 	libglib2.0-dev \
 	libpq-dev \
 	libhiredis-dev \
+	jq \
 	-y && \
     apt-get clean
 
