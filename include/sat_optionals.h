@@ -1,0 +1,12 @@
+#include <sat_curl.h>
+#include <sat_webserver.h>
+#include <sat_gtk3.h>
+#include <sat_properties.h>
+#include <sat_json.h>
+#include <sat_kafka.h>
+#include <sat_mqtt.h>
+#include <sat_mysql.h>
+#include <sat_postgres.h>
+#include <sat_redis.h>
+#include <sat_sdl.h>
+#include <sat_sqlite.h>

@@ -45,7 +45,7 @@ RUN cd /development && \
 	rm -rf paho.mqtt.c
 
 RUN cd /development && \
-	git clone https://github.com/codenotallk/sat && \
+	git clone https://github.com/NakedSolidSnake/sat && \
 	mkdir -p sat/build && \
 	cd sat/build && \
 	cmake \
@@ -65,7 +65,7 @@ RUN cd /development && \
 	ldconfig
 
 RUN cd /development && \
-	git clone https://github.com/codenotallk/sat_scaffolding && \
+	git clone https://github.com/NakedSolidSnake/sat_scaffolding && \
 	mkdir -p sat_scaffolding/build && \
 	cd sat_scaffolding/build && \
 	cmake .. && \

@@ -1,9 +1,10 @@
 #!/bin/bash 
 
-docker build -t codenotalk/development .
+docker build --no-cache -t solidcris/development .
+ 
 
-docker tag codenotalk/development codenotalk/development:1.0.0
+docker tag solidcris/development solidcris/development:1.0.0
 
-docker login -u codenotalk  
+docker login -u solidcris  
 
-docker push -a codenotalk/development
+docker push -a solidcris/development
