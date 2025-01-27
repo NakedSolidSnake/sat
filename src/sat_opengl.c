@@ -4,6 +4,7 @@
 #include <sat_opengl_vao.h>
 #include <sat_opengl_vbo.h>
 #include <sat_opengl_ebo.h>
+#include <sat_opengl_container_texture.h>
 
 #include <sat_set.h>
 #include <sat_iterator.h>
@@ -21,12 +22,14 @@ struct sat_opengl_t
     bool initialized;
     sat_set_t *programs;
     sat_set_t *vaos;
+    sat_set_t *textures;
 };
 
 static sat_status_t sat_opengl_check_args (sat_opengl_args_t *args);
 static sat_status_t sat_opengl_init (void);
 static bool sat_opengl_is_program_equal (void *element, void *new_element);
 static bool sat_opengl_is_vao_equal (void *element, void *new_element);
+static bool sat_opengl_is_textures_equal (void *element, void *new_element);
 static void sat_opengl_draw_by (sat_opengl_draw_type_t type, uint32_t vertices_amount);
 
 sat_status_t sat_opengl_create (sat_opengl_t **object, sat_opengl_args_t *args)
@@ -96,6 +99,23 @@ sat_status_t sat_opengl_create (sat_opengl_t **object, sat_opengl_args_t *args)
         {
             sat_opengl_window_close (&opengl->window);
 
+            
+            free (opengl);
+            break;
+        }
+
+        status = sat_set_create (&opengl->textures, &(sat_set_args_t)
+                                                    {
+                                                        .size = 3,
+                                                        .object_size = sizeof (sat_opengl_container_texture_t),
+                                                        .is_equal = sat_opengl_is_textures_equal,
+                                                        .mode = sat_set_mode_dynamic
+                                                    });
+        if (sat_status_get_result (&status) == false)
+        {
+            sat_opengl_window_close (&opengl->window);
+
+            
             free (opengl);
             break;
         }
@@ -428,7 +448,8 @@ sat_status_t sat_opengl_add_vbo_to_vao (sat_opengl_t *object, const char *name, 
                     sat_opengl_vbo_enable (&vbo);
 
                     sat_opengl_vbo_set_vertices (&vbo, &args->vertices);
-                    sat_opengl_vbo_set_attributes (&vbo, &args->attribute);
+
+                    sat_opengl_vbo_set_attributes (&vbo, &args->attributes);
 
                     if (args->indexes.list != NULL && args->indexes.size > 0)
                     {
@@ -455,6 +476,102 @@ sat_status_t sat_opengl_add_vbo_to_vao (sat_opengl_t *object, const char *name, 
     return status;
 }
 
+
+sat_status_t sat_opengl_texture_container_create (sat_opengl_t *object, const char *name)
+{
+    sat_status_t status = sat_status_set (&status, false, "sat opengl texture container create error");
+
+    if (object != NULL && object->initialized == true && name != NULL && strlen (name) > 0)
+    {
+        sat_opengl_container_texture_t container;
+
+        sat_opengl_container_texture_init (&container, name);
+
+        status = sat_set_add (object->textures, &container);
+    }
+
+    return status;
+}
+
+sat_status_t sat_opengl_texture_container_add (sat_opengl_t *object, const char *name, sat_opengl_texture_args_t *args)
+{
+    sat_status_t status = sat_status_set (&status, false, "sat opengl texture container add error");
+
+    if (object != NULL && object->initialized == true && name != NULL && strlen (name) > 0 && args != NULL)
+    {
+        sat_iterator_t iterator;
+
+        do 
+        {
+            status = sat_iterator_open (&iterator, object->textures);
+            if (sat_status_get_result (&status) == false)
+            {
+                break;
+            }
+
+            sat_opengl_container_texture_t *container = (sat_opengl_container_texture_t *) sat_iterator_next (&iterator);
+
+            while (container != NULL)
+            {
+                if (strcmp (container->name, name) == 0)
+                {
+                    sat_opengl_texture_t texture;
+
+                    status = sat_opengl_texture_open (&texture, args);
+
+                    if (sat_status_get_result (&status) == true)
+                    {
+                        status = sat_opengl_container_texture_add (container, &texture);
+                    }
+
+                    break;
+                }
+
+                container = (sat_opengl_container_texture_t *) sat_iterator_next (&iterator);
+            }
+
+        } while (false);
+    }
+
+    return status;
+}
+
+sat_status_t sat_opengl_texture_container_enable (sat_opengl_t *object, const char *name)
+{
+    sat_status_t status = sat_status_set (&status, false, "sat opengl texture container enable error");
+
+    if (object != NULL && object->initialized == true && name != NULL && strlen (name) > 0)
+    {
+        sat_iterator_t iterator;
+
+        do 
+        {
+            status = sat_iterator_open (&iterator, object->textures);
+            if (sat_status_get_result (&status) == false)
+            {
+                break;
+            }
+
+            sat_opengl_container_texture_t *container = (sat_opengl_container_texture_t *) sat_iterator_next (&iterator);
+
+            while (container != NULL)
+            {
+                if (strcmp (container->name, name) == 0)
+                {
+                   
+                    sat_opengl_container_texture_enable (container);
+
+                    break;
+                }
+
+                container = (sat_opengl_container_texture_t *) sat_iterator_next (&iterator);
+            }
+
+        } while (false);
+    }
+
+    return status;
+}
 
 sat_status_t sat_opengl_send_shader_value (sat_opengl_t *object, const char *name, const char *param, const sat_opengl_value_t *value)
 {
@@ -569,6 +686,21 @@ static bool sat_opengl_is_vao_equal (void *element, void *new_element)
     sat_opengl_vao_t *new_vao= (sat_opengl_vao_t *)new_element;
 
     if (strcmp (vao->name, new_vao->name) == 0)
+    {
+        status = true;
+    }
+
+    return status;
+}
+
+static bool sat_opengl_is_textures_equal (void *element, void *new_element)
+{
+    bool status = false;
+
+    sat_opengl_container_texture_t *container = (sat_opengl_container_texture_t *)element;
+    sat_opengl_container_texture_t *new_container = (sat_opengl_container_texture_t *)new_element;
+
+    if (strcmp (container->name, new_container->name) == 0)
     {
         status = true;
     }

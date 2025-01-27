@@ -36,9 +36,16 @@ typedef struct
 
 typedef struct 
 {
+    sat_opengl_attribute_t *list;
+    uint8_t amount;
+
+} sat_opengl_attributes_t;
+
+typedef struct 
+{
     const char *name;
     sat_opengl_vertices_t vertices;
-    sat_opengl_attribute_t attribute;
+    sat_opengl_attributes_t attributes;
     sat_opengl_indexes_t indexes;
 
 } sat_opengl_vbo_args_t;
@@ -112,5 +119,29 @@ typedef struct
    sat_opengl_value_float_t floats;
 
 } sat_opengl_value_t;
+
+
+typedef enum
+{
+    sat_opengl_texture_format_jpg,
+    sat_opengl_texture_format_png
+
+} sat_opengl_texture_format_t;
+
+typedef enum
+{
+    sat_opengl_texture_type_2D,
+    sat_opengl_texture_type_3D
+
+} sat_opengl_texture_type_t;
+
+typedef struct 
+{
+    sat_opengl_texture_type_t type;
+    sat_opengl_texture_format_t format;
+    const char *filename;
+    bool flip;
+
+} sat_opengl_texture_args_t;
 
 #endif/* SAT_OPENGL_TYPES_H_ */

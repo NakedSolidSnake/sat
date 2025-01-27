@@ -9,17 +9,27 @@ int main (int argc, char *argv [])
 
     float vertices [] = 
     {
-       -0.5f, -0.5f, 0.0f,
-        0.5f, -0.5f, 0.0f,
-        0.0f,  0.5f, 0.0f
+      // positions            colors              texture coords
+         0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top right
+         0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // bottom right
+        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom left
+        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // top left 
+    };
+
+    unsigned int indexes [] = 
+    {
+        0, 1, 3,
+        1, 2, 3
     };
 
     sat_opengl_attribute_t attributes [] = 
     {
-      {.location = 0, .amount = 3, .elements = 3, .offset = 0},
+      {.location = 0, .amount = 3, .elements = 8, .offset = 0},
+      {.location = 1, .amount = 3, .elements = 8, .offset = 3},
+      {.location = 2, .amount = 2, .elements = 8, .offset = 6},
     };
 
-    assert (argc == 3);
+    assert (argc == 4);
 
     sat_status_t status = sat_opengl_create (&opengl, &(sat_opengl_args_t)
                                                       {
@@ -34,6 +44,7 @@ int main (int argc, char *argv [])
 
     char *vertex = argv [1];
     char *fragment = argv [2];
+    char *texture = argv [3];
 
     status = sat_opengl_create_program (opengl, "triangle");
     assert (sat_status_get_result (&status) == true);
@@ -58,12 +69,29 @@ int main (int argc, char *argv [])
                                                                 .list = vertices,
                                                                 .size = sizeof (vertices)
                                                               },
+                                                              .indexes = 
+                                                              {
+                                                                .list = indexes,
+                                                                .size = sizeof (indexes)
+                                                              },
                                                               .attributes = 
                                                               {
                                                                 .list = attributes,
-                                                                .amount = 1
+                                                                .amount = 3
                                                               }
                                                             });
+    assert (sat_status_get_result (&status) == true);
+
+    status = sat_opengl_texture_container_create (opengl, "textures");
+    assert (sat_status_get_result (&status) == true);
+
+    status = sat_opengl_texture_container_add (opengl, "textures", &(sat_opengl_texture_args_t)
+                                                                   {
+                                                                    .type = sat_opengl_texture_type_2D,
+                                                                    .format = sat_opengl_texture_format_jpg,
+                                                                    .filename = texture,
+                                                                    .flip = true,
+                                                                   });
     assert (sat_status_get_result (&status) == true);
 
     while (sat_status_get_result (&status) == true)
@@ -72,6 +100,9 @@ int main (int argc, char *argv [])
       float time = 0.0f;
 
       sat_opengl_set_color (opengl, (sat_opengl_color_t){.red = 0.2f, .green = 0.3f, .blue = 0.3f, .alpha = 1.0f});
+
+      status = sat_opengl_texture_container_enable (opengl, "textures");
+      assert (sat_status_get_result (&status) == true);
 
       status = sat_opengl_enable_program (opengl, "triangle");
       assert (sat_status_get_result (&status) == true);
@@ -94,7 +125,7 @@ int main (int argc, char *argv [])
                                                                                   }
                                                                                 });
 
-      status = sat_opengl_draw (opengl, sat_opengl_draw_type_triangles, 3);
+      status = sat_opengl_draw (opengl, sat_opengl_draw_type_elements, 6);
     }
 
     status = sat_opengl_close (opengl);

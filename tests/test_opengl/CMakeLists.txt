@@ -19,5 +19,13 @@ if (${SAT_OPENGL})
     target_link_libraries (test_sat_opengl_triangle_uniform PUBLIC sat)
     add_test (NAME test_sat_opengl_triangle_uniform COMMAND test_sat_opengl_triangle_uniform ${CMAKE_CURRENT_LIST_DIR})
 
+    add_executable (test_sat_opengl_triangle_texture ${CMAKE_CURRENT_LIST_DIR}/test_sat_opengl_triangle_texture.c)
+    target_link_libraries (test_sat_opengl_triangle_texture PUBLIC sat)
+    add_test (NAME test_sat_opengl_triangle_texture COMMAND test_sat_opengl_triangle_texture ${CMAKE_CURRENT_LIST_DIR})
+
+    add_executable (test_sat_opengl_triangle_texture2 ${CMAKE_CURRENT_LIST_DIR}/test_sat_opengl_triangle_texture2.c)
+    target_link_libraries (test_sat_opengl_triangle_texture2 PUBLIC sat)
+    add_test (NAME test_sat_opengl_triangle_texture2 COMMAND test_sat_opengl_triangle_texture2 ${CMAKE_CURRENT_LIST_DIR})
+
     
 endif ()

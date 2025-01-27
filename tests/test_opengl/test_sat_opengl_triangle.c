@@ -13,6 +13,11 @@ int main (int argc, char *argv [])
         0.0f,  0.5f, 0.0f
     };
 
+    sat_opengl_attribute_t attributes [] = 
+    {
+      {.location = 0, .amount = 3, .elements = 3, .offset = 0}
+    };
+
     assert (argc == 3);
 
     sat_status_t status = sat_opengl_create (&opengl, &(sat_opengl_args_t)
@@ -52,12 +57,10 @@ int main (int argc, char *argv [])
                                                                 .list = vertices,
                                                                 .size = sizeof (vertices)
                                                               },
-                                                              .attribute = 
+                                                              .attributes = 
                                                               {
-                                                                .location = 0,
-                                                                .amount = 3,
-                                                                .elements = 3,
-                                                                .offset = 0
+                                                                .list = attributes,
+                                                                .amount = 1
                                                               }
                                                             });
     assert (sat_status_get_result (&status) == true);

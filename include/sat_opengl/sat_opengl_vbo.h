@@ -15,7 +15,7 @@ sat_status_t sat_opengl_vbo_create (sat_opengl_vbo_t *object, const char *name);
 sat_status_t sat_opengl_vbo_destroy (sat_opengl_vbo_t *object);
 
 sat_status_t sat_opengl_vbo_set_vertices (sat_opengl_vbo_t *object, sat_opengl_vertices_t *vertices);
-sat_status_t sat_opengl_vbo_set_attributes (sat_opengl_vbo_t *object, sat_opengl_attribute_t *attribute);
+sat_status_t sat_opengl_vbo_set_attributes (sat_opengl_vbo_t *object, sat_opengl_attributes_t *attributes);
 
 sat_status_t sat_opengl_vbo_enable (sat_opengl_vbo_t *object);
 sat_status_t sat_opengl_vbo_disable (sat_opengl_vbo_t *object);

@@ -26,18 +26,25 @@ sat_status_t sat_opengl_vbo_set_vertices (sat_opengl_vbo_t *object, sat_opengl_v
     return status;
 }
 
-sat_status_t sat_opengl_vbo_set_attributes (sat_opengl_vbo_t *object, sat_opengl_attribute_t *attribute)
+sat_status_t sat_opengl_vbo_set_attributes (sat_opengl_vbo_t *object, sat_opengl_attributes_t *attributes)
 {
-    glVertexAttribPointer (attribute->location,
+
+    for (uint8_t i = 0; i < attributes->amount; i ++)
+    {
+        sat_opengl_attribute_t *attribute = &attributes->list [i];
+
+        glVertexAttribPointer (attribute->location,
                            attribute->amount,
                            GL_FLOAT,
                            GL_FALSE,
                            attribute->elements * sizeof (float),
                            (void *)(attribute->offset * sizeof (float)));
 
-    glEnableVertexAttribArray (attribute->location);
+        glEnableVertexAttribArray (attribute->location);
+    }
 
     sat_status_t status = sat_status_set (&status, true, "");
+
     return status;
 }
 

@@ -10,13 +10,17 @@ if (${SAT_OPENGL})
                              ${CMAKE_SOURCE_DIR}/src/sat_opengl/sat_opengl_shader.c
                              ${CMAKE_SOURCE_DIR}/src/sat_opengl/sat_opengl_vao.c
                              ${CMAKE_SOURCE_DIR}/src/sat_opengl/sat_opengl_vbo.c
-                             ${CMAKE_SOURCE_DIR}/src/sat_opengl/sat_opengl_ebo.c)
+                             ${CMAKE_SOURCE_DIR}/src/sat_opengl/sat_opengl_ebo.c
+                             ${CMAKE_SOURCE_DIR}/src/sat_opengl/sat_opengl_texture.c
+                             ${CMAKE_SOURCE_DIR}/src/sat_opengl/sat_opengl_container_texture.c
+                             )
 
     list (APPEND SAT_INCLUDES ${CMAKE_SOURCE_DIR}/include/sat_opengl)
     file (APPEND ${CMAKE_SOURCE_DIR}/include/sat_optionals.h "#include <sat_opengl.h>\n")
 
     list (APPEND SAT_LIBRARIES GLEW glfw GL X11 pthread Xrandr Xi dl m)
 
-    install (FILES include/sat_opengl.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+    install (FILES include/sat_opengl.h           DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+    install (FILES include/sat_opengl/sat_types.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 endif ()
