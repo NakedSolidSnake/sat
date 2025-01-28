@@ -17,15 +17,13 @@ sat_status_t sat_opengl_texture_open (sat_opengl_texture_t *object, sat_opengl_t
 
     glGenTextures (1, &object->id);
 
+    object->type = args->type;
+
     sat_opengl_texture_enable (object);
 
     sat_opengl_texture_configure (object);
 
     status = sat_opengl_texture_load (object, args);
-    if (sat_status_get_result (&status) == true)
-    {
-        object->type = args->type;
-    }
 
     return status;
 }
