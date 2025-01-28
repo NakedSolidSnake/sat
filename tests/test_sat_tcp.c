@@ -7,6 +7,7 @@
 #include <unistd.h>
 
 #define BUFFER_SIZE     1024
+#define SERVICE         4321
 
 static bool running = true;
 
@@ -62,7 +63,7 @@ static void *server_thread (void *args)
         .type = sat_tcp_type_server,
         .server = 
         {
-            .service = "1234",
+            .service = SERVICE,
             .buffer = buffer,
             .size = BUFFER_SIZE,
             .events = 
@@ -114,7 +115,7 @@ static void *client_thread (void *args)
         .client = 
         {
             .hostname = "localhost",
-            .service = "1234"
+            .service = SERVICE
         }
     };
 

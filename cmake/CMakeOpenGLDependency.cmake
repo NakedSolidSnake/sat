@@ -20,7 +20,7 @@ if (${SAT_OPENGL})
 
     list (APPEND SAT_LIBRARIES GLEW glfw GL X11 pthread Xrandr Xi dl m)
 
-    install (FILES include/sat_opengl.h           DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-    install (FILES include/sat_opengl/sat_types.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+    install (FILES include/sat_opengl.h                  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+    install (FILES include/sat_opengl/sat_opengl_types.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 endif ()
