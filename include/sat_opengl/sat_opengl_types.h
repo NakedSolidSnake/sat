@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <cglm/cglm.h>
 
 typedef enum 
 {
@@ -143,5 +144,22 @@ typedef struct
     bool flip;
 
 } sat_opengl_texture_args_t;
+
+typedef enum 
+{
+    sat_opengl_matrix_type_2x2,
+    sat_opengl_matrix_type_3x3,
+    sat_opengl_matrix_type_4x4,
+
+} sat_opengl_matrix_type_t;
+
+typedef struct 
+{
+    sat_opengl_matrix_type_t type;
+    mat2 *matrix_2x2;
+    mat3 *matrix_3x3;
+    mat4 *matrix_4x4;
+
+} sat_opengl_matrix_t;
 
 #endif/* SAT_OPENGL_TYPES_H_ */

@@ -621,6 +621,42 @@ sat_status_t sat_opengl_send_shader_value (sat_opengl_t *object, const char *nam
     return status;
 }
 
+sat_status_t sat_opengl_send_shader_matrix (sat_opengl_t *object, const char *name, const char *param, const sat_opengl_matrix_t *matrix)
+{
+    sat_status_t status = sat_status_set (&status, false, "sat opengl send shader value error");
+
+    if (object != NULL && object->initialized == true && name != NULL && strlen (name) > 0)
+    {
+        sat_iterator_t iterator;
+
+        do 
+        {
+            status = sat_iterator_open (&iterator, object->programs);
+            if (sat_status_get_result (&status) == false)
+            {
+                break;
+            }
+
+            sat_opengl_program_t *program = (sat_opengl_program_t *) sat_iterator_next (&iterator);
+
+            while (program != NULL)
+            {
+                if (strcmp (program->name, name) == 0)
+                {
+                    status = sat_opengl_program_set_matrix (program, param, matrix);
+
+                    break;
+                }
+
+                program = (sat_opengl_program_t *) sat_iterator_next (&iterator);
+            }
+
+        } while (false);
+    }
+
+    return status;
+}
+
 sat_status_t sat_opengl_get_time (sat_opengl_t *object, float *value)
 {
     sat_status_t status = sat_status_set (&status, false, "sat opengl get time error");

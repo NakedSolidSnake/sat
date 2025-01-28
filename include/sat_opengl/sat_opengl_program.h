@@ -31,4 +31,6 @@ sat_status_t sat_opengl_program_set_bool (sat_opengl_program_t *object, const ch
 sat_status_t sat_opengl_program_set_int (sat_opengl_program_t *object, const char *name, sat_opengl_value_send_t send, sat_opengl_value_int_t *value);
 sat_status_t sat_opengl_program_set_float (sat_opengl_program_t *object, const char *name, sat_opengl_value_send_t send, sat_opengl_value_float_t *value);
 
+sat_status_t sat_opengl_program_set_matrix (sat_opengl_program_t *object, const char *name, sat_opengl_matrix_t *matrix);
+
 #endif/* SAT_OPENGL_PROGRAM_H_ */

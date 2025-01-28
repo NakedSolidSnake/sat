@@ -38,6 +38,7 @@ sat_status_t sat_opengl_texture_container_add (sat_opengl_t *object, const char 
 sat_status_t sat_opengl_texture_container_enable (sat_opengl_t *object, const char *name);
 
 sat_status_t sat_opengl_send_shader_value (sat_opengl_t *object, const char *name, const char *param, const sat_opengl_value_t *value);
+sat_status_t sat_opengl_send_shader_matrix (sat_opengl_t *object, const char *name, const char *param, const sat_opengl_matrix_t *matrix);
 sat_status_t sat_opengl_get_time (sat_opengl_t *object, float *value);
 
 #endif/* SAT_OPENGL_H_ */
