@@ -162,4 +162,11 @@ typedef struct
 
 } sat_opengl_matrix_t;
 
+typedef struct 
+{
+    uint16_t width;
+    uint16_t height;
+    
+} sat_opengl_dimension_t;
+
 #endif/* SAT_OPENGL_TYPES_H_ */

@@ -671,6 +671,20 @@ sat_status_t sat_opengl_get_time (sat_opengl_t *object, float *value)
     return status;
 }
 
+sat_status_t sat_opengl_get_window_dimension (sat_opengl_t *object, sat_opengl_dimension_t *dimension)
+{
+    sat_status_t status = sat_status_set (&status, false, "sat opengl get window dimension error");
+
+    if (object != NULL && object->initialized == true && dimension != NULL)
+    {
+        dimension->width = object->window.width;
+        dimension->height = object->window.height;
+
+        sat_status_set (&status, true, "");
+    }
+
+    return status;
+}
 
 static sat_status_t sat_opengl_check_args (sat_opengl_args_t *args)
 {

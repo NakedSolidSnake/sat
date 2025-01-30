@@ -41,4 +41,6 @@ sat_status_t sat_opengl_send_shader_value (sat_opengl_t *object, const char *nam
 sat_status_t sat_opengl_send_shader_matrix (sat_opengl_t *object, const char *name, const char *param, const sat_opengl_matrix_t *matrix);
 sat_status_t sat_opengl_get_time (sat_opengl_t *object, float *value);
 
+sat_status_t sat_opengl_get_window_dimension (sat_opengl_t *object, sat_opengl_dimension_t *dimension);
+
 #endif/* SAT_OPENGL_H_ */

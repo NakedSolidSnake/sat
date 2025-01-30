@@ -29,7 +29,11 @@ if (${SAT_OPENGL})
 
     add_executable (test_sat_opengl_triangle_transform ${CMAKE_CURRENT_LIST_DIR}/test_sat_opengl_triangle_transform.c)
     target_link_libraries (test_sat_opengl_triangle_transform PUBLIC sat)
-    add_test (NAME test_sat_opengl_triangle_transformv COMMAND test_sat_opengl_triangle_transform ${CMAKE_CURRENT_LIST_DIR})
+    add_test (NAME test_sat_opengl_triangle_transform COMMAND test_sat_opengl_triangle_transform ${CMAKE_CURRENT_LIST_DIR})
+
+    add_executable (test_sat_opengl_triangle_fov ${CMAKE_CURRENT_LIST_DIR}/test_sat_opengl_triangle_fov.c)
+    target_link_libraries (test_sat_opengl_triangle_fov PUBLIC sat)
+    add_test (NAME test_sat_opengl_triangle_fov COMMAND test_sat_opengl_triangle_fov ${CMAKE_CURRENT_LIST_DIR})
 
     
 endif ()
