@@ -25,6 +25,8 @@ sat_status_t sat_opengl_window_create (sat_opengl_window_t *object, sat_opengl_w
     {
         glfwMakeContextCurrent (object->handle);
 
+        glEnable (GL_DEPTH_TEST);
+
         sat_status_set (&status, true, "");
     }
 

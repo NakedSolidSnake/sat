@@ -410,7 +410,7 @@ sat_status_t sat_opengl_set_color (sat_opengl_t *object, sat_opengl_color_t colo
     if (object != NULL && object->initialized == true)
     {
         glClearColor (color.red, color.green, color.blue, color.alpha);
-        glClear (GL_COLOR_BUFFER_BIT);
+        glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         sat_status_set (&status, true, "");
     }

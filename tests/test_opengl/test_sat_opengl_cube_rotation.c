@@ -7,20 +7,56 @@ int main (int argc, char *argv [])
 
     sat_opengl_t *opengl;
 
-    float vertices [] = 
+    float vertices [] =
     {
-        // positions         texture coords
-         0.5f,  0.5f, 0.0f,  1.0f, 1.0f, // top right
-         0.5f, -0.5f, 0.0f,  1.0f, 0.0f, // bottom right
-        -0.5f, -0.5f, 0.0f,  0.0f, 0.0f, // bottom left
-        -0.5f,  0.5f, 0.0f,  0.0f, 1.0f  // top left 
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+         0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
     };
 
-    unsigned int indexes [] = 
-    {
-        0, 1, 3,
-        1, 2, 3
-    };
+    // unsigned int indexes [] = 
+    // {
+    //     0, 1, 3,
+    //     1, 2, 3
+    // };
 
     sat_opengl_attribute_t attributes [] = 
     {
@@ -69,11 +105,11 @@ int main (int argc, char *argv [])
                                                                 .list = vertices,
                                                                 .size = sizeof (vertices)
                                                               },
-                                                              .indexes = 
-                                                              {
-                                                                .list = indexes,
-                                                                .size = sizeof (indexes)
-                                                              },
+                                                              // .indexes = 
+                                                              // {
+                                                              //   .list = indexes,
+                                                              //   .size = sizeof (indexes)
+                                                              // },
                                                               .attributes = 
                                                               {
                                                                 .list = attributes,
@@ -142,10 +178,15 @@ int main (int argc, char *argv [])
       mat4 view = GLM_MAT4_IDENTITY_INIT;
       mat4 projection = GLM_MAT4_IDENTITY_INIT;
 
-      vec3 model_rotate = {1.0f, 0.0f, 0.0f};
+      vec3 model_rotate = {0.5f, 1.0f, 0.0f};
       vec3 view_translate = {0.0f, 0.0f, -3.0f};
 
-      glm_rotate (model, glm_rad (-55.0f), model_rotate);
+      float time;
+
+      status = sat_opengl_get_time (opengl, &time);
+      assert (sat_status_get_result (&status) == true);
+
+      glm_rotate (model, glm_rad (50.0f) * time, model_rotate);
       glm_translate (view, view_translate);
 
       sat_opengl_dimension_t dimension;
@@ -170,7 +211,7 @@ int main (int argc, char *argv [])
       status = sat_opengl_enable_vao (opengl, "triangle");
       assert (sat_status_get_result (&status) == true);
 
-      status = sat_opengl_draw (opengl, sat_opengl_draw_type_elements, 6);
+      status = sat_opengl_draw (opengl, sat_opengl_draw_type_triangles, 36);
     }
 
     status = sat_opengl_close (opengl);

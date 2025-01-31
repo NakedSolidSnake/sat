@@ -35,5 +35,8 @@ if (${SAT_OPENGL})
     target_link_libraries (test_sat_opengl_triangle_fov PUBLIC sat)
     add_test (NAME test_sat_opengl_triangle_fov COMMAND test_sat_opengl_triangle_fov ${CMAKE_CURRENT_LIST_DIR})
 
-    
+    add_executable (test_sat_opengl_cube_rotation ${CMAKE_CURRENT_LIST_DIR}/test_sat_opengl_cube_rotation.c)
+    target_link_libraries (test_sat_opengl_cube_rotation PUBLIC sat)
+    add_test (NAME test_sat_opengl_cube_rotation COMMAND test_sat_opengl_cube_rotation ${CMAKE_CURRENT_LIST_DIR})
+
 endif ()
