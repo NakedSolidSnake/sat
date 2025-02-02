@@ -23,3 +23,9 @@ bin/test_sat_opengl_cube_rotation ../tests/test_opengl/assets/rotation/vertex.sh
 ```bash
 bin/test_sat_opengl_many_cube_rotation ../tests/test_opengl/assets/rotation/vertex.shader ../tests/test_opengl/assets/rotation/fragment.shader ../tests/test_opengl/assets/images/container.jpg ../tests/test_opengl/assets/images/awesomeface.png
 ```
+
+## Run test_sat_opengl_many_cube_rotation_camera
+
+```bash
+bin/test_sat_opengl_many_cube_rotation_camera ../tests/test_opengl/assets/rotation/vertex.shader ../tests/test_opengl/assets/rotation/fragment.shader ../tests/test_opengl/assets/images/container.jpg ../tests/test_opengl/assets/images/awesomeface.png
+```

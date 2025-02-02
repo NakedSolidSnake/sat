@@ -43,4 +43,8 @@ if (${SAT_OPENGL})
     target_link_libraries (test_sat_opengl_many_cube_rotation PUBLIC sat)
     add_test (NAME test_sat_opengl_many_cube_rotation COMMAND test_sat_opengl_many_cube_rotation ${CMAKE_CURRENT_LIST_DIR})
 
+    add_executable (test_sat_opengl_many_cube_rotation_camera ${CMAKE_CURRENT_LIST_DIR}/test_sat_opengl_many_cube_rotation_camera.c)
+    target_link_libraries (test_sat_opengl_many_cube_rotation_camera PUBLIC sat)
+    add_test (NAME test_sat_opengl_many_cube_rotation_camera COMMAND test_sat_opengl_many_cube_rotation_camera ${CMAKE_CURRENT_LIST_DIR})
+
 endif ()
