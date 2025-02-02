@@ -42,10 +42,13 @@ bool sat_opengl_window_run (sat_opengl_window_t *object)
         status = false;
     }
 
+    return status;
+}
+
+void sat_opengl_window_draw (sat_opengl_window_t *object)
+{
     glfwSwapBuffers (object->handle);
     glfwPollEvents ();
-
-    return status;
 }
 
 void sat_opengl_window_close (sat_opengl_window_t *object)

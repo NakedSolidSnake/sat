@@ -235,8 +235,12 @@ int main (int argc, char *argv [])
         status = sat_opengl_send_shader_matrix (opengl, "triangle", "model", &(sat_opengl_matrix_t){.type = sat_opengl_matrix_type_4x4, .matrix_4x4 = model});
         assert (sat_status_get_result (&status) == true);
 
-        status = sat_opengl_draw (opengl, sat_opengl_draw_type_triangles, 36);
+        status = sat_opengl_draw_object (opengl, sat_opengl_draw_type_triangles, 36);
+        assert (sat_status_get_result (&status) == true);
+        
       }
+
+      status = sat_opengl_draw (opengl);
     }
 
     status = sat_opengl_close (opengl);

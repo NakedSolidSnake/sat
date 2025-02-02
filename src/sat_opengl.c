@@ -383,20 +383,33 @@ sat_status_t sat_opengl_enable_program (sat_opengl_t *object, const char *name)
     return status;
 }
 
-sat_status_t sat_opengl_draw (sat_opengl_t *object, sat_opengl_draw_type_t type, uint32_t vertices_amount)
+sat_status_t sat_opengl_draw_object (sat_opengl_t *object, sat_opengl_draw_type_t type, uint32_t vertices_amount)
 {
     sat_status_t status = sat_status_set (&status, false, "sat opengl draw error");
 
     if (object != NULL && object->initialized == true)
     {
-        // glDrawArrays (GL_TRIANGLES, 0, 3);
-
         sat_opengl_draw_by (type, vertices_amount);
 
         if (sat_opengl_window_run (&object->window) == true)
         {
             sat_status_set (&status, true, "");
         }
+
+    }
+
+    return status;
+}
+
+sat_status_t sat_opengl_draw (sat_opengl_t *object)
+{
+    sat_status_t status = sat_status_set (&status, false, "sat opengl draw error");
+
+    if (object != NULL && object->initialized == true)
+    {
+        sat_opengl_window_draw (&object->window);
+
+        sat_status_set (&status, true, "");
 
     }
 
