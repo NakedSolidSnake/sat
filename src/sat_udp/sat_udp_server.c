@@ -1,4 +1,5 @@
 #include <sat_udp_server.h>
+#include <sat_udp_server_abstract.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,170 +10,187 @@
 #include <netdb.h>
 #include <unistd.h>
 
-static sat_status_t sat_udp_server_is_args_valid (sat_udp_args_t *args);
-static sat_status_t sat_udp_server_configure (sat_udp_t *object, struct addrinfo *info_list);
-static sat_status_t sat_udp_server_set_socket (sat_udp_t *object, struct addrinfo *info);
-static sat_status_t sat_udp_server_set_reuse_address (sat_udp_t *object);
-static sat_status_t sat_udp_server_set_bind (sat_udp_t *object, struct addrinfo *info);
-static struct addrinfo *sat_udp_server_get_info_list (sat_udp_args_t *args);
+static struct addrinfo *sat_udp_server_get_info_list (sat_udp_server_args_t *args);
 
-sat_status_t sat_udp_server_open (sat_udp_t *object, sat_udp_args_t *args)
+struct sat_udp_server_t
 {
-    sat_status_t status = sat_udp_server_is_args_valid (args);
+    sat_udp_server_abstract_t abstract;
+};
 
-    do 
+sat_status_t sat_udp_server_open (sat_udp_server_t **object, sat_udp_server_args_t *args)
+{
+    sat_status_t status;
+
+    do
     {
+        status = sat_udp_server_abstract_is_args_valid (args);
         if (sat_status_get_result (&status) == false)
         {
             break;
         }
-        
-        object->buffer = args->buffer;
-        object->size = args->size;
-        object->service = args->service;
-        object->events.on_receive = args->events.on_receive;
-        object->events.on_send = args->events.on_send;
-        object->data = args->data;
+
+        sat_udp_server_t *__object = calloc (1, sizeof (sat_udp_server_t));
+        if (__object == NULL)
+        {
+            break;
+        }
+
+        sat_udp_server_abstract_copy_to_context (&__object->abstract, args);
 
         struct addrinfo *info_list = sat_udp_server_get_info_list (args);
 
         if (info_list == NULL)
         {
+            free (__object);
             break;
         }
 
-        status = sat_udp_server_configure (object, info_list);
+        status = sat_udp_server_abstract_configure (&__object->abstract, info_list);
+        if (sat_status_get_result (&status) == false)
+        {
+            freeaddrinfo (info_list);
+            free (__object);
+            break;
+        }
 
         freeaddrinfo (info_list);
+
+        *object = __object;
 
     } while (false);
 
     return status;
 }
 
-sat_status_t sat_udp_server_run (sat_udp_t *object)
+sat_status_t sat_udp_server_run (sat_udp_server_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat udp server args error");
+    sat_status_t status = sat_status_set (&status, false, "sat udp server run error");
 
-    struct sockaddr_storage source;
-    socklen_t length = sizeof (source);
-    uint32_t size;
-
-    memset (&source, 0, sizeof (struct sockaddr_storage));
-
-    if (object->socket >= 0)
+    if (object->abstract.socket >= 0)
     {
-        size = recvfrom (object->socket,
-                         object->buffer,
-                         object->size,
-                         0,
-                         (struct sockaddr *)&source,
-                         &length);
-
-        object->buffer [size] = 0;
-
-        if (object->events.on_receive)
-            object->events.on_receive (object->buffer, &size, object->data);
-
-        if (object->events.on_send)
-        {
-            object->events.on_send (object->buffer, &size, object->data);
-            size = size > object->size ? object->size : size;
-            sendto (object->socket,
-                    object->buffer,
-                    size,
-                    0,
-                    (struct sockaddr *)&source,
-                    sizeof (source));                    
-        }
-
-        memset (object->buffer, 0, object->size);
-
-        sat_status_set (&status, true, "");
-    }
-
-
-    return status;
-}
-
-static sat_status_t sat_udp_server_is_args_valid (sat_udp_args_t *args)
-{
-    sat_status_t status = sat_status_set (&status, false, "sat udp server args error");
-
-    if (args->buffer != NULL &&
-        args->size > 0 && 
-        args->service != NULL)
-    {
-        sat_status_set (&status, true, "");
+        status = object->abstract.base.run (&object->abstract);
     }
 
     return status;
 }
 
-static sat_status_t sat_udp_server_configure (sat_udp_t *object, struct addrinfo *info_list)
+int sat_udp_server_get_socket (sat_udp_server_t *object)
 {
-    sat_status_t status;
-
-    struct addrinfo *info = NULL;
-
-    for (info = info_list; info != NULL; info = info->ai_next)
-    {
-        status = sat_udp_server_set_socket (object, info);
-
-        if (sat_status_get_result (&status) == false)
-            continue;
-
-        status = sat_udp_server_set_reuse_address (object);
-        if (sat_status_get_result (&status) == false)
-            break;
-
-        status = sat_udp_server_set_bind (object, info);
-        if (sat_status_get_result (&status) == false)
-        {
-            close (object->socket);
-            continue;
-        }
-
-        break;
-    }
-
-    return status;
+    return object->abstract.socket;
 }
 
-static sat_status_t sat_udp_server_set_socket (sat_udp_t *object, struct addrinfo *info)
-{
-    sat_status_t status = sat_status_set (&status, false, "sat udp server set socket error");
+// sat_status_t sat_udp_server_open (sat_udp_t *object, sat_udp_args_t *args)
+// {
+//     sat_status_t status = sat_udp_server_is_args_valid (args);
 
-    object->socket = socket (info->ai_family, info->ai_socktype, info->ai_protocol);
+//     do 
+//     {
+//         if (sat_status_get_result (&status) == false)
+//         {
+//             break;
+//         }
+        
+//         // object->buffer = args->buffer;
+//         // object->size = args->size;
+//         // object->service = args->service;
+//         // object->events.on_receive = args->events.on_receive;
+//         // object->events.on_send = args->events.on_send;
+//         // object->data = args->data;
 
-    if (object->socket >= 0)
-        sat_status_set (&status, true, "");
+//         struct addrinfo *info_list = sat_udp_server_get_info_list (args);
 
-    return status;
-}
+//         if (info_list == NULL)
+//         {
+//             break;
+//         }
 
-static sat_status_t sat_udp_server_set_reuse_address (sat_udp_t *object)
-{
-    sat_status_t status = sat_status_set (&status, false, "sat udp server set reuse address error");
-    int yes = 1;
+//         status = sat_udp_server_configure (object, info_list);
 
-    if (setsockopt (object->socket, SOL_SOCKET, SO_REUSEADDR, (void *)&yes, sizeof (yes)) == 0)
-        sat_status_set (&status, true, "");
+//         freeaddrinfo (info_list);
 
-    return status;
-}
+//     } while (false);
 
-static sat_status_t sat_udp_server_set_bind (sat_udp_t *object, struct addrinfo *info)
-{
-    sat_status_t status = sat_status_set (&status, false, "sat udp server set bind error");
+//     return status;
+// }
 
-    if (bind (object->socket, info->ai_addr, info->ai_addrlen) == 0)
-        sat_status_set (&status, true, "");
+// static sat_status_t sat_udp_server_is_args_valid (sat_udp_args_t *args)
+// {
+//     sat_status_t status = sat_status_set (&status, false, "sat udp server args error");
 
-    return status;
-}
+//     if (args->buffer != NULL &&
+//         args->size > 0 && 
+//         args->service != NULL)
+//     {
+//         sat_status_set (&status, true, "");
+//     }
 
-static struct addrinfo *sat_udp_server_get_info_list (sat_udp_args_t *args)
+//     return status;
+// }
+
+// static sat_status_t sat_udp_server_configure (sat_udp_t *object, struct addrinfo *info_list)
+// {
+//     sat_status_t status;
+
+//     struct addrinfo *info = NULL;
+
+//     for (info = info_list; info != NULL; info = info->ai_next)
+//     {
+//         status = sat_udp_server_set_socket (object, info);
+
+//         if (sat_status_get_result (&status) == false)
+//             continue;
+
+//         status = sat_udp_server_set_reuse_address (object);
+//         if (sat_status_get_result (&status) == false)
+//             break;
+
+//         status = sat_udp_server_set_bind (object, info);
+//         if (sat_status_get_result (&status) == false)
+//         {
+//             close (object->socket);
+//             continue;
+//         }
+
+//         break;
+//     }
+
+//     return status;
+// }
+
+// static sat_status_t sat_udp_server_set_socket (sat_udp_t *object, struct addrinfo *info)
+// {
+//     sat_status_t status = sat_status_set (&status, false, "sat udp server set socket error");
+
+//     object->socket = socket (info->ai_family, info->ai_socktype, info->ai_protocol);
+
+//     if (object->socket >= 0)
+//         sat_status_set (&status, true, "");
+
+//     return status;
+// }
+
+// static sat_status_t sat_udp_server_set_reuse_address (sat_udp_t *object)
+// {
+//     sat_status_t status = sat_status_set (&status, false, "sat udp server set reuse address error");
+//     int yes = 1;
+
+//     if (setsockopt (object->socket, SOL_SOCKET, SO_REUSEADDR, (void *)&yes, sizeof (yes)) == 0)
+//         sat_status_set (&status, true, "");
+
+//     return status;
+// }
+
+// static sat_status_t sat_udp_server_set_bind (sat_udp_t *object, struct addrinfo *info)
+// {
+//     sat_status_t status = sat_status_set (&status, false, "sat udp server set bind error");
+
+//     if (bind (object->socket, info->ai_addr, info->ai_addrlen) == 0)
+//         sat_status_set (&status, true, "");
+
+//     return status;
+// }
+
+static struct addrinfo *sat_udp_server_get_info_list (sat_udp_server_args_t *args)
 {
     struct addrinfo hints;
     struct addrinfo *info_list = NULL;

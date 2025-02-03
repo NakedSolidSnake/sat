@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#define SERVICE_NAME    "8888"
+
 #define BUFFER_SIZE     1024
 
 void on_receive (char *buffer, uint32_t *size, void *data)
@@ -57,14 +59,18 @@ static void *server_thread (void *args)
     sat_udp_args_t _args = 
     {
         .type = sat_udp_type_server,
-        .service = "1234",
-        .buffer = buffer,
-        .size = BUFFER_SIZE,
-        .events = 
+        .server = 
         {
-            .on_receive = on_receive,
-            .on_send = on_send
+            .service = SERVICE_NAME,
+            .buffer = buffer,
+            .size = BUFFER_SIZE,
+            .events = 
+            {
+                .on_receive = on_receive,
+                .on_send = on_send
+            }
         }
+        
     };
 
     sat_status_t status = sat_udp_init (&server);
@@ -97,8 +103,6 @@ static void *client_thread (void *args)
     sat_udp_args_t _args = 
     {
         .type = sat_udp_type_client,
-        .hostname = "localhost",
-        .service = "1234"
     };
 
     sat_status_t status = sat_udp_init (&client);
@@ -107,7 +111,11 @@ static void *client_thread (void *args)
     status = sat_udp_open (&client, &_args);
     assert (sat_status_get_result (&status) == true);
 
-    status = sat_udp_send (&client, hello_message, strlen (hello_message));
+    status = sat_udp_send (&client, hello_message, strlen (hello_message), &(sat_udp_destination_t)
+                                                                          {
+                                                                            .hostname = "localhost",
+                                                                            .service = SERVICE_NAME
+                                                                          });
     assert (sat_status_get_result (&status) == true);
 
     status = sat_udp_receive (&client, buffer, &size);
@@ -115,7 +123,11 @@ static void *client_thread (void *args)
 
     assert (strcmp (hello_message, buffer) == 0);
 
-    status = sat_udp_send (&client, exit_message, strlen (exit_message));
+    status = sat_udp_send (&client, exit_message, strlen (exit_message), &(sat_udp_destination_t)
+                                                                          {
+                                                                            .hostname = "localhost",
+                                                                            .service = SERVICE_NAME
+                                                                          });
     assert (sat_status_get_result (&status) == true);
 
     status = sat_udp_close (&client);

@@ -21,6 +21,8 @@ list (APPEND SAT_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/sat_uuid.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_udp.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_udp/sat_udp_server.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_udp/sat_udp_client.c
+                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_udp/sat_udp_server_abstract.c
+                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_udp/sat_udp_server_interactive.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_linked_list.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_queue.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_map.c
