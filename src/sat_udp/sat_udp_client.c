@@ -27,39 +27,24 @@ sat_status_t sat_udp_client_open (sat_udp_client_t **object, sat_udp_client_args
 {
     sat_status_t status = sat_status_set (&status, false, "sat udp client open error");
 
-    // if (args->hostname != NULL && args->service != NULL)
-    // {
-        do 
+    do 
+    {
+        sat_udp_client_t *__object = calloc (1, sizeof (sat_udp_client_t));
+        if (__object == NULL)
         {
-            sat_udp_client_t *__object = calloc (1, sizeof (sat_udp_client_t));
-            if (__object == NULL)
-            {
-                break;
-            }
+            break;
+        }
 
-            // struct addrinfo *info_list = sat_udp_client_get_info_list (args);
-            // if (info_list == NULL)
-            // {
-            //     break;
-            // }
+        status = sat_udp_client_set_socket (__object, NULL);
+        if (sat_status_get_result (&status) == false)
+        {
+            continue;
+        }
 
-            // status = sat_udp_client_configure (__object, info_list);
-            // if (sat_status_get_result (&status) == false)
-            // {
-            //     break;
-            // }
+        __object->service = args->service;
+        *object = __object;
 
-            status = sat_udp_client_set_socket (__object, NULL);
-            if (sat_status_get_result (&status) == false)
-            {
-                continue;
-            }
-
-            __object->service = args->service;
-            *object = __object;
-
-        } while (false);
-    // }
+    } while (false);
 
     return status;
 }

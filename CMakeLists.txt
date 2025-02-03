@@ -65,6 +65,7 @@ target_include_directories (sat
     )
 
 add_subdirectory (tests)
+add_subdirectory (samples)
 
 install (TARGETS sat LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 

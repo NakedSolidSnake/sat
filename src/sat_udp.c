@@ -135,31 +135,6 @@ sat_status_t sat_udp_close (sat_udp_t *object)
     return status;
 }
 
-// static sat_status_t sat_udp_type_open (sat_udp_t *object, sat_udp_args_t *args)
-// {
-//     sat_udp_open_t open = sat_udp_type_error_open;
-
-//     object->type = args->type;
-
-//     if (object->type == sat_udp_type_server)
-//         open = sat_udp_server_open;
-    
-//     else if (object->type == sat_udp_type_client)
-//         open = sat_udp_client_open;
-
-//     return open (object, args);
-// }
-
-// static sat_status_t sat_udp_type_error_open (sat_udp_t *object, sat_udp_args_t *args)
-// {
-//     sat_status_t status = sat_status_set (&status, false, "sat udp type error");
-
-//     (void) object;
-//     (void) args;
-
-//     return status;
-// }
-
 static int sat_udp_get_socket (sat_udp_t *object)
 {
     int socket = -1;
