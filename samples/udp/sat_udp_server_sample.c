@@ -34,10 +34,19 @@ int main (int argc, char *argv[])
     sat_udp_t server;
     char buffer [BUFFER_SIZE] = {0};
 
-    if (argc != 2)
+    sat_udp_server_type_t type = sat_udp_server_type_interactive;
+
+    if (argc < 2 && argc > 3)
     {
-        fprintf (stderr, "Usage: %s <port>\n", argv [0]);
+        fprintf (stderr, "Usage: %s <port> <mode> \n", argv [0]);
+        fprintf (stderr, "mode: interactive [default]\n");
+        fprintf (stderr, "      async\n");
         return EXIT_FAILURE;
+    }
+
+    if (strcmp (argv [1], "async") == 0 && argc == 3)
+    {
+
     }
 
     sat_udp_args_t _args = 
@@ -52,7 +61,8 @@ int main (int argc, char *argv[])
             {
                 .on_receive = on_receive,
                 .on_send = on_send
-            }
+            },
+            .type = type
         }
         
     };
