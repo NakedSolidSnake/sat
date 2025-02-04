@@ -24,13 +24,13 @@ int main (int argc, char *argv [])
                                                          });
     assert (sat_status_get_result (&status) == true);
 
-    status = sat_shared_memory_get (&shm, &person_write);
+    status = sat_shared_memory_get (&shm, (void **)&person_write);
     assert (sat_status_get_result (&status) == true);
 
     person_write->age = 10;
     strncpy (person_write->name, "John Doe", NAME_SIZE);
 
-    status = sat_shared_memory_get (&shm, &person_read);
+    status = sat_shared_memory_get (&shm, (void **)&person_read);
     assert (sat_status_get_result (&status) == true);
 
     assert (person_read->age == 10);

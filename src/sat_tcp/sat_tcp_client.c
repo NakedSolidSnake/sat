@@ -20,7 +20,6 @@ static struct addrinfo * sat_tcp_client_get_info_list (sat_tcp_client_args_t *ar
 
 static sat_status_t sat_tcp_client_configure (sat_tcp_client_t *object, struct addrinfo *info_list);
 static sat_status_t sat_tcp_client_set_socket (sat_tcp_client_t *object, struct addrinfo *info);
-static sat_status_t sat_tcp_client_get_ip_by_hostname (sat_tcp_client_t *object, sat_tcp_client_args_t *args);
 static sat_status_t sat_tcp_client_connect (sat_tcp_client_t *object, struct addrinfo *info);
 
 sat_status_t sat_tcp_client_open (sat_tcp_client_t **object, sat_tcp_client_args_t *args)

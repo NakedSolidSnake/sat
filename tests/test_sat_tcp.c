@@ -7,7 +7,7 @@
 #include <unistd.h>
 
 #define BUFFER_SIZE     1024
-#define SERVICE         4321
+#define SERVICE         "4321"
 
 static bool running = true;
 

@@ -23,8 +23,6 @@ int main (int argc, char *argv[])
 
 static void sat_array_iterator_test (void)
 {
-    uint32_t size;
-
     person_t john = {.name = "John Doe", .age = 35};
     person_t jane = {.name = "Jane Doe", .age = 31};
     person_t some = {.name = "Some One", .age = 33};
@@ -50,7 +48,7 @@ static void sat_array_iterator_test (void)
     status = sat_array_add (array, &some);
     assert (sat_status_get_result (&status) == true);
 
-    status = sat_iterator_open (&iterator, array);
+    status = sat_iterator_open (&iterator, (sat_iterator_base_t *)array);
     assert (sat_status_get_result (&status) == true);
 
     person_t *person = (person_t *) sat_iterator_next (&iterator);
@@ -66,8 +64,6 @@ static void sat_array_iterator_test (void)
 
 static void sat_set_iterator_test (void)
 {
-    uint32_t size;
-
     person_t john = {.name = "John Doe", .age = 35};
     person_t jane = {.name = "Jane Doe", .age = 31};
     person_t some = {.name = "Some One", .age = 33};
@@ -94,7 +90,7 @@ static void sat_set_iterator_test (void)
     status = sat_set_add (set, &some);
     assert (sat_status_get_result (&status) == true);
 
-    status = sat_iterator_open (&iterator, set);
+    status = sat_iterator_open (&iterator, (sat_iterator_base_t *)set);
     assert (sat_status_get_result (&status) == true);
 
     person_t *person = (person_t *) sat_iterator_next (&iterator);
