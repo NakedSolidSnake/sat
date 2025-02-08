@@ -48,12 +48,7 @@ sat_status_t sat_udp_run (sat_udp_t *object)
 
     if (object != NULL && object->type == sat_udp_type_server)
     {
-        while (true)
-        {
-            sat_udp_server_run (object->server);
-        }
-
-        sat_status_set (&status, true, "");
+        status = sat_udp_server_run (object->server);
     }
 
     return status;

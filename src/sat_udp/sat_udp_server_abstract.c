@@ -1,5 +1,4 @@
 #include <sat_udp_server_abstract.h>
-#include <sat_udp_server_interactive.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,13 +9,17 @@
 #include <netdb.h>
 #include <unistd.h>
 
+static void sat_udp_server_abstract_copy_to_context (sat_udp_server_abstract_t *object, sat_udp_server_args_t *args);
+
 static sat_status_t sat_udp_server_abstract_set_socket (sat_udp_server_abstract_t *object, struct addrinfo *info);
 static sat_status_t sat_udp_server_abstract_set_reuse_address (sat_udp_server_abstract_t *object);
 static sat_status_t sat_udp_server_abstract_set_bind (sat_udp_server_abstract_t *object, struct addrinfo *info);
+static sat_status_t sat_udp_server_abstract_is_args_valid (sat_udp_server_args_t *args);
+static sat_status_t sat_udp_server_abstract_configure (sat_udp_server_abstract_t *object, struct addrinfo *info_list);
 
-static sat_status_t sat_udp_server_abstract_select_type (sat_udp_server_abstract_t *object);
+static struct addrinfo *sat_udp_server_abstract_get_info_list (sat_udp_server_args_t *args);
 
-void sat_udp_server_abstract_copy_to_context (sat_udp_server_abstract_t *object, sat_udp_server_args_t *args)
+static void sat_udp_server_abstract_copy_to_context (sat_udp_server_abstract_t *object, sat_udp_server_args_t *args)
 {
     object->buffer = args->buffer;
     object->size = args->size;
@@ -26,7 +29,7 @@ void sat_udp_server_abstract_copy_to_context (sat_udp_server_abstract_t *object,
     object->data = args->data;
 }
 
-sat_status_t sat_udp_server_abstract_is_args_valid (sat_udp_server_args_t *args)
+static sat_status_t sat_udp_server_abstract_is_args_valid (sat_udp_server_args_t *args)
 {
     sat_status_t status = sat_status_set (&status, false, "sat udp server args error");
 
@@ -40,7 +43,44 @@ sat_status_t sat_udp_server_abstract_is_args_valid (sat_udp_server_args_t *args)
     return status;
 }
 
-sat_status_t sat_udp_server_abstract_configure (sat_udp_server_abstract_t *object, struct addrinfo *info_list)
+sat_status_t sat_udp_server_abstract_open (sat_udp_server_abstract_t *object, sat_udp_server_args_t *args)
+{
+    sat_status_t status;
+
+    do 
+    {
+        status = sat_udp_server_abstract_is_args_valid (args);
+        if (sat_status_get_result (&status) == false)
+        {
+            break;
+        }
+
+        struct addrinfo *info_list = sat_udp_server_abstract_get_info_list (args);
+        if (info_list == NULL)
+        {
+            sat_status_set (&status, false, "sat udp server abstract open cannot get info list error");
+            break;
+        }
+
+        status = sat_udp_server_abstract_configure (object, info_list);
+        if (sat_status_get_result (&status) == false)
+        {
+            break;
+        }
+
+        sat_udp_server_abstract_copy_to_context (object, args);
+
+    } while (false);
+
+    return status;
+}
+
+int sat_udp_server_abstract_get_socket (sat_udp_server_abstract_t *object)
+{
+    return object->socket;
+}
+
+static sat_status_t sat_udp_server_abstract_configure (sat_udp_server_abstract_t *object, struct addrinfo *info_list)
 {
     sat_status_t status;
 
@@ -62,8 +102,6 @@ sat_status_t sat_udp_server_abstract_configure (sat_udp_server_abstract_t *objec
             close (object->socket);
             continue;
         }
-
-        status = sat_udp_server_abstract_select_type (object);
 
         break;
     }
@@ -104,17 +142,19 @@ static sat_status_t sat_udp_server_abstract_set_bind (sat_udp_server_abstract_t 
     return status;
 }
 
-static sat_status_t sat_udp_server_abstract_select_type (sat_udp_server_abstract_t *object)
+static struct addrinfo *sat_udp_server_abstract_get_info_list (sat_udp_server_args_t *args)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat udp server abstract select type error");
-    
-    if (object->type == sat_udp_server_type_interactive)
-    {
+    struct addrinfo hints;
+    struct addrinfo *info_list = NULL;
 
-        object->base = sat_udp_server_interactive_create ();
+    memset(&hints, 0, sizeof (hints));
 
-        sat_status_set (&status, true, "");
-    }
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_DGRAM;
+    hints.ai_flags = AI_PASSIVE;
+    hints.ai_protocol = IPPROTO_UDP;
 
-    return status;
+    getaddrinfo (NULL, args->service, &hints, &info_list);
+
+    return info_list;
 }

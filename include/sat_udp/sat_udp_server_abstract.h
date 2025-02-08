@@ -2,7 +2,6 @@
 #define SAT_UDP_SERVER_ABSTRACT_H_
 
 #include <sat_udp_types.h>
-#include <sat_udp_server_base.h>
 #include <sat_status.h>
 #include <sys/types.h>
 #include <netinet/in.h>
@@ -24,14 +23,11 @@ typedef struct
 
     void *data;
 
-    sat_udp_server_base_t base;
-
     sat_udp_server_type_t type;
 
 } sat_udp_server_abstract_t;
 
-void sat_udp_server_abstract_copy_to_context (sat_udp_server_abstract_t *object, sat_udp_server_args_t *args);
-sat_status_t sat_udp_server_abstract_is_args_valid (sat_udp_server_args_t *args);
-sat_status_t sat_udp_server_abstract_configure (sat_udp_server_abstract_t *object, struct addrinfo *info_list);
+sat_status_t sat_udp_server_abstract_open (sat_udp_server_abstract_t *object, sat_udp_server_args_t *args);
+int sat_udp_server_abstract_get_socket (sat_udp_server_abstract_t *object);
 
 #endif/* SAT_UDP_SERVER_ABSTRACT_H_ */

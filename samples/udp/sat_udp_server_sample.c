@@ -44,7 +44,7 @@ int main (int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
-    if (strcmp (argv [1], "async") == 0 && argc == 3)
+    if (argc == 3 && strcmp (argv [2], "async") == 0)
     {
 
     }
