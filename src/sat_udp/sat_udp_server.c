@@ -1,6 +1,7 @@
 #include <sat_udp_server.h>
 #include <sat_udp_server_base.h>
 #include <sat_udp_server_interactive.h>
+#include <sat_udp_server_async.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -68,12 +69,18 @@ int sat_udp_server_get_socket (sat_udp_server_t *object)
 
 static sat_status_t sat_udp_server_select_type (sat_udp_server_t *object, sat_udp_server_type_t type)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat udp server abstract select type error");
+    sat_status_t status = sat_status_set (&status, false, "sat udp server select type error");
     
     if (type == sat_udp_server_type_interactive)
     {
-
         object->base = sat_udp_server_interactive_create ();
+
+        sat_status_set (&status, true, "");
+    }
+
+    else if (type == sat_udp_server_type_async)
+    {
+        object->base = sat_udp_server_async_create ();
 
         sat_status_set (&status, true, "");
     }

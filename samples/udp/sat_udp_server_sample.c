@@ -46,7 +46,7 @@ int main (int argc, char *argv[])
 
     if (argc == 3 && strcmp (argv [2], "async") == 0)
     {
-
+        type = sat_udp_server_type_async;
     }
 
     sat_udp_args_t _args = 
@@ -75,8 +75,10 @@ int main (int argc, char *argv[])
     status = sat_udp_open (&server, &_args);
     assert (sat_status_get_result (&status) == true);
 
-    status = sat_udp_run (&server);
-    assert (sat_status_get_result (&status) == true);
+    do
+    {
+        status = sat_udp_run (&server);
+    } while (sat_status_get_result (&status) == true);
 
     status = sat_udp_close (&server);
     assert (sat_status_get_result (&status) == true);

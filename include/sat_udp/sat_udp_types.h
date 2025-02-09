@@ -17,6 +17,7 @@ typedef enum
 typedef enum 
 {
     sat_udp_server_type_interactive,
+    sat_udp_server_type_async,
 
 } sat_udp_server_type_t;
 
