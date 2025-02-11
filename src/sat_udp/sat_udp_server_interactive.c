@@ -14,7 +14,7 @@ sat_udp_server_base_t *sat_udp_server_interactive_create (void)
 {
     static sat_udp_server_interactive_t interactive =
     {
-        .base =
+        .abstract.base =
         {
             .object = &interactive,
             .open = sat_udp_server_interactive_open,

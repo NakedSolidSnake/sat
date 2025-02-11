@@ -2,6 +2,7 @@
 #define SAT_UDP_SERVER_ABSTRACT_H_
 
 #include <sat_udp_types.h>
+#include <sat_udp_server_base.h>
 #include <sat_status.h>
 #include <sys/types.h>
 #include <netinet/in.h>
@@ -11,6 +12,7 @@
 
 typedef struct 
 {
+    sat_udp_server_base_t base;
     int socket;
     const char *service;
     char *buffer;

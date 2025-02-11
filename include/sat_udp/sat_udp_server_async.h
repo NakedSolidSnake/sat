@@ -7,7 +7,6 @@
 
 typedef struct 
 {
-    sat_udp_server_base_t base;
     sat_udp_server_abstract_t abstract;
 
     fd_set master;

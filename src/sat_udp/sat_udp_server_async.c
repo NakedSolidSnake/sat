@@ -14,7 +14,7 @@ sat_udp_server_base_t *sat_udp_server_async_create (void)
 {
     static sat_udp_server_async_t async =
     {
-        .base =
+        .abstract.base =
         {
             .object = &async,
             .open = sat_udp_server_async_open,
