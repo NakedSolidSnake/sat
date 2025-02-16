@@ -16,6 +16,10 @@ static sat_status_t sat_udp_server_abstract_set_reuse_address (sat_udp_server_ab
 static sat_status_t sat_udp_server_abstract_set_bind (sat_udp_server_abstract_t *object, struct addrinfo *info);
 static sat_status_t sat_udp_server_abstract_is_args_valid (sat_udp_server_args_t *args);
 static sat_status_t sat_udp_server_abstract_configure (sat_udp_server_abstract_t *object, struct addrinfo *info_list);
+static sat_status_t sat_udp_server_abstract_multicast_enable (sat_udp_server_abstract_t *object, sat_udp_server_args_t *args);
+
+static sat_status_t sat_udp_server_abstract_try_enable_multicast_ipv4 (sat_udp_server_abstract_t *object, const char *address);
+static sat_status_t sat_udp_server_abstract_try_enable_multicast_ipv6 (sat_udp_server_abstract_t *object, const char *address);
 
 static struct addrinfo *sat_udp_server_abstract_get_info_list (sat_udp_server_args_t *args);
 
@@ -67,6 +71,9 @@ sat_status_t sat_udp_server_abstract_open (sat_udp_server_abstract_t *object, sa
         {
             break;
         }
+
+        status = sat_udp_server_abstract_multicast_enable (object, args);
+        
 
         sat_udp_server_abstract_copy_to_context (object, args);
 
@@ -157,4 +164,82 @@ static struct addrinfo *sat_udp_server_abstract_get_info_list (sat_udp_server_ar
     getaddrinfo (NULL, args->service, &hints, &info_list);
 
     return info_list;
+}
+
+
+static sat_status_t sat_udp_server_abstract_multicast_enable (sat_udp_server_abstract_t *object, sat_udp_server_args_t *args)
+{
+    sat_status_t status = sat_status_set (&status, true, "");
+
+    if (args->mode == sat_udp_server_mode_multicast && args->multicast_group != NULL)
+    {
+
+        do
+        {
+            status = sat_udp_server_abstract_try_enable_multicast_ipv4 (object, args->multicast_group);
+            if (sat_status_get_result (&status) == true)
+            {
+                break;
+            }
+
+            status = sat_udp_server_abstract_try_enable_multicast_ipv6 (object, args->multicast_group);
+
+        } while (false);
+    }
+
+    return status;
+}
+
+static sat_status_t sat_udp_server_abstract_try_enable_multicast_ipv4 (sat_udp_server_abstract_t *object, const char *address)
+{
+    sat_status_t status = sat_status_set (&status, true, "sat udp server abstract is multicast ipv4 error");
+
+    struct in_addr addr4;
+
+    if (inet_pton (AF_INET, address, &addr4) == true)
+    {
+        uint32_t ip_addr = ntohl (addr4.s_addr);
+
+        if (ip_addr >= 0xE0000000 && ip_addr <= 0xEFFFFFFF) // 224.0.0.0 a 239.255.255.255
+        {
+            struct ip_mreq mreq;
+
+            sat_status_set (&status, false, "sat udp server abstract multicast enable error");
+
+            mreq.imr_multiaddr.s_addr = addr4.s_addr;
+            mreq.imr_interface.s_addr = htonl (INADDR_ANY);
+
+            if (setsockopt (object->socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&mreq, sizeof (mreq)) == 0)
+            {
+                sat_status_set (&status, true, "");
+            }
+        }
+    }
+
+    return status;
+}
+
+static sat_status_t sat_udp_server_abstract_try_enable_multicast_ipv6 (sat_udp_server_abstract_t *object, const char *address)
+{
+    sat_status_t status = sat_status_set (&status, true, "sat udp server abstract is multicast ipv6 error");
+
+    struct in6_addr addr6;
+
+    if (inet_pton (AF_INET6, address, &addr6) == true && addr6.s6_addr [0] == 0xFF) // IPv6 starts with FF
+    {
+        sat_status_set (&status, false, "sat udp server abstract multicast enable error");
+
+        struct ipv6_mreq mreq;
+
+        inet_pton (AF_INET6, address, &mreq.ipv6mr_multiaddr);
+
+        mreq.ipv6mr_interface = 0;
+
+        if (setsockopt (object->socket, IPPROTO_IPV6, IPV6_ADD_MEMBERSHIP, &mreq, sizeof (mreq)) == 0)
+        {
+            sat_status_set (&status, true, "");
+        }
+    }
+
+    return status;
 }

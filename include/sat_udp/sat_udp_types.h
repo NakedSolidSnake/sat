@@ -21,11 +21,19 @@ typedef enum
 
 } sat_udp_server_type_t;
 
+typedef enum 
+{
+    sat_udp_server_mode_unicast,
+    sat_udp_server_mode_multicast,
+
+} sat_udp_server_mode_t;
+
 typedef struct sat_udp_server_t sat_udp_server_t;
 typedef struct sat_udp_client_t sat_udp_client_t;
 
 typedef struct 
 {
+    const char *multicast_group;
     const char *service;
     char *buffer;
     uint32_t size;
@@ -40,6 +48,8 @@ typedef struct
     void *data;
 
     sat_udp_server_type_t type;
+
+    sat_udp_server_mode_t mode;
 
 } sat_udp_server_args_t;
 
