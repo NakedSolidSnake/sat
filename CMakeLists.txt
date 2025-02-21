@@ -40,13 +40,16 @@ list (APPEND SAT_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/sat_uuid.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_channel.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_shared_memory.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_queue_ipc.c
-                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_iterator.c)
+                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_iterator.c
+                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_process/sat_process.c
+                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_process/sat_process_monitor.c)
 
 list (APPEND SAT_LIBRARIES uuid m pthread dl pthread)
 
 list (APPEND SAT_INCLUDES ${CMAKE_CURRENT_LIST_DIR}/include
                           ${CMAKE_CURRENT_LIST_DIR}/include/sat_tcp/
-                          ${CMAKE_CURRENT_LIST_DIR}/include/sat_udp/)
+                          ${CMAKE_CURRENT_LIST_DIR}/include/sat_udp/
+                          ${CMAKE_CURRENT_LIST_DIR}/include/sat_process/)
 
 file (WRITE ${CMAKE_CURRENT_LIST_DIR}/include/sat_optionals.h "")
 
@@ -81,6 +84,7 @@ install (FILES include/sat_event.h       DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 install (FILES include/sat_stack.h       DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install (FILES include/sat_array.h       DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install (FILES include/sat_udp.h         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install (FILES include/sat_udp/sat_udp_types.h         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install (FILES include/sat_linked_list.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install (FILES include/sat_queue.h       DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install (FILES include/sat_map.h         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
@@ -95,4 +99,6 @@ install (FILES include/sat_channel.h     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 install (FILES include/sat_shared_memory.h     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install (FILES include/sat_queue_ipc.h   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install (FILES include/sat_iterator.h    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install (FILES include/sat_process/sat_process.h    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install (FILES include/sat_process/sat_process_monitor.h    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install (FILES include/sat_optionals.h   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})

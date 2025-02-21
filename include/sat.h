@@ -24,6 +24,8 @@
 #include <sat_shared_memory.h>
 #include <sat_queue_ipc.h>
 #include <sat_iterator.h>
+#include <sat_process/sat_process.h>
+#include <sat_process/sat_process_monitor.h>
 
 #include <sat_optionals.h>
 
