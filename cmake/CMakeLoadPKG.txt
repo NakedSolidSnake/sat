@@ -1,0 +1,7 @@
+find_package (PkgConfig REQUIRED)
+
+if (PKG_CONFIG_FOUND)
+    message (STATUS "PkgConfig found!")
+else ()
+    message (FATAL_ERROR "PkgConfig not found!")
+endif ()

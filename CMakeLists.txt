@@ -55,6 +55,8 @@ file (WRITE ${CMAKE_CURRENT_LIST_DIR}/include/sat_optionals.h "")
 
 list (APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
+include ("${CMAKE_CURRENT_SOURCE_DIR}/cmake/CMakeLoadPKG.txt")
+include ("${CMAKE_CURRENT_SOURCE_DIR}/cmake/CMakeFunctions.txt")
 include ("${CMAKE_CURRENT_SOURCE_DIR}/cmake/LoadModules.txt")
 
 add_library (sat SHARED "")
