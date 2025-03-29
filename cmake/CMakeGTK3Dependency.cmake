@@ -5,12 +5,6 @@ if (${SAT_GTK3})
 
     check_library (GTK "gtk+-3.0")
 
-    # if (GTK_FOUND)
-    #     message (STATUS "GTK library Found")
-    # else ()
-    #     message (FATAL_ERROR "GTK library not found")
-    # endif ()
-
     list (APPEND SAT_SOURCES 
         ${CMAKE_SOURCE_DIR}/src/sat_gtk3.c
         ${CMAKE_SOURCE_DIR}/src/sat_gtk3/sat_gtk3_window.c

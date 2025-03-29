@@ -6,20 +6,8 @@ if (${SAT_KAFKA})
 
     
     check_library (GLIB "glib-2.0")
-    # if (GLIB_FOUND)
-    #     message (STATUS "GLIB found")
-    # else ()
-    #     message (FATAL_ERROR "GLIB not found")
-    # endif ()
-    
     check_library (RDKAFKA "rdkafka")
 
-    # if (RDKAFKA_FOUND)
-    #     message (STATUS "RDKAFKA found")
-    # else ()
-    #     message (FATAL_ERROR "RDKAFKA not found")
-    # endif ()
-        
     list (APPEND SAT_SOURCES 
         ${CMAKE_SOURCE_DIR}/src/sat_kafka.c
         ${CMAKE_SOURCE_DIR}/src/sat_kafka/sat_kafka_common.c

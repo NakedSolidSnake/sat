@@ -3,8 +3,6 @@ option (SAT_MQTT "SAT_MQTT support" OFF)
 if (${SAT_MQTT})
     message (STATUS "SAT_MQTT support enable")
 
-    # check_library (PAHO_MQTT "paho-mqtt3c")
-
     list (APPEND SAT_SOURCES ${CMAKE_SOURCE_DIR}/src/sat_mqtt.c)
     file (APPEND ${CMAKE_SOURCE_DIR}/include/sat_optionals.h "#include <sat_mqtt.h>\n")
     list (APPEND SAT_INCLUDES ${CMAKE_SOURCE_DIR}/include/sat_mqtt)
