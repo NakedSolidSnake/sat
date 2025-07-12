@@ -54,18 +54,27 @@ sat_status_t sat_queue_enqueue (sat_queue_t *object, void *data)
         if (element != NULL)
         {
             element->data = calloc (1, object->object_size);
-            memcpy (element->data, data, object->object_size);
+            if (element->data != NULL)
+            {
+                memcpy (element->data, data, object->object_size);
 
-            if (object->end != NULL)
-                object->end->next = element;
-            else 
-                object->start = element;
+                if (object->end != NULL)
+                    object->end->next = element;
+                else 
+                    object->start = element;
 
-            object->end = element;
-            
-            object->amount ++;
+                object->end = element;
+                
+                object->amount ++;
 
-            sat_status_set (&status, true, "");
+                sat_status_set (&status, true, "");
+            }
+
+            else
+            {
+                free (element);
+                sat_status_set (&status, false, "sat queue data allocation error");
+            }
         }
     }
 
@@ -104,7 +113,7 @@ sat_status_t sat_queue_get_size (sat_queue_t *object, uint32_t *size)
 {
     sat_status_t status = sat_status_set (&status, false, "sat queue get size error");
 
-    if (object != NULL && size > 0)
+    if (object != NULL && size != NULL)
     {
         *size = object->amount;
 

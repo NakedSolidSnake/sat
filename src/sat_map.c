@@ -21,6 +21,8 @@ struct sat_map_t
 static sat_status_t sat_map_is_args_valid (sat_map_args_t *args);
 static void sat_map_set_context (sat_map_t *object, sat_map_args_t *args);
 static sat_status_t sat_map_buffer_allocate (sat_map_t *object);
+static sat_status_t sat_map_alloc_item (sat_map_t *object, sat_map_item_t *item);
+static sat_status_t sat_map_destroy_item (sat_map_item_t *item);
 
 sat_status_t sat_map_create (sat_map_t **object, sat_map_args_t *args)
 {
@@ -69,13 +71,18 @@ sat_status_t sat_map_add (sat_map_t *object, void *key, void *value)
     {
         sat_map_item_t item;
 
-        item.key = calloc (1, object->key_size);
-        item.value = calloc (1, object->value_size);
+        status = sat_map_alloc_item (object, &item);
+        if (sat_status_get_result (&status) == true)
+        {
+            memcpy (item.key, key, object->key_size);
+            memcpy (item.value, value, object->value_size);
 
-        memcpy (item.key, key, object->key_size);
-        memcpy (item.value, value, object->value_size);
-
-        status = sat_array_add (object->array, (void *)&item);
+            status = sat_array_add (object->array, (void *)&item);
+            if (sat_status_get_result (&status) == false)
+            {
+                sat_map_destroy_item (&item);
+            }
+        }
     }
 
     return status;
@@ -188,8 +195,7 @@ sat_status_t sat_map_destroy (sat_map_t *object)
             sat_map_item_t item;
             sat_array_get_object_by (object->array, i, &item);
 
-            free (item.key);
-            free (item.value);
+            status = sat_map_destroy_item (&item);
         }
 
         status = sat_array_destroy (object->array);
@@ -230,4 +236,43 @@ static sat_status_t sat_map_buffer_allocate (sat_map_t *object)
                                                 .object_size = sizeof (sat_map_item_t),
                                                 .mode = (sat_array_mode_t) object->mode
                                              });
+}
+
+static sat_status_t sat_map_alloc_item (sat_map_t *object, sat_map_item_t *item)
+{
+    sat_status_t status = sat_status_set (&status, false, "sat map alloc item error");
+
+    if (object != NULL && item != NULL)
+    {
+        item->key = calloc (1, object->key_size);
+        if (item->key == NULL)
+            return sat_status_set (&status, false, "sat map key allocation error");
+
+        item->value = calloc (1, object->value_size);
+        if (item->value == NULL)
+        {
+            free(item->key);
+            return sat_status_set (&status, false, "sat map value allocation error");
+        }
+
+        sat_status_set (&status, true, "");
+    }
+
+    return status;
+}
+
+static sat_status_t sat_map_destroy_item (sat_map_item_t *item)
+{
+    sat_status_t status = sat_status_set (&status, false, "sat map destroy item error");
+
+    if (item != NULL && item->key != NULL && item->value != NULL)
+    {
+        free(item->key);
+
+        free(item->value);
+
+        sat_status_set (&status, true, "");
+    }
+
+    return status;
 }

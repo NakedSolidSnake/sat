@@ -4,6 +4,7 @@
 #include <sat_status.h>
 #include <sat_queue.h>
 #include <pthread.h>
+#include <stdbool.h>
 
 typedef void (*sat_worker_handler_t) (void *object);
 
@@ -16,6 +17,7 @@ typedef struct
     sat_queue_t *queue;
     uint32_t object_size;
     sat_worker_handler_t handler;
+    bool running;
 } sat_worker_t;
 
 typedef struct 

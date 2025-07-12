@@ -98,9 +98,9 @@ sat_status_t sat_opengl_create (sat_opengl_t **object, sat_opengl_args_t *args)
         if (sat_status_get_result (&status) == false)
         {
             sat_opengl_window_close (&opengl->window);
-
-            
+            sat_set_destroy (opengl->programs);            
             free (opengl);
+
             break;
         }
 
@@ -114,15 +114,19 @@ sat_status_t sat_opengl_create (sat_opengl_t **object, sat_opengl_args_t *args)
         if (sat_status_get_result (&status) == false)
         {
             sat_opengl_window_close (&opengl->window);
-
-            
+            sat_set_destroy (opengl->programs);
+            sat_set_destroy (opengl->vaos);            
             free (opengl);
+
             break;
         }
 
         if (glewInit () == GL_TRUE)
         {
             sat_opengl_window_close (&opengl->window);
+            sat_set_destroy (opengl->programs);
+            sat_set_destroy (opengl->vaos);    
+            sat_set_destroy (opengl->textures);
 
             free (opengl);
             break;
@@ -271,6 +275,10 @@ sat_status_t sat_opengl_close (sat_opengl_t *object)
         sat_set_destroy (object->programs);
 
         sat_set_destroy (object->vaos);
+
+        sat_set_destroy (object->textures);
+
+        free (object);
 
         glfwTerminate ();
 

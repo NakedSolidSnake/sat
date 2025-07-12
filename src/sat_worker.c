@@ -15,6 +15,18 @@ sat_status_t sat_worker_init (sat_worker_t *object)
     if (object != NULL)
     {
         memset (object, 0, sizeof (sat_worker_t));
+        
+        // Initialize mutex and condition variable
+        if (pthread_mutex_init (&object->mutex, NULL) != 0)
+        {
+            return status;
+        }
+        
+        if (pthread_cond_init (&object->cond, NULL) != 0)
+        {
+            pthread_mutex_destroy (&object->mutex);
+            return status;
+        }
 
         sat_status_set (&status, true, "");
     }
@@ -49,6 +61,8 @@ sat_status_t sat_worker_open (sat_worker_t *object, sat_worker_args_t *args)
             status = sat_worker_threads_start (object);
             if (sat_status_get_result (&status) == false)
                 break;
+
+            object->running = true;
 
         } while (false);
 
@@ -91,15 +105,31 @@ sat_status_t sat_worker_close (sat_worker_t *object)
 
     if (object != NULL)
     {
+        object->running = false;
+        
+        // Wake up all threads
+        pthread_mutex_lock (&object->mutex);
+        pthread_cond_broadcast (&object->cond);
+        pthread_mutex_unlock (&object->mutex);
+        
+        // Wait for all threads to finish
+        if (object->threads != NULL)
+        {
+            for (uint8_t i = 0; i < object->threads_amount; i++)
+            {
+                pthread_join (object->threads[i], NULL);
+            }
+            free (object->threads);
+        }
+
         if (object->queue != NULL)
         {
             sat_queue_destroy (object->queue);
         }
 
-        if (object->threads != NULL)
-        {
-            free (object->threads);
-        }
+        // Destroy mutex and condition variable
+        pthread_mutex_destroy (&object->mutex);
+        pthread_cond_destroy (&object->cond);
 
         sat_status_set (&status, true, "");
     }
@@ -157,8 +187,12 @@ static void *sat_worker_thread_function (void *args)
     sat_status_t status;
 
     uint8_t *object = (uint8_t *) malloc (worker->object_size);
+    if (object == NULL)
+    {
+        return NULL;
+    }
 
-    while (true)
+    while (worker->running)
     {
         pthread_mutex_lock (&worker->mutex);
 
@@ -168,10 +202,13 @@ static void *sat_worker_thread_function (void *args)
         if (sat_status_get_result (&status) == false)
         {
             pthread_cond_wait (&worker->cond, &worker->mutex);
-            status = sat_queue_dequeue (worker->queue, object);
+            if (worker->running)
+            {
+                status = sat_queue_dequeue (worker->queue, object);
+            }
         }
 
-        if (sat_status_get_result (&status) == true)
+        if (sat_status_get_result (&status) == true && worker->running)
             worker->handler (object);
 
         pthread_mutex_unlock (&worker->mutex);
