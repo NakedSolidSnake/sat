@@ -1,8 +1,8 @@
 #!/bin/bash 
 
-docker build --no-cache -t solidcris/development .
+docker build --no-cache -t solidcris/development:1.0.1 .
 
-docker tag solidcris/development solidcris/development:1.0.0
+docker tag solidcris/development solidcris/development:1.0.1
 
 docker login -u solidcris  
 

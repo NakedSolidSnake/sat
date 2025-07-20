@@ -311,7 +311,8 @@ static int sat_webserver_generic_handler (struct mg_connection *object, void *da
         sat_array_get_object_by (webserver->array, i, &request);
 
         if (strcmp (request.endpoint, ri->request_uri) == 0 && 
-            strcmp (request.method, ri->request_method) == 0)
+            (strcmp (request.method, ri->request_method) == 0 ||
+             strcmp (request.method, "*") == 0))
         {
             status = request.handler (object, request.data);
             break;

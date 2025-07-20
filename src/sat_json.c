@@ -145,6 +145,20 @@ sat_status_t sat_json_to_string (sat_json_t *object, char **json)
     return status;
 }
 
+sat_status_t sat_json_buffer_clear (sat_json_t *object)
+{
+    sat_status_t status = sat_status_set (&status, false, "sat json buffer clear error");
+
+    if (object != NULL)
+    {
+        memset (object->buffer, 0, object->size);
+
+        sat_status_set (&status, true, "");
+    }
+
+    return status;
+}
+
 sat_status_t sat_json_close (sat_json_t *object)
 {
     sat_status_t status = sat_status_set (&status, false, "sat json init error");

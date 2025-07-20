@@ -54,6 +54,8 @@ sat_status_t sat_json_deserialize (sat_json_t *object, const char *json, sat_jso
 
 sat_status_t sat_json_to_string (sat_json_t *object, char **json);
 
+sat_status_t sat_json_buffer_clear (sat_json_t *object);
+
 sat_status_t sat_json_close (sat_json_t *object);
 
 #endif/* SAT_JSON_H_ */
