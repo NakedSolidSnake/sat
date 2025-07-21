@@ -1,7 +1,6 @@
 #include <sat_webserver.h>
 #include <string.h>
 #include <stdio.h>
-#include <unistd.h>
 
 typedef struct 
 {
@@ -95,9 +94,8 @@ sat_status_t sat_webserver_run (sat_webserver_t *object)
 {
     sat_status_t status = sat_status_set (&status, false, "sat webserver run error");
 
-    if (object != NULL)
+    if (object != NULL && object->running == false)
     {
-
         const char *options [] = 
         {
             "listening_ports",
@@ -121,10 +119,27 @@ sat_status_t sat_webserver_run (sat_webserver_t *object)
         {
             sat_webserver_endpoint_register (object);
 
-            while (true)
-                usleep (1);
-        }
+            object->running = true;
 
+            sat_status_set (&status, true, "");
+        }
+    }
+    else if (object != NULL && object->running == true)
+    {
+        sat_status_set (&status, true, "");
+    }
+
+    return status;
+}
+
+sat_status_t sat_webserver_stop (sat_webserver_t *object)
+{
+    sat_status_t status = sat_status_set (&status, false, "sat webserver stop error");
+
+    if (object != NULL && object->running == true)
+    {
+        object->running = false;
+        
         sat_status_set (&status, true, "");
     }
 
