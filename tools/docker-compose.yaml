@@ -1,7 +1,8 @@
 version: "3"
 services:
   development:
-    image: codenotalk/development
+    # build: .
+    image: solidcris/development
     container_name: development
     volumes:
     - .:/development
