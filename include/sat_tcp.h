@@ -3,7 +3,7 @@
 
 #include <sat_status.h>
 #include <stdint.h>
-#include <sat_tcp_types.h>
+#include <sat_tcp/sat_tcp_types.h>
 
 typedef struct 
 {

@@ -3,7 +3,7 @@
 
 #include <sat_status.h>
 #include <stdint.h>
-#include <sat_udp_types.h>
+#include <sat_udp/sat_udp_types.h>
 
 typedef struct 
 {

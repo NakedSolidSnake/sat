@@ -2,7 +2,7 @@
 #define SAT_PROCESS_MONITOR_H_
 
 #include <sat_array.h>
-#include <sat_process.h>
+#include "sat_process.h"
 
 typedef struct 
 {
