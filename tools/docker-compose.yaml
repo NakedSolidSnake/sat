@@ -1,8 +1,8 @@
 version: "3"
 services:
   development:
-    # build: .
-    image: solidcris/development
+    build: .
+    # image: solidcris/development
     container_name: development
     volumes:
     - .:/development

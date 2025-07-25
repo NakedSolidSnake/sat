@@ -1,5 +1,6 @@
-FROM ubuntu:22.04
-
+# Dockerfile com múltiplos estágios
+# Estágio 1: Dependências base
+FROM ubuntu:22.04 AS base-deps
 RUN apt-get update && \
 	apt-get install \
 	cmake \
@@ -10,6 +11,13 @@ RUN apt-get update && \
 	git \
 	curl \
 	uuid-dev \
+	iproute2 \
+	-y && \
+    apt-get clean
+
+# Estágio 2: Dependências de desenvolvimento
+FROM base-deps AS dev-deps
+RUN apt-get install \
 	libmysqlclient-dev \
 	libcurl4-openssl-dev \
 	librdkafka-dev \
@@ -18,12 +26,14 @@ RUN apt-get update && \
 	libpq-dev \
 	libhiredis-dev \
 	jq \
-	iproute2 \
 	-y && \
     apt-get clean
 
+# Estágio 3: Compilação de bibliotecas externas
+FROM dev-deps AS external-libs
 WORKDIR /development
 
+# CivetWeb
 RUN git clone https://github.com/civetweb/civetweb.git && \
 	mkdir -p civetweb/_build && \
 	cd civetweb/_build && \
@@ -31,6 +41,7 @@ RUN git clone https://github.com/civetweb/civetweb.git && \
 	make install && \
 	rm -rf /development/civetweb
 
+# SQLite
 RUN wget https://www.sqlite.org/2024/sqlite-autoconf-3450100.tar.gz && \
 	tar -xvf sqlite-autoconf-3450100.tar.gz && \
 	cd sqlite-autoconf-3450100 && \
@@ -39,15 +50,16 @@ RUN wget https://www.sqlite.org/2024/sqlite-autoconf-3450100.tar.gz && \
 	cd .. && \
     rm -rf sqlite-autoconf-3450100.tar.gz sqlite-autoconf-3450100
 
-RUN cd /development && \
-    git clone https://github.com/eclipse/paho.mqtt.c.git && \
+# MQTT
+RUN git clone https://github.com/eclipse/paho.mqtt.c.git && \
 	cd paho.mqtt.c && \
 	make install && \
 	cd .. && \
 	rm -rf paho.mqtt.c
 
-RUN cd /development && \
-	git clone https://github.com/NakedSolidSnake/sat && \
+# Estágio 4: Compilação do SAT
+FROM external-libs AS sat-build
+RUN git clone https://github.com/NakedSolidSnake/sat && \
 	mkdir -p sat/build && \
 	cd sat/build && \
 	cmake \
@@ -66,8 +78,9 @@ RUN cd /development && \
 	rm -rf /development/sat && \
 	ldconfig
 
-RUN cd /development && \
-	git clone https://github.com/NakedSolidSnake/sat_scaffolding && \
+# Estágio 5: Imagem final
+FROM sat-build AS final
+RUN git clone https://github.com/NakedSolidSnake/sat_scaffolding && \
 	mkdir -p sat_scaffolding/build && \
 	cd sat_scaffolding/build && \
 	cmake .. && \
