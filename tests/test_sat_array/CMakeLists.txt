@@ -1,0 +1,6 @@
+create_test (test_sat_array_basic)
+create_test (test_sat_array_static)
+create_test (test_sat_array_dynamic)
+create_test (test_sat_array_operations)
+create_test (test_sat_array_edge_cases)
+create_test (test_sat_array_iterator)
