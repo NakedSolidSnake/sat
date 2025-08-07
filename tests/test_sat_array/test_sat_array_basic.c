@@ -123,9 +123,9 @@ void test_array_basic_operations (void)
     
     test_item_t items [] =
     {
-        {1, "Item 1", 10.5f},
-        {2, "Item 2", 20.3f},
-        {3, "Item 3", 30.7f}
+        { 1, "Item 1", 10.5f },
+        { 2, "Item 2", 20.3f },
+        { 3, "Item 3", 30.7f }
     };
     
     for (int i = 0; i < 3; i++)
