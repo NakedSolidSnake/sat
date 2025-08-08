@@ -53,7 +53,11 @@ int main (int argc, char *argv[])
     status = sat_webserver_add_endpoint (&webserver, "/exit", "GET", exit_handler, NULL);
     assert (sat_status_get_result (&status) == true);
 
-    sat_webserver_run (&webserver);
+    do
+    {
+        status = sat_webserver_run (&webserver);
+
+    } while (sat_status_get_result (&status) == true);
 
     status = sat_webserver_close (&webserver);
     assert (sat_status_get_result (&status) == true);
@@ -143,7 +147,7 @@ static void *send_exit_thread (void *args)
 {
     (void) args;
 
-    sleep (1);
+    sleep (1000);
 
     system ("curl http://localhost:1234/exit");
 

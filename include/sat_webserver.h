@@ -158,6 +158,14 @@ typedef struct
     char *threads_amount;              /**< Number of worker threads (as string) */
     sat_array_t *array;               /**< Array storing registered endpoints */
     bool running;                     /**< Server running state flag */
+
+    struct 
+    {
+        sat_webserver_handler_t handler; /**< Fallback request handler */
+        void *data;                      /**< User data for fallback handler */
+
+    } fallback;
+
 } sat_webserver_t;
 
 /**
@@ -315,6 +323,9 @@ sat_status_t sat_webserver_open (sat_webserver_t *object, sat_webserver_args_t *
  * @see sat_webserver_handler_t, sat_webserver_open()
  */
 sat_status_t sat_webserver_add_endpoint (sat_webserver_t *object, const char *endpoint, const char *method, sat_webserver_handler_t handler, void *data);
+
+
+sat_status_t sat_webserver_fallback_register (sat_webserver_t *object, sat_webserver_handler_t handler, void *data);
 
 /**
  * @brief Start the web server
@@ -487,4 +498,4 @@ sat_status_t sat_webserver_response_send (struct mg_connection *object, sat_webs
  */
 sat_status_t sat_webserver_close (sat_webserver_t *object);
 
-#endif /* SAT_WEBSERVER_H_ */
+#endif /* SAT_WEBSERVER_H */

@@ -16,6 +16,8 @@ typedef struct
     char *value;
 } sat_webserver_header_t;
 
+static int sat_webserver_fallback_handler (struct mg_connection *object, void *data); 
+
 static int sat_webserver_log_message (const struct mg_connection *connection, const char *message);
 sat_status_t sat_webserver_is_endpoint_valid (sat_webserver_request_t *object);
 static bool sat_webserver_is_payload_present (sat_webserver_response_t *object);
@@ -35,6 +37,9 @@ sat_status_t sat_webserver_init (sat_webserver_t *object)
         mg_init_library (MG_FEATURES_DEFAULT);
 
         object->mg_callbacks.log_message = sat_webserver_log_message;
+
+        object->fallback.handler = sat_webserver_fallback_handler;
+        object->fallback.data = NULL;
 
         sat_status_set (&status, true, "");
     }
@@ -86,6 +91,32 @@ sat_status_t sat_webserver_add_endpoint (sat_webserver_t *object, const char *en
             status = sat_array_add (object->array, &request);
         }        
     }
+
+    return status;
+}
+
+sat_status_t sat_webserver_fallback_register (sat_webserver_t *object, sat_webserver_handler_t handler, void *data)
+{
+    sat_status_t status;
+
+    do 
+    {
+        if (object == NULL)
+        {
+            status = sat_status_set (&status, false, "sat webserver fallback register error: sat_webserver_t is NULL");
+            break;
+        }
+
+        if (handler == NULL)
+        {
+            status = sat_status_set (&status, false, "sat webserver fallback register error: handler is NULL");
+            break;
+        }
+
+        object->fallback.handler = handler;
+        object->fallback.data = data;
+
+    } while (false);
 
     return status;
 }
@@ -316,6 +347,7 @@ static int sat_webserver_generic_handler (struct mg_connection *object, void *da
 
     uint32_t endpoint_amount;
     sat_array_get_size (webserver->array, &endpoint_amount);
+    bool found = false;
 
     const struct mg_request_info *ri = mg_get_request_info (object);
 
@@ -330,9 +362,29 @@ static int sat_webserver_generic_handler (struct mg_connection *object, void *da
              strcmp (request.method, "*") == 0))
         {
             status = request.handler (object, request.data);
+            found = true;
             break;
         }
     }
 
+    if (found == false )
+    {
+        webserver->fallback.handler (object, webserver->fallback.data);
+    }
+
     return status;
+}
+
+static int sat_webserver_fallback_handler (struct mg_connection *object, void *data)
+{
+    (void) data;
+
+    sat_webserver_response_t response;
+
+    sat_webserver_response_set_payload (&response, "Not Found", 9);
+    sat_webserver_response_set_status (&response, sat_webserver_http_status_not_found);
+
+    sat_webserver_response_send (object, response);
+
+    return sat_webserver_http_status_not_found;
 }
