@@ -93,4 +93,4 @@ USER developer
 
 EXPOSE 1234
 
-ENTRYPOINT [ "/bin/tail", "-f", "/dev/null" ]
+CMD [ "/bin/tail", "-f", "/dev/null" ]
