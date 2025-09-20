@@ -25,6 +25,9 @@ static bool sat_webserver_response_headers_apply (struct mg_connection *object, 
 
 static void sat_webserver_endpoint_register (sat_webserver_t *object);
 static int sat_webserver_generic_handler (struct mg_connection *object, void *data);
+static int sat_webserver_endpoints_handler (struct mg_connection *object, void *data);
+static int sat_webserver_static_handler (struct mg_connection *object, void *data);
+static bool sat_webserver_is_extension_supported (const char *extension);
 
 sat_status_t sat_webserver_init (sat_webserver_t *object)
 {
@@ -343,11 +346,34 @@ static void sat_webserver_endpoint_register (sat_webserver_t *object)
 static int sat_webserver_generic_handler (struct mg_connection *object, void *data)
 {
     sat_webserver_t *webserver = (sat_webserver_t *)data;
+    int status;
+
+    do
+    {
+        status = sat_webserver_static_handler (object, data);
+        if (status != sat_webserver_http_status_not_found)
+        {
+            break;
+        }
+
+        status = sat_webserver_endpoints_handler (object, data);
+        if (status == sat_webserver_http_status_not_found)
+        {
+            webserver->fallback.handler (object, webserver->fallback.data);
+        }
+
+    } while (false);
+
+    return status;
+}
+
+static int sat_webserver_endpoints_handler (struct mg_connection *object, void *data)
+{
+    sat_webserver_t *webserver = (sat_webserver_t *)data;
     int status = sat_webserver_http_status_ok;
 
     uint32_t endpoint_amount;
     sat_array_get_size (webserver->array, &endpoint_amount);
-    bool found = false;
 
     const struct mg_request_info *ri = mg_get_request_info (object);
 
@@ -362,17 +388,35 @@ static int sat_webserver_generic_handler (struct mg_connection *object, void *da
              strcmp (request.method, "*") == 0))
         {
             status = request.handler (object, request.data);
-            found = true;
             break;
         }
     }
 
-    if (found == false )
+    return status;
+}
+
+static int sat_webserver_static_handler (struct mg_connection *object, void *data)
+{
+    int http_status = sat_webserver_http_status_not_found;
+
+    (void) data;
+
+    const struct mg_request_info *ri = mg_get_request_info (object);
+
+    const char *root = mg_get_option (mg_get_context (object), "document_root");
+
+    if (sat_webserver_is_extension_supported (ri->request_uri) == true) 
     {
-        webserver->fallback.handler (object, webserver->fallback.data);
+        char path[1024] = {0};
+
+        snprintf (path, sizeof (path), "%s%s", root, ri->request_uri);
+
+        mg_send_file (object, path);
+
+        http_status = sat_webserver_http_status_ok;
     }
 
-    return status;
+    return http_status;
 }
 
 static int sat_webserver_fallback_handler (struct mg_connection *object, void *data)
@@ -387,4 +431,33 @@ static int sat_webserver_fallback_handler (struct mg_connection *object, void *d
     sat_webserver_response_send (object, response);
 
     return sat_webserver_http_status_not_found;
+}
+
+static bool sat_webserver_is_extension_supported (const char *uri)
+{
+    bool status = false;
+
+    const char *extension = strrchr (uri, '.');
+
+    const char *supported_extensions [] = 
+    {
+        ".html",
+        ".css",
+        ".js",
+        ".png",
+        ".jpg",
+        ".jpeg",
+        ".ico"
+    };
+
+    for (uint8_t i = 0; i < sizeof (supported_extensions) / sizeof (supported_extensions [0]) && extension != NULL; i++)
+    {
+        if (strcmp (extension, supported_extensions [i]) == 0)
+        {
+            status = true;
+            break;
+        }
+    }
+
+    return status;
 }
