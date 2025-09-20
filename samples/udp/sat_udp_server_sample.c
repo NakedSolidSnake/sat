@@ -36,7 +36,7 @@ int main (int argc, char *argv[])
 
     sat_udp_server_type_t type = sat_udp_server_type_interactive;
 
-    if (argc < 2 && argc > 3)
+    if (argc < 2 || argc > 3)
     {
         fprintf (stderr, "Usage: %s <port> <mode> \n", argv [0]);
         fprintf (stderr, "mode: interactive [default]\n");
