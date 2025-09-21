@@ -370,7 +370,7 @@ static int sat_webserver_generic_handler (struct mg_connection *object, void *da
 static int sat_webserver_endpoints_handler (struct mg_connection *object, void *data)
 {
     sat_webserver_t *webserver = (sat_webserver_t *)data;
-    int status = sat_webserver_http_status_ok;
+    int status = sat_webserver_http_status_not_found;
 
     uint32_t endpoint_amount;
     sat_array_get_size (webserver->array, &endpoint_amount);
