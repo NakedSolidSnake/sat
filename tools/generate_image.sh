@@ -19,7 +19,7 @@ check_command() {
     fi
 }
 
-check_command "docker build -t tools-development -f Dockerfile ." "build sat-build image"
+check_command "docker build --no-cache -t tools-development -f Dockerfile ." "build sat-build image"
 
 # Login to Docker Hub
 check_command "docker login -u solidcris" "login to Docker Hub"

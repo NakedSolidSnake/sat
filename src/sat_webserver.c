@@ -424,6 +424,8 @@ static int sat_webserver_fallback_handler (struct mg_connection *object, void *d
     (void) data;
 
     sat_webserver_response_t response;
+    
+    memset (&response, 0, sizeof (sat_webserver_response_t));
 
     sat_webserver_response_set_payload (&response, "Not Found", 9);
     sat_webserver_response_set_status (&response, sat_webserver_http_status_not_found);
