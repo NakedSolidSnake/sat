@@ -119,28 +119,94 @@ sat_status_t sat_json_deserialize (sat_json_t *object, const char *json, sat_jso
 
 sat_status_t sat_json_to_string (sat_json_t *object, char **json)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat json to string error");
+    sat_status_t status;
 
-    if (object != NULL && json != NULL)
+    do
     {
-        char *string = cJSON_PrintUnformatted (object->json);
-        if (string != NULL)
+        if (object == NULL)
         {
-            sat_status_set (&status, false, "sat json to string buffer error");
-
-            if (strlen (string) < object->size)
-            {
-                memset (object->buffer, 0, object->size);
-                strncpy (object->buffer, string, strlen (string));
-
-                *json = object->buffer;
-
-                sat_status_set (&status, true, "");
-            }
-
-            cJSON_free (string);
+            sat_status_set (&status, false, "sat json error: [object is NULL]");
+            break;
         }
-    }
+
+        if (json == NULL)
+        {
+            sat_status_set (&status, false, "sat json error: [json is NULL]");
+            break;
+        }
+
+        char *string = cJSON_PrintUnformatted (object->json);
+        if  (string == NULL)
+        {
+            sat_status_set (&status, false, "sat json error: [string is NULL]");
+            break;
+        }
+
+        if (strlen (string) > object->size)
+        {
+            sat_status_set (&status, false, "sat json error: [string is too large]");
+            cJSON_free (string);
+            break;
+        }
+
+        memset (object->buffer, 0, object->size);
+        strncpy (object->buffer, string, strlen (string));
+
+        *json = object->buffer;
+
+        cJSON_free (string);
+
+        sat_status_set (&status, true, "");
+
+    } while (false);
+
+    return status;
+}
+
+sat_status_t sat_json_string_to_buffer (sat_json_t *object, char *buffer, uint32_t size)
+{
+    sat_status_t status;
+    char *string = NULL;
+
+    do
+    {
+        if (object == NULL)
+        {
+            sat_status_set (&status, false, "sat json error: [object is NULL]");
+            break;
+        }
+
+        if (buffer == NULL)
+        {
+            sat_status_set (&status, false, "sat json error: [buffer is NULL]");
+            break;
+        }
+
+        if (size == 0)
+        {
+            sat_status_set (&status, false, "sat json error: [size cannot be 0]");
+            break;
+        }
+
+        status = sat_json_to_string (object, &string);
+        if (sat_status_get_result (&status) == false )
+        {
+            sat_status_set (&status, false, "sat json error: [it wasn't possible to be string]");
+            break;
+        }
+
+        if (strlen (string) > size)
+        {
+            sat_status_set (&status, false, "sat json error: [buffer is too small]");
+            break;
+        }
+
+        memset (buffer, 0, size);
+        strncpy (buffer, string, size - 1);
+
+        sat_status_set (&status, true, "");
+
+    } while (false);
 
     return status;
 }
@@ -161,7 +227,7 @@ sat_status_t sat_json_buffer_clear (sat_json_t *object)
 
 sat_status_t sat_json_close (sat_json_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat json init error");
+    sat_status_t status = sat_status_set (&status, false, "sat json close error");
 
     if (object != NULL)
     {
@@ -295,15 +361,18 @@ static sat_status_t sat_json_deserialize_array (cJSON *json, sat_json_mapper_t *
     {
         sat_json_mapper_t *temp = mapper->get_next (mapper->data, i);
 
-        if (temp->token != NULL && strlen (temp->token) > 0)
+        if (temp != NULL)
         {
-            sat_json_deserialize_items (data, temp, fields);
+            if (temp->token != NULL && strlen (temp->token) > 0)
+            {
+                sat_json_deserialize_items (data, temp, fields);
+            }
+
+            else
+                sat_json_deserialize_primitives (data, temp);
+
+            free (temp);
         }
-
-        else
-            sat_json_deserialize_primitives (data, temp);
-
-        free (temp);
 
         data = cJSON_GetArrayItem (json, ++i);
     }

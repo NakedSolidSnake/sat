@@ -14,7 +14,7 @@ typedef struct
 typedef struct 
 {
     person_t parent;
-    person_t children [2];
+    person_t children [3];
 } registry_t;
 
 typedef struct 
@@ -191,6 +191,8 @@ bool sat_json_test_serialize_object_object (void)
     char buffer_root [1024] = {0};
     char buffer_object [1024] = {0};
 
+    char buffer_user [1024] = {0};
+
     char *s = NULL;
 
     person_t person = 
@@ -227,6 +229,10 @@ bool sat_json_test_serialize_object_object (void)
     sat_json_to_string (&root, &s);
 
     printf ("%s\n", s);
+
+    sat_json_string_to_buffer (&root, buffer_user, sizeof (buffer_user));
+
+    printf ("%s\n", buffer_user);
     
     sat_json_close (&root);
 
@@ -474,7 +480,7 @@ bool sat_json_test_deserialize_object_object (void)
 
     sat_json_mapper_t address_mapper [] = 
     {
-        {.token = "street", .data = owner.address.street, .type = sat_json_type_string, .size = 512},
+        {.token = "street", .data = owner.address.street, .type = sat_json_type_string, .size = 128},
         {.token = "number", .data = &owner.address.number, .type = sat_json_type_int, .size = sizeof (int)},
         {.token = "zipcode", .data = owner.address.zipcode, .type = sat_json_type_string, .size = 10},
     };

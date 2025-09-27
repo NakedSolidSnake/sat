@@ -53,6 +53,7 @@ sat_status_t sat_json_serialize_add (sat_json_t *object, sat_json_type_t type, c
 sat_status_t sat_json_deserialize (sat_json_t *object, const char *json, sat_json_mapper_t *mapper, uint16_t fields);
 
 sat_status_t sat_json_to_string (sat_json_t *object, char **json);
+sat_status_t sat_json_string_to_buffer (sat_json_t *object, char *buffer, uint32_t size);
 
 sat_status_t sat_json_buffer_clear (sat_json_t *object);
 
