@@ -12,7 +12,8 @@
 typedef struct
 {
     sat_udp_t udp;
-    bool is_running;
+    sat_scheduler_t scheduler;
+    
     char service_name [SAT_DISCOVERY_SERVICE_NAME_MAX_LENGTH + 1];
 
     struct
@@ -38,8 +39,5 @@ sat_status_t sat_discovery_init (sat_discovery_t *object);
 sat_status_t sat_discovery_open (sat_discovery_t *object, sat_discovery_args_t *args);   
 sat_status_t sat_discovery_start (sat_discovery_t *object);
 sat_status_t sat_discovery_stop (sat_discovery_t *object);
-
-
-sat_status_t sat_discovery_announce (sat_discovery_t *object);
 
 #endif /* SAT_DISCOVERY_H */

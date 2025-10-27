@@ -5,8 +5,10 @@
 
 static sat_status_t sat_discovery_is_args_valid (sat_discovery_args_t *args);
 static sat_status_t sat_discovery_server_setup (sat_discovery_t *object, sat_discovery_args_t *args);
+static sat_status_t sat_discovery_scheduler_setup (sat_discovery_t *object);
 
-static void *sat_discovery_run (void *arg);
+static void sat_discovery_scan (void *object);
+static void sat_discovery_announce (void *object);
 
 static void sat_discovery_on_receive (char *buffer, uint32_t *size, void *data)
 {
@@ -52,6 +54,12 @@ sat_status_t sat_discovery_open (sat_discovery_t *object, sat_discovery_args_t *
             break;
         }
 
+        status = sat_discovery_scheduler_setup (object);
+        if (sat_status_get_result (&status) == false)
+        {
+            break;
+        }
+
         strncpy (object->service_name, args->name, SAT_DISCOVERY_SERVICE_NAME_MAX_LENGTH);
         strncpy (object->channel.service, args->channel.service, SAT_DISCOVERY_SERVICE_MAX_LENGTH);
         strncpy (object->channel.address, args->channel.address, SAT_DISCOVERY_ADDRESS_MAX_LENGTH);
@@ -67,16 +75,7 @@ sat_status_t sat_discovery_start (sat_discovery_t *object)
 
     if (object != NULL )
     {
-        pthread_t thread;
-
-        object->is_running = true;
-
-        pthread_create (&thread, NULL, sat_discovery_run, (void *)object);
-        pthread_detach (thread);
-
-
-        // Start the discovery process
-        sat_status_set (&status, true, "");
+        status = sat_scheduler_start (&object->scheduler);
     }
 
     return status;
@@ -89,26 +88,7 @@ sat_status_t sat_discovery_stop (sat_discovery_t *object)
     if (object != NULL )
     {
         // Stop the discovery process
-        object->is_running = false;
-        sat_status_set (&status, true, "");
-    }
-
-    return status;
-}
-
-sat_status_t sat_discovery_announce (sat_discovery_t *object)
-{
-    sat_status_t status = sat_status_set (&status, false, "sat discovery announce error");
-
-    if (object != NULL )
-    {
-        sat_udp_send (&object->udp, object->service_name, strlen (object->service_name), &(sat_udp_destination_t)
-                                                                          {
-                                                                            .hostname = object->channel.address,
-                                                                            .service = object->channel.service
-                                                                          });
-        
-        sat_status_set (&status, true, "");
+        status = sat_scheduler_stop (&object->scheduler);
     }
 
     return status;
@@ -163,19 +143,58 @@ static sat_status_t sat_discovery_server_setup (sat_discovery_t *object, sat_dis
     return status;
 }
 
-static void *sat_discovery_run (void *arg)
+static sat_status_t sat_discovery_scheduler_setup (sat_discovery_t *object)
 {
-    sat_discovery_t *object = (sat_discovery_t *)arg;
+    sat_status_t status;
 
-    if (object != NULL)
+    do
     {
-        // Discovery main loop
-        while (object->is_running)
+        status = sat_scheduler_open (&object->scheduler, &(sat_scheduler_args_t){.event_amount = 2});
+        if (sat_status_get_result (&status) == false)
         {
-            sat_discovery_announce (object);
-            sat_udp_run (&object->udp);
+            break;
         }
-    }
+        status = sat_scheduler_add_event (&object->scheduler, &(sat_scheduler_event_t)
+                                             {
+                                                .name = "discovery announce",
+                                                .object = object,
+                                                .handler = (sat_scheduler_handler_t)sat_discovery_announce,
+                                                .ran = false,
+                                                .timeout = 500
+                                             });
+        if (sat_status_get_result (&status) == false)
+        {
+            break;
+        }
 
-    return NULL;
+        status = sat_scheduler_add_event (&object->scheduler, &(sat_scheduler_event_t)
+                                             {
+                                                .name = "discovery_scan",
+                                                .object = &object->udp,
+                                                .handler = (sat_scheduler_handler_t)sat_discovery_scan,
+                                                .ran = false,
+                                                .timeout = 100
+                                             });
+
+    } while (false);
+
+    return status;
+}
+
+static void sat_discovery_scan (void *object)
+{
+    sat_discovery_t *discovery = (sat_discovery_t *)object;
+
+    sat_udp_run (&discovery->udp);
+}
+
+static void sat_discovery_announce (void *object)
+{
+    sat_discovery_t *discovery = (sat_discovery_t *)object;
+
+    sat_udp_send (&discovery->udp, discovery->service_name, strlen (discovery->service_name), &(sat_udp_destination_t)
+                                                                          {
+                                                                            .hostname = discovery->channel.address,
+                                                                            .service = discovery->channel.service
+                                                                          });
 }
