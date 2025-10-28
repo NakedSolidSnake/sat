@@ -56,7 +56,9 @@ list (APPEND SAT_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/sat_uuid.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_handle_frame_heartbeat.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_handle_frame_interest.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_handle_frame_vanish.c
-                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_service_vanish.c)
+                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_service_vanish.c
+                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_network.c)
+
 
 list (APPEND SAT_LIBRARIES uuid m pthread dl pthread)
 
