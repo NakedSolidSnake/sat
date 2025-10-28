@@ -39,6 +39,79 @@ static bool sat_network_get_connected_address (int socket, char *ip_address, siz
     return status;
 }
 
+sat_status_t sat_network_get_ip_class (const char *const ip_address, sat_network_class_t *const ip_class)
+{
+    sat_status_t status;
+
+    do
+    {
+        struct in_addr addr;
+
+        if (inet_pton (AF_INET, ip_address, &addr) != 1)
+        {
+            sat_status_set (&status, false, "Invalid IP address format");
+            break;
+        }
+
+        uint32_t ip = ntohl (addr.s_addr);
+
+        if ((ip >= 0xE0000000 && ip <= 0xEFFFFFFF))
+        {
+            *ip_class = sat_network_class_multicast;
+        }
+        else if ((ip >= 0xFF000000 && ip <= 0xFFFFFFFF))
+        {
+            *ip_class = sat_network_class_broadcast;
+        }
+        else if ((ip >= 0x00000000 && ip <= 0x7FFFFFFF))
+        {
+            *ip_class = sat_network_class_public;
+        }
+        else if ((ip >= 0x80000000 && ip <= 0xBFFFFFFF))
+        {
+            *ip_class = sat_network_class_private;
+        }
+        else if ((ip >= 0x7F000000 && ip <= 0x7FFFFFFF))
+        {
+            *ip_class = sat_network_class_loopback;
+        }
+        else
+        {
+            sat_status_set (&status, false, "Unknown IP address class");
+            break;
+        }
+
+        sat_status_set (&status, true, "");
+
+    } while (false);
+
+    return status;
+}
+
+const char *const sat_network_get_ip_class_string (const sat_network_class_t ip_class)
+{
+    switch (ip_class)
+    {
+        case sat_network_class_multicast:
+            return "multicast";
+
+        case sat_network_class_broadcast:
+            return "broadcast";
+
+        case sat_network_class_public:
+            return "public";
+
+        case sat_network_class_private:
+            return "private";
+
+        case sat_network_class_loopback:
+            return "loopback";
+            
+        default:
+            return "unknown";
+    }
+}
+
 sat_status_t sat_network_get_public_ip (const char *const dns_address, uint16_t dns_port, char ip_address [SAT_NETWORK_IP_MAX_LEN + 1])
 {
     sat_status_t status;
