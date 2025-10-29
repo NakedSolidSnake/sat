@@ -1,6 +1,11 @@
 #include <sat_discovery_frame.h>
 #include <string.h>
 #include <arpa/inet.h>
+#include <sat_time.h>
+#include <stddef.h>
+#include <endian.h>
+
+#define SAT_DISCOVERY_FRAME_VERSION 1 
 
 sat_status_t sat_discover_frame_create (sat_discovery_frame_t *const object, sat_discovery_frame_args_t *args)
 {
@@ -8,10 +13,9 @@ sat_status_t sat_discover_frame_create (sat_discovery_frame_t *const object, sat
 
     do
     {
-        // Validate input parameters
         if (object == NULL || args == NULL)
         {
-            sat_status_set (&status, false, "Invalid parameters");
+            sat_status_failure (&status, "Invalid parameters");
             break;
         }
 
@@ -19,18 +23,47 @@ sat_status_t sat_discover_frame_create (sat_discovery_frame_t *const object, sat
         memset (object, 0, sizeof (sat_discovery_frame_t));
 
         // Copy values from args to object
-        object->version = args->version;
-        object->type = args->type;
-        object->flags = args->flags;
-        object->timestamp = args->timestamp;
-        object->service_port = args->service_port;
-        object->address = args->address;
+        object->header.version = SAT_DISCOVERY_FRAME_VERSION;
+        object->header.type = args->type;
+        memcpy (object->header.uuid, args->uuid, SAT_UUID_BINARY_SIZE);
 
-        // Copy service name with bounds checking
-        strncpy (object->service_name, args->service_name, SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE - 1);
-        object->service_name [SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE - 1] = '\0';
+        if (args->type < sat_discovery_frame_type_announce || args->type > sat_discovery_frame_type_vanish)
+        {
+            sat_status_failure (&status, "Invalid frame type");
+            break;
+        }
 
-        sat_status_set (&status, true, "");
+        switch (args->type)
+        {
+            case sat_discovery_frame_type_announce:
+                object->payload.announce.service_port = args->service_port;
+                object->payload.announce.address = args->address;
+                strncpy (object->payload.announce.service_name, args->service_name, SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE - 1);
+                object->payload.announce.service_name [SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE - 1] = '\0';
+                break;
+
+            case sat_discovery_frame_type_interest:
+                strncpy (object->payload.interest.service_name, args->service_name, SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE - 1);
+                object->payload.interest.service_name [SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE - 1] = '\0';
+                break;
+
+            case sat_discovery_frame_type_heartbeat:
+                strncpy (object->payload.heartbeat.service_name, args->service_name, SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE - 1);
+                object->payload.heartbeat.service_name [SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE - 1] = '\0';
+                object->payload.heartbeat.timestamp = sat_time_get_epoch_now_ms ();
+                break;
+
+            case sat_discovery_frame_type_vanish:
+                strncpy (object->payload.vanish.service_name, args->service_name, SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE - 1);
+                object->payload.vanish.service_name [SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE - 1] = '\0';
+                break;
+
+            default:
+                sat_status_failure (&status, "Invalid frame type");
+                break;
+        }
+
+        sat_status_success (&status);
 
     } while (false);
 
@@ -43,70 +76,152 @@ sat_status_t sat_discover_frame_pack (const sat_discovery_frame_t *const object,
 
     do
     {
-        // Validate input parameters
         if (object == NULL || buffer == NULL)
         {
-            sat_status_set (&status, false, "Invalid parameters");
+            sat_status_failure (&status, "Invalid parameters");
             break;
         }
 
-        // Clear the buffer
-        memset (buffer, 0, sizeof (sat_discovery_frame_buffer_t));
+        // Validate frame type before processing
+        if (object->header.type < sat_discovery_frame_type_announce || object->header.type > sat_discovery_frame_type_vanish)
+        {
+            sat_status_failure (&status, "Invalid frame type");
+            break;
+        }
 
-        // Create a temporary packed structure for network byte order conversion
-        sat_discovery_frame_t packed_frame;
-        memcpy (&packed_frame, object, sizeof (sat_discovery_frame_t));
+        // Verify buffer size can accommodate the frame
+        if (sizeof (sat_discovery_frame_t) > SAT_DISCOVERY_FRAME_SIZE)
+        {
+            sat_status_failure (&status, "Frame size exceeds buffer capacity");
+            break;
+        }
+
+        // Copy the frame data into the buffer
+        memcpy (buffer->data, object, sizeof (sat_discovery_frame_t));
 
         // Convert multi-byte fields to network byte order
-        packed_frame.flags = htonl (packed_frame.flags);
-        packed_frame.timestamp = htonl (packed_frame.timestamp);
-        packed_frame.service_port = htons (packed_frame.service_port);
-        packed_frame.address = htonl (packed_frame.address);
+        uint16_t *service_port_ptr = NULL;
+        uint32_t *address_ptr = NULL;
+        uint64_t *timestamp_ptr = NULL;
 
-        // Copy the packed structure to the buffer
-        memcpy (buffer->buffer, &packed_frame, sizeof (sat_discovery_frame_t));
-        buffer->size = sizeof (sat_discovery_frame_t);
+        switch (object->header.type)
+        {
+            case sat_discovery_frame_type_announce:
+                service_port_ptr = (uint16_t *) &buffer->data[sizeof (sat_discovery_frame_header_t) + offsetof (sat_discovery_frame_announce_t, service_port)];
+                *service_port_ptr = htons (*service_port_ptr);
 
-        sat_status_set (&status, true, "");
+                address_ptr = (uint32_t *) &buffer->data[sizeof (sat_discovery_frame_header_t) + offsetof (sat_discovery_frame_announce_t, address)];
+                *address_ptr = htonl (*address_ptr);
+                break;
+
+            case sat_discovery_frame_type_interest:
+                // No multi-byte fields to convert
+                break;
+
+            case sat_discovery_frame_type_heartbeat:
+                timestamp_ptr = (uint64_t *) &buffer->data[sizeof (sat_discovery_frame_header_t) + offsetof (sat_discovery_frame_heartbeat_t, timestamp)];
+                *timestamp_ptr = htobe64 (*timestamp_ptr);
+                break;
+
+            case sat_discovery_frame_type_vanish:
+                // No multi-byte fields to convert
+                break;
+
+            default:
+                // This should never be reached due to validation above
+                sat_status_failure (&status, "Invalid frame type");
+                break;
+        }
+
+        // Only set success if we didn't encounter any errors
+        sat_status_success (&status);
 
     } while (false);
 
     return status;
 }
 
-sat_status_t sat_discover_frame_unpack (sat_discovery_frame_t *const object, const sat_discovery_frame_buffer_t *const buffer)
+sat_status_t sat_discovery_frame_unpack (sat_discovery_frame_t *const object, const sat_discovery_frame_buffer_t *const buffer)
 {
     sat_status_t status;
 
     do
     {
-        // Validate input parameters
         if (object == NULL || buffer == NULL)
         {
-            sat_status_set (&status, false, "Invalid parameters");
+            sat_status_failure (&status, "Invalid parameters");
             break;
         }
 
-        // Validate buffer size
-        if (buffer->size != sizeof (sat_discovery_frame_t))
+        // Copy the frame data from the buffer
+        memcpy (object, buffer->data, sizeof (sat_discovery_frame_t));
+
+        // Validate frame version
+        if (object->header.version != SAT_DISCOVERY_FRAME_VERSION)
         {
-            sat_status_set (&status, false, "Invalid buffer size");
+            sat_status_failure (&status, "Invalid frame version");
             break;
         }
 
-        // Copy the buffer data to the object
-        memcpy (object, buffer->buffer, sizeof (sat_discovery_frame_t));
+        // Validate frame type
+        if (object->header.type < sat_discovery_frame_type_announce || object->header.type > sat_discovery_frame_type_vanish)
+        {
+            sat_status_failure (&status, "Invalid frame type");
+            break;
+        }
 
         // Convert multi-byte fields from network byte order to host byte order
-        object->flags = ntohl (object->flags);
-        object->timestamp = ntohl (object->timestamp);
-        object->service_port = ntohs (object->service_port);
-        object->address = ntohl (object->address);
+        switch (object->header.type)
+        {
+            case sat_discovery_frame_type_announce:
+                object->payload.announce.service_port = ntohs (object->payload.announce.service_port);
+                object->payload.announce.address = ntohl (object->payload.announce.address);
+                break;
 
-        // Ensure service name is null-terminated
-        object->service_name [SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE - 1] = '\0';
+            case sat_discovery_frame_type_interest:
+                // No multi-byte fields to convert
+                break;
 
-        sat_status_set (&status, true, "");
+            case sat_discovery_frame_type_heartbeat:
+                object->payload.heartbeat.timestamp = be64toh (object->payload.heartbeat.timestamp);
+                break;
+
+            case sat_discovery_frame_type_vanish:
+                // No multi-byte fields to convert
+                break;
+
+            default:
+                // This should never be reached due to validation above
+                sat_status_failure (&status, "Invalid frame type");
+                break;
+        }
+
+        // Ensure service names are null-terminated for safety
+        switch (object->header.type)
+        {
+            case sat_discovery_frame_type_announce:
+                object->payload.announce.service_name[SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE - 1] = '\0';
+                break;
+
+            case sat_discovery_frame_type_interest:
+                object->payload.interest.service_name[SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE - 1] = '\0';
+                break;
+
+            case sat_discovery_frame_type_heartbeat:
+                object->payload.heartbeat.service_name[SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE - 1] = '\0';
+                break;
+
+            case sat_discovery_frame_type_vanish:
+                object->payload.vanish.service_name[SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE - 1] = '\0';
+                break;
+
+            default:
+                // Already handled above
+                break;
+        }
+
+        // Only set success if we didn't encounter any errors
+        sat_status_success (&status);
 
     } while (false);
 

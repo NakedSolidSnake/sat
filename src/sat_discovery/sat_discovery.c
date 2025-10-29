@@ -4,6 +4,7 @@
 #include <pthread.h>
 #include <sat_discovery_interest.h>
 #include <sat_iterator.h>
+#include <sat_discovery_frame.h>
 
 static sat_status_t sat_discovery_is_args_valid (sat_discovery_args_t *args);
 static sat_status_t sat_discovery_server_setup (sat_discovery_t *object, sat_discovery_args_t *args);
@@ -35,6 +36,26 @@ static void sat_discovery_on_receive (char *buffer, uint32_t *size, void *data)
     (void)buffer;
     (void)size;
     sat_discovery_t *service = (sat_discovery_t *)data;
+
+    sat_discovery_frame_t frame;
+    sat_discovery_frame_buffer_t frame_buffer;
+
+    sat_status_t status = sat_discovery_frame_unpack (&frame, (sat_discovery_frame_buffer_t *)buffer);
+
+    
+    if (frame.header.type == sat_discovery_frame_type_announce)
+    {
+        printf ("Discovery announce received: %.*s\n", *size, buffer);
+    }
+    else if (frame.header.type == sat_discovery_frame_type_heartbeat)
+    {
+        printf ("Discovery heartbeat received: %.*s\n", *size, buffer);
+    }
+    else if (frame.header.type == sat_discovery_frame_type_interest)
+    {
+        printf ("Discovery interest received: %.*s\n", *size, buffer);
+    }
+
     if (strcmp (buffer, service->service_name) == 0)
         return; // Ignore messages from itself
 
