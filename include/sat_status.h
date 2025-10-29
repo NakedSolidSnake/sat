@@ -13,4 +13,7 @@ sat_status_t sat_status_set (sat_status_t *object, bool result, char *motive);
 bool sat_status_get_result (sat_status_t *object);
 char *sat_status_get_motive (sat_status_t *object);
 
+sat_status_t sat_status_success (sat_status_t *object);
+sat_status_t sat_status_failure (sat_status_t *object, char *motive);
+
 #endif/* SAT_STATUS_H */
