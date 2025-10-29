@@ -20,5 +20,7 @@ bool sat_uuid_generate_string (uuid_string_t uuid_string, sat_uuid_format_t form
 bool sat_uuid_generate_bin (uuid_binary_t uuid_bin);
 bool sat_uuid_string_to_bin (const uuid_string_t uuid_string, uuid_binary_t uuid);
 bool sat_uuid_bin_to_string (const uuid_binary_t uuid_bin, uuid_string_t uuid_string, sat_uuid_format_t format);
+bool sat_uuid_compare_bin (const uuid_binary_t uuid1, const uuid_binary_t uuid2);
+bool sat_uuid_compare_string (const uuid_string_t uuid1, const uuid_string_t uuid2, sat_uuid_format_t format);
 
 #endif /* SAT_UUID_H */
