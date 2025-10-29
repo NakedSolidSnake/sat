@@ -42,14 +42,18 @@ list (APPEND SAT_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/sat_uuid.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_queue_ipc.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_iterator.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_process/sat_process.c
-                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_process/sat_process_monitor.c)
+                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_process/sat_process_monitor.c
+                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery.c
+                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_interest.c
+                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_frame.c)
 
 list (APPEND SAT_LIBRARIES uuid m pthread dl pthread)
 
 list (APPEND SAT_INCLUDES ${CMAKE_CURRENT_LIST_DIR}/include
                           ${CMAKE_CURRENT_LIST_DIR}/include/sat_tcp/
                           ${CMAKE_CURRENT_LIST_DIR}/include/sat_udp/
-                          ${CMAKE_CURRENT_LIST_DIR}/include/sat_process/)
+                          ${CMAKE_CURRENT_LIST_DIR}/include/sat_process/
+                          ${CMAKE_CURRENT_LIST_DIR}/include/sat_discovery/)
 
 file (WRITE ${CMAKE_CURRENT_LIST_DIR}/include/sat_optionals.h "")
 
