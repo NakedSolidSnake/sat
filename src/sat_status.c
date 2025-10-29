@@ -4,7 +4,6 @@
 
 sat_status_t sat_status_set (sat_status_t *object, bool result, char *motive)
 {
-
     assert (object);
 
     object->result = result;
@@ -23,4 +22,14 @@ char *sat_status_get_motive (sat_status_t *object)
 {
     assert (object);
     return object->motive;
+}
+
+sat_status_t sat_status_success (sat_status_t *object)
+{
+    return sat_status_set (object, true, "");
+}
+
+sat_status_t sat_status_failure (sat_status_t *object, char *motive)
+{
+    return sat_status_set (object, false, motive);
 }
