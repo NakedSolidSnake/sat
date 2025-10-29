@@ -1,8 +1,9 @@
 #include <sat.h>
+#include <stdio.h>
 
 int main (int argc, char *argv[])
 {
-    if (argc != 4)
+    if (argc < 4)
     {
         fprintf (stderr, "Usage: %s <name> <address> <service>\n", argv [0]);
         return EXIT_FAILURE;
@@ -14,8 +15,8 @@ int main (int argc, char *argv[])
         .name = argv[1],
         .channel = 
         {
-            .service = argv[3],
-            .address = argv[2],
+            .service = argv [3],
+            .address = argv [2],
         }
     };
 
@@ -31,6 +32,19 @@ int main (int argc, char *argv[])
     {
         fprintf (stderr, "Failed to open discovery: %s\n", sat_status_get_motive (&status));
         return EXIT_FAILURE;
+    }
+
+    for (int i = 4; i < argc; i++)
+    {
+        char interest_name [64];
+        snprintf (interest_name, sizeof (interest_name), "%s", argv [i]);
+
+        status = sat_discovery_add_interest (&discovery, interest_name);
+        if (sat_status_get_result (&status) == false)
+        {
+            fprintf (stderr, "Failed to add interest '%s': %s\n", interest_name, sat_status_get_motive (&status));
+            return EXIT_FAILURE;
+        }
     }
 
     status = sat_discovery_start (&discovery);
