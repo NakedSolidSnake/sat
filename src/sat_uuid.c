@@ -66,3 +66,24 @@ bool sat_uuid_bin_to_string (const uuid_binary_t uuid_bin, uuid_string_t uuid_st
 
     return true;
 }
+
+bool sat_uuid_compare_bin (const uuid_binary_t uuid1, const uuid_binary_t uuid2)
+{
+    return uuid_compare (uuid1, uuid2) == 0;
+}
+
+bool sat_uuid_compare_string (const uuid_string_t uuid1, const uuid_string_t uuid2, sat_uuid_format_t format)
+{
+    bool status = true;
+
+    for (int i = 0; i < SAT_UUID_STRING_SIZE; i++)
+    {
+        if (uuid1 [i] != uuid2 [i])
+        {
+            status = false;
+            break;
+        }
+    }
+
+    return status;
+}
