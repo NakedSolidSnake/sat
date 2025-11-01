@@ -4,10 +4,11 @@
 #include <sat_time.h>
 #include <stddef.h>
 #include <endian.h>
+#include <stdio.h>
 
 #define SAT_DISCOVERY_FRAME_VERSION 1 
 
-sat_status_t sat_discover_frame_create (sat_discovery_frame_t *const object, sat_discovery_frame_args_t *args)
+sat_status_t sat_discovery_frame_create (sat_discovery_frame_t *const object, sat_discovery_frame_args_t *args)
 {
     sat_status_t status;
 
@@ -36,8 +37,8 @@ sat_status_t sat_discover_frame_create (sat_discovery_frame_t *const object, sat
         switch (args->type)
         {
             case sat_discovery_frame_type_announce:
-                object->payload.announce.service_port = args->service_port;
-                object->payload.announce.address = args->address;
+                // object->payload.announce.service_port = args->service_port;
+                // object->payload.announce.address = args->address;
                 strncpy (object->payload.announce.service_name, args->service_name, SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE - 1);
                 object->payload.announce.service_name [SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE - 1] = '\0';
                 break;
@@ -47,16 +48,16 @@ sat_status_t sat_discover_frame_create (sat_discovery_frame_t *const object, sat
                 object->payload.interest.service_name [SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE - 1] = '\0';
                 break;
 
-            case sat_discovery_frame_type_heartbeat:
-                strncpy (object->payload.heartbeat.service_name, args->service_name, SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE - 1);
-                object->payload.heartbeat.service_name [SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE - 1] = '\0';
-                object->payload.heartbeat.timestamp = sat_time_get_epoch_now_ms ();
-                break;
+            // case sat_discovery_frame_type_heartbeat:
+            //     strncpy (object->payload.heartbeat.service_name, args->service_name, SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE - 1);
+            //     object->payload.heartbeat.service_name [SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE - 1] = '\0';
+            //     object->payload.heartbeat.timestamp = sat_time_get_epoch_now_ms ();
+            //     break;
 
-            case sat_discovery_frame_type_vanish:
-                strncpy (object->payload.vanish.service_name, args->service_name, SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE - 1);
-                object->payload.vanish.service_name [SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE - 1] = '\0';
-                break;
+            // case sat_discovery_frame_type_vanish:
+            //     strncpy (object->payload.vanish.service_name, args->service_name, SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE - 1);
+            //     object->payload.vanish.service_name [SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE - 1] = '\0';
+            //     break;
 
             default:
                 sat_status_failure (&status, "Invalid frame type");
@@ -70,7 +71,7 @@ sat_status_t sat_discover_frame_create (sat_discovery_frame_t *const object, sat
     return status;
 }
 
-sat_status_t sat_discover_frame_pack (const sat_discovery_frame_t *const object, sat_discovery_frame_buffer_t *const buffer)
+sat_status_t sat_discovery_frame_pack (const sat_discovery_frame_t *const object, sat_discovery_frame_buffer_t buffer)
 {
     sat_status_t status;
 
@@ -95,32 +96,39 @@ sat_status_t sat_discover_frame_pack (const sat_discovery_frame_t *const object,
             sat_status_failure (&status, "Frame size exceeds buffer capacity");
             break;
         }
+        
+        buffer [0] = object->header.version;
+        buffer [1] = object->header.type;
+        memcpy (&buffer [2], object->header.uuid, SAT_UUID_BINARY_SIZE);
 
         // Copy the frame data into the buffer
-        memcpy (buffer->data, object, sizeof (sat_discovery_frame_t));
+        // memcpy (buffer->data, object, sizeof (sat_discovery_frame_t));
 
         // Convert multi-byte fields to network byte order
-        uint16_t *service_port_ptr = NULL;
-        uint32_t *address_ptr = NULL;
-        uint64_t *timestamp_ptr = NULL;
+        // uint16_t *service_port_ptr = NULL;
+        // uint32_t *address_ptr = NULL;
+        // uint64_t *timestamp_ptr = NULL;
 
         switch (object->header.type)
         {
             case sat_discovery_frame_type_announce:
-                service_port_ptr = (uint16_t *) &buffer->data[sizeof (sat_discovery_frame_header_t) + offsetof (sat_discovery_frame_announce_t, service_port)];
-                *service_port_ptr = htons (*service_port_ptr);
+                memcpy (&buffer [sizeof (sat_discovery_frame_header_t)], object->payload.announce.service_name, SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE);
+                // service_port_ptr = (uint16_t *) &buffer [sizeof (sat_discovery_frame_header_t) + offsetof (sat_discovery_frame_announce_t, service_port)];
+                // *service_port_ptr = htons (*service_port_ptr);
 
-                address_ptr = (uint32_t *) &buffer->data[sizeof (sat_discovery_frame_header_t) + offsetof (sat_discovery_frame_announce_t, address)];
-                *address_ptr = htonl (*address_ptr);
+                // address_ptr = (uint32_t *) &buffer [sizeof (sat_discovery_frame_header_t) + offsetof (sat_discovery_frame_announce_t, address)];
+                // *address_ptr = htonl (*address_ptr);
                 break;
 
             case sat_discovery_frame_type_interest:
                 // No multi-byte fields to convert
+                memcpy (&buffer [sizeof (sat_discovery_frame_header_t)], object->payload.interest.service_name, SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE);
                 break;
 
             case sat_discovery_frame_type_heartbeat:
-                timestamp_ptr = (uint64_t *) &buffer->data[sizeof (sat_discovery_frame_header_t) + offsetof (sat_discovery_frame_heartbeat_t, timestamp)];
-                *timestamp_ptr = htobe64 (*timestamp_ptr);
+                be64toh (object->payload.heartbeat.timestamp);
+                // timestamp_ptr = (uint64_t *) &buffer [sizeof (sat_discovery_frame_header_t) + offsetof (sat_discovery_frame_heartbeat_t, timestamp)];
+                // *timestamp_ptr = htobe64 (*timestamp_ptr);
                 break;
 
             case sat_discovery_frame_type_vanish:
@@ -141,7 +149,7 @@ sat_status_t sat_discover_frame_pack (const sat_discovery_frame_t *const object,
     return status;
 }
 
-sat_status_t sat_discovery_frame_unpack (sat_discovery_frame_t *const object, const sat_discovery_frame_buffer_t *const buffer)
+sat_status_t sat_discovery_frame_unpack (sat_discovery_frame_t *const object, const sat_discovery_frame_buffer_t buffer)
 {
     sat_status_t status;
 
@@ -154,8 +162,12 @@ sat_status_t sat_discovery_frame_unpack (sat_discovery_frame_t *const object, co
         }
 
         // Copy the frame data from the buffer
-        memcpy (object, buffer->data, sizeof (sat_discovery_frame_t));
+        // memcpy (object, buffer->data, sizeof (sat_discovery_frame_t));
+        object->header.version = buffer [0];
+        object->header.type = buffer[1];
+        memcpy (object->header.uuid, &buffer [2], SAT_UUID_BINARY_SIZE);
 
+            
         // Validate frame version
         if (object->header.version != SAT_DISCOVERY_FRAME_VERSION)
         {
@@ -174,12 +186,14 @@ sat_status_t sat_discovery_frame_unpack (sat_discovery_frame_t *const object, co
         switch (object->header.type)
         {
             case sat_discovery_frame_type_announce:
+                strncpy (object->payload.announce.service_name, &buffer [18], SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE - 1);
                 object->payload.announce.service_port = ntohs (object->payload.announce.service_port);
                 object->payload.announce.address = ntohl (object->payload.announce.address);
                 break;
 
             case sat_discovery_frame_type_interest:
                 // No multi-byte fields to convert
+                strncpy (object->payload.interest.service_name, &buffer [18], SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE - 1);
                 break;
 
             case sat_discovery_frame_type_heartbeat:
@@ -208,11 +222,10 @@ sat_status_t sat_discovery_frame_unpack (sat_discovery_frame_t *const object, co
                 break;
 
             case sat_discovery_frame_type_heartbeat:
-                object->payload.heartbeat.service_name[SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE - 1] = '\0';
                 break;
 
             case sat_discovery_frame_type_vanish:
-                object->payload.vanish.service_name[SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE - 1] = '\0';
+                // object->payload.vanish.service_name[SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE - 1] = '\0';
                 break;
 
             default:
@@ -226,4 +239,44 @@ sat_status_t sat_discovery_frame_unpack (sat_discovery_frame_t *const object, co
     } while (false);
 
     return status;
+}
+
+void sat_discovery_frame_print (const sat_discovery_frame_t *const object)
+{
+    if (object == NULL)
+    {
+        printf ("Invalid frame object\n");
+        return;
+    }
+
+    printf ("Frame Version: %u\n", object->header.version);
+    printf ("Frame Type: %u\n", object->header.type);
+
+    char uuid_string[SAT_UUID_STRING_SIZE];
+    sat_uuid_bin_to_string (object->header.uuid, uuid_string, sat_uuid_format_lower_case);
+    printf ("UUID: %s\n", uuid_string);
+
+    switch (object->header.type)
+    {
+        case sat_discovery_frame_type_announce:
+            printf ("Service Name: %s\n", object->payload.announce.service_name);
+            printf ("Service Port: %u\n", object->payload.announce.service_port);
+            printf ("Address: %u\n", object->payload.announce.address);
+            break;
+
+        case sat_discovery_frame_type_interest:
+            printf ("Service Name: %s\n", object->payload.interest.service_name);
+            break;
+
+        case sat_discovery_frame_type_heartbeat:
+            printf ("Timestamp: %llu\n", (unsigned long long)object->payload.heartbeat.timestamp);
+            break;
+
+        case sat_discovery_frame_type_vanish:
+            break;
+
+        default:
+            printf ("Unknown frame type\n");
+            break;
+    }
 }

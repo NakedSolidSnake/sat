@@ -5,14 +5,14 @@ int main (int argc, char *argv[])
 {
     if (argc < 4)
     {
-        fprintf (stderr, "Usage: %s <name> <address> <service>\n", argv [0]);
+        fprintf (stderr, "Usage: %s <service_name> <address> <port>\n", argv [0]);
         return EXIT_FAILURE;
     }
     
     sat_discovery_t discovery;
     sat_discovery_args_t args = 
     {
-        .name = argv[1],
+        .service_name = argv [1],
         .channel = 
         {
             .service = argv [3],
