@@ -12,7 +12,7 @@ typedef struct
     char name [SAT_DISCOVERY_SERVICE_NAME + 1];
     char address [SAT_DISCOVERY_SERVICE_ADDRESS + 1];
     uint16_t port;
-    // uint32_t last_heartbeat;
+    uint32_t last_heartbeat;
 
 } sat_discovery_node_t;
 

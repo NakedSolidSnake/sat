@@ -16,6 +16,7 @@ typedef struct
     sat_udp_t udp;
     sat_scheduler_t scheduler;
     sat_set_t *interests;
+    sat_set_t *nodes;
     uuid_binary_t uuid;
     
     char service_name [SAT_DISCOVERY_SERVICE_NAME_MAX_LENGTH + 1];
