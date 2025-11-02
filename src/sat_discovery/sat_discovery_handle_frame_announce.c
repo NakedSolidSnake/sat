@@ -27,6 +27,7 @@ void sat_discovery_handle_frame_announce (sat_discovery_t *const service, sat_di
                 sat_discovery_node_t node;
                 sat_discovery_node_args_t node_args = 
                 {
+                    .uuid = &frame.header.uuid,
                     .name = frame.payload.announce.service_name,
                     .address = "", // TODO: get address from frame or UDP source
                     .port = frame.payload.announce.service_port
@@ -39,7 +40,7 @@ void sat_discovery_handle_frame_announce (sat_discovery_t *const service, sat_di
                     status = sat_set_add (service->nodes, &node);
                     if (sat_status_get_result (&status) == true)
                     {
-                        printf ("Registered discovery node: %s\n", node.name);
+                        // printf ("Registered discovery node: %s\n", node.name);
                         interest->registered = true;
                     }
                 }

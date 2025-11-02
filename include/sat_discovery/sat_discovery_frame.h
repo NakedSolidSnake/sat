@@ -48,7 +48,7 @@ typedef struct __attribute__ ((packed))
 
 typedef struct __attribute__ ((packed))
 {
-    uint64_t timestamp;
+    char service_name [SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE];
 } sat_discovery_frame_heartbeat_t;
 
 typedef struct __attribute__ ((packed))
@@ -76,7 +76,7 @@ typedef struct __attribute__ ((packed))
     uuid_binary_t *uuid;
     char *service_name;
     uint16_t service_port;
-    uint32_t address;    
+    uint32_t address;
     
 } sat_discovery_frame_args_t;
 
@@ -86,6 +86,6 @@ sat_status_t sat_discovery_frame_create (sat_discovery_frame_t *const object, sa
 sat_status_t sat_discovery_frame_pack (const sat_discovery_frame_t *const object, sat_discovery_frame_buffer_t buffer);
 sat_status_t sat_discovery_frame_unpack (sat_discovery_frame_t *const object, const sat_discovery_frame_buffer_t buffer);
 
-void sat_discovery_frame_print (const sat_discovery_frame_t *const object);
+void sat_discovery_frame_debug (const sat_discovery_frame_t *const object);
 
 #endif /* SAT_DISCOVERY_FRAME_H */

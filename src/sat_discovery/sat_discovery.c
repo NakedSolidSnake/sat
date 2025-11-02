@@ -38,7 +38,7 @@ static void sat_discovery_on_receive (char *buffer, uint32_t *size, void *data)
 
     sat_discovery_frame_t frame;
 
-    sat_discovery_frame_unpack (&frame, (sat_discovery_frame_buffer_t *)&buffer[0]);
+    sat_discovery_frame_unpack (&frame, (uint8_t *)buffer);
 
     // sat_discovery_frame_print (&frame);
 
@@ -284,7 +284,7 @@ static sat_status_t sat_discovery_scheduler_setup (sat_discovery_t *object)
                                                 .object = object,
                                                 .handler = (sat_scheduler_handler_t)sat_discovery_service_heartbeat,
                                                 .ran = false,
-                                                .timeout = 1000
+                                                .timeout = 5000
                                              });
         if (sat_status_get_result (&status) == false)
         {

@@ -44,6 +44,7 @@ sat_status_t sat_discovery_frame_create (sat_discovery_frame_t *const object, sa
                 break;
 
             case sat_discovery_frame_type_interest:
+            case sat_discovery_frame_type_heartbeat:
                 strncpy (object->payload.interest.service_name, args->service_name, SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE - 1);
                 object->payload.interest.service_name [SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE - 1] = '\0';
                 break;
@@ -126,7 +127,8 @@ sat_status_t sat_discovery_frame_pack (const sat_discovery_frame_t *const object
                 break;
 
             case sat_discovery_frame_type_heartbeat:
-                be64toh (object->payload.heartbeat.timestamp);
+                memcpy (&buffer [sizeof (sat_discovery_frame_header_t)], object->payload.heartbeat.service_name, SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE);
+                // be64toh (object->payload.heartbeat.timestamp);
                 // timestamp_ptr = (uint64_t *) &buffer [sizeof (sat_discovery_frame_header_t) + offsetof (sat_discovery_frame_heartbeat_t, timestamp)];
                 // *timestamp_ptr = htobe64 (*timestamp_ptr);
                 break;
@@ -186,18 +188,19 @@ sat_status_t sat_discovery_frame_unpack (sat_discovery_frame_t *const object, co
         switch (object->header.type)
         {
             case sat_discovery_frame_type_announce:
-                strncpy (object->payload.announce.service_name, &buffer [18], SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE - 1);
+                strncpy (object->payload.announce.service_name, (const char *)&buffer [18], SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE - 1);
                 object->payload.announce.service_port = ntohs (object->payload.announce.service_port);
                 object->payload.announce.address = ntohl (object->payload.announce.address);
                 break;
 
+            case sat_discovery_frame_type_heartbeat:
             case sat_discovery_frame_type_interest:
                 // No multi-byte fields to convert
-                strncpy (object->payload.interest.service_name, &buffer [18], SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE - 1);
+                strncpy (object->payload.interest.service_name, (const char *)&buffer [18], SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE - 1);
                 break;
 
-            case sat_discovery_frame_type_heartbeat:
-                object->payload.heartbeat.timestamp = be64toh (object->payload.heartbeat.timestamp);
+            // case sat_discovery_frame_type_heartbeat:
+                // object->payload.heartbeat.timestamp = be64toh (object->payload.heartbeat.timestamp);
                 break;
 
             case sat_discovery_frame_type_vanish:
@@ -241,7 +244,7 @@ sat_status_t sat_discovery_frame_unpack (sat_discovery_frame_t *const object, co
     return status;
 }
 
-void sat_discovery_frame_print (const sat_discovery_frame_t *const object)
+void sat_discovery_frame_debug (const sat_discovery_frame_t *const object)
 {
     if (object == NULL)
     {
@@ -253,7 +256,7 @@ void sat_discovery_frame_print (const sat_discovery_frame_t *const object)
     printf ("Frame Type: %u\n", object->header.type);
 
     char uuid_string[SAT_UUID_STRING_SIZE];
-    sat_uuid_bin_to_string (object->header.uuid, uuid_string, sat_uuid_format_lower_case);
+    sat_uuid_bin_to_string (object->header.uuid, uuid_string, sat_uuid_format_upper_case);
     printf ("UUID: %s\n", uuid_string);
 
     switch (object->header.type)
@@ -264,13 +267,18 @@ void sat_discovery_frame_print (const sat_discovery_frame_t *const object)
             printf ("Address: %u\n", object->payload.announce.address);
             break;
 
+        case sat_discovery_frame_type_heartbeat:
+            printf ("Service Name: %s\n", object->payload.heartbeat.service_name);
+            // printf ("Timestamp: %llu\n", (unsigned long long)object->payload.heartbeat.timestamp);
+            break;
+
         case sat_discovery_frame_type_interest:
             printf ("Service Name: %s\n", object->payload.interest.service_name);
             break;
 
-        case sat_discovery_frame_type_heartbeat:
-            printf ("Timestamp: %llu\n", (unsigned long long)object->payload.heartbeat.timestamp);
-            break;
+        // case sat_discovery_frame_type_heartbeat:
+            // printf ("Timestamp: %llu\n", (unsigned long long)object->payload.heartbeat.timestamp);
+            // break;
 
         case sat_discovery_frame_type_vanish:
             break;

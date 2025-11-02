@@ -4,6 +4,8 @@
 #include <sat_time.h>
 #include <sat_iterator.h>
 #include <sat_discovery_interest.h>
+#include <stdio.h>
+#include <string.h>
 
 #define SAT_DISCOVERY_NODE_HEARTBEAT_TIMEOUT_S 10
 
