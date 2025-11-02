@@ -257,7 +257,7 @@ static sat_status_t sat_discovery_scheduler_setup (sat_discovery_t *object)
                                                 .name = "discovery announce",
                                                 .object = object,
                                                 .handler = (sat_scheduler_handler_t)sat_discovery_service_announce,
-                                                .ran = false,
+                                                .type = sat_scheduler_type_periodic,
                                                 .timeout = 500
                                              });
         if (sat_status_get_result (&status) == false)
@@ -270,7 +270,7 @@ static sat_status_t sat_discovery_scheduler_setup (sat_discovery_t *object)
                                                 .name = "discovery scan",
                                                 .object = object,
                                                 .handler = (sat_scheduler_handler_t)sat_discovery_service_scan,
-                                                .ran = false,
+                                                .type = sat_scheduler_type_periodic,
                                                 .timeout = 100
                                              });
         if (sat_status_get_result (&status) == false)
@@ -283,7 +283,7 @@ static sat_status_t sat_discovery_scheduler_setup (sat_discovery_t *object)
                                                 .name = "discovery heartbeat",
                                                 .object = object,
                                                 .handler = (sat_scheduler_handler_t)sat_discovery_service_heartbeat,
-                                                .ran = false,
+                                                .type = sat_scheduler_type_periodic,
                                                 .timeout = 5000
                                              });
         if (sat_status_get_result (&status) == false)
@@ -296,7 +296,7 @@ static sat_status_t sat_discovery_scheduler_setup (sat_discovery_t *object)
                                                 .name = "discovery interest",
                                                 .object = object,
                                                 .handler = (sat_scheduler_handler_t)sat_discovery_service_interest,
-                                                .ran = false,
+                                                .type = sat_scheduler_type_periodic,
                                                 .timeout = 1000
                                              });
 
@@ -310,7 +310,7 @@ static sat_status_t sat_discovery_scheduler_setup (sat_discovery_t *object)
                                                 .name = "discovery ageing",
                                                 .object = object,
                                                 .handler = (sat_scheduler_handler_t)sat_discovery_service_node_ageing,
-                                                .ran = false,
+                                                .type = sat_scheduler_type_periodic,
                                                 .timeout = 1000
                                              });
 

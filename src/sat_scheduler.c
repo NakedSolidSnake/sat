@@ -97,6 +97,20 @@ sat_status_t sat_scheduler_is_running (sat_scheduler_t *object)
     return status;
 }
 
+sat_status_t sat_scheduler_get_amount (sat_scheduler_t *object, uint16_t *amount)
+{
+    sat_status_t status = sat_status_set (&status, false, "sat scheduler get amount error");
+
+    if (object != NULL && amount != NULL)
+    {
+        sat_set_get_size (object->set, (uint32_t *)amount);
+
+        sat_status_set (&status, true, "");
+    }
+
+    return status;
+}
+
 sat_status_t sat_scheduler_close (sat_scheduler_t *object)
 {
     sat_status_t status = sat_status_set (&status, false, "sat scheduler close error");
@@ -172,6 +186,15 @@ static void *sat_scheduler_main_handler (void *parameters)
             if (current > (event.timeout + event.last_update))
             {
                 event.handler (event.object);
+
+                if (event.type == sat_scheduler_type_one_shot)
+                {
+                    sat_set_remove_by (object->set, i);
+                    sat_set_get_size (object->set, &size);
+
+                    continue;
+                }
+
                 event.last_update = sat_time_get_epoch_now_ms ();
                 sat_set_update_by (object->set, &event, i);
             }
