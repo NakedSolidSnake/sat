@@ -21,6 +21,7 @@ typedef struct
     {
         sat_udp_event_t on_receive;
         sat_udp_event_t on_send;
+        sat_udp_multicast_event_t on_multicast_join;
     } events;
 
     void *data;

@@ -9,6 +9,12 @@
 
 #define BUFFER_SIZE     1024
 
+void on_multicast_join (void *data)
+{
+    (void)data;
+    puts ("Joined to multicast group");
+}
+
 void on_receive (char *buffer, uint32_t *size, void *data)
 {
     (void)size;
@@ -60,7 +66,8 @@ int main (int argc, char *argv[])
             .events = 
             {
                 .on_receive = on_receive,
-                .on_send = on_send
+                .on_send = on_send,
+                .on_multicast_join = on_multicast_join,
             },
             .type = type,
             .mode = sat_udp_server_mode_multicast,
