@@ -5,6 +5,7 @@
 #include <sat_udp.h>
 #include <sat_scheduler.h>
 #include <sat_set.h>
+#include <sat_uuid.h>
 
 #define SAT_DISCOVERY_SERVICE_NAME_MAX_LENGTH 128
 #define SAT_DISCOVERY_ADDRESS_MAX_LENGTH 64
@@ -14,7 +15,9 @@ typedef struct
 {
     sat_udp_t udp;
     sat_scheduler_t scheduler;
-    sat_set_t *set;
+    sat_set_t *interests;
+    sat_set_t *nodes;
+    uuid_binary_t uuid;
     
     char service_name [SAT_DISCOVERY_SERVICE_NAME_MAX_LENGTH + 1];
 
@@ -28,7 +31,7 @@ typedef struct
 
 typedef struct
 {
-    char *name;
+    char *service_name;
     struct 
     {
         char *service;
@@ -40,7 +43,7 @@ typedef struct
 sat_status_t sat_discovery_init (sat_discovery_t *object);
 sat_status_t sat_discovery_open (sat_discovery_t *object, sat_discovery_args_t *args);
 
-sat_status_t sat_discovery_add_interest (sat_discovery_t *object, const char *name);
+sat_status_t sat_discovery_add_interest (sat_discovery_t *object, const char *service_name);
 
 sat_status_t sat_discovery_start (sat_discovery_t *object);
 sat_status_t sat_discovery_stop (sat_discovery_t *object);

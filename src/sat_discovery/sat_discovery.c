@@ -5,6 +5,11 @@
 #include <sat_discovery_interest.h>
 #include <sat_iterator.h>
 #include <sat_discovery_frame.h>
+#include <sat_discovery_node.h>
+#include <sat_time.h>
+#include <sat_discovery_services.h>
+#include <sat_discovery_handle_frames.h>
+
 
 static sat_status_t sat_discovery_is_args_valid (sat_discovery_args_t *args);
 static sat_status_t sat_discovery_server_setup (sat_discovery_t *object, sat_discovery_args_t *args);
@@ -26,41 +31,41 @@ static bool sat_discovery_is_equal (void *element, void *new_element)
     return status;
 }
 
-static void sat_discovery_scan (void *object);
-static void sat_discovery_announce (void *object);
-static void sat_discovery_heartbeat (void *object);
-static void sat_discovery_interest (void *object);
-
 static void sat_discovery_on_receive (char *buffer, uint32_t *size, void *data)
 {
-    (void)buffer;
     (void)size;
     sat_discovery_t *service = (sat_discovery_t *)data;
 
     sat_discovery_frame_t frame;
-    sat_discovery_frame_buffer_t frame_buffer;
 
-    sat_status_t status = sat_discovery_frame_unpack (&frame, (sat_discovery_frame_buffer_t *)buffer);
+    sat_discovery_frame_unpack (&frame, (uint8_t *)buffer);
 
-    
-    if (frame.header.type == sat_discovery_frame_type_announce)
+    // sat_discovery_frame_print (&frame);
+
+    if (sat_uuid_compare_bin (frame.header.uuid, service->uuid) == true )
     {
-        printf ("Discovery announce received: %.*s\n", *size, buffer);
+        return; // Ignore messages from itself
+    }
+
+    // Ignores the same service announcements    
+    if (frame.header.type == sat_discovery_frame_type_announce &&
+        strcmp (frame.payload.announce.service_name, service->service_name) != 0)
+    {
+        sat_discovery_handle_frame_announce (service, frame);
     }
     else if (frame.header.type == sat_discovery_frame_type_heartbeat)
     {
-        printf ("Discovery heartbeat received: %.*s\n", *size, buffer);
+        sat_discovery_handle_frame_heartbeat (service, frame);
     }
     else if (frame.header.type == sat_discovery_frame_type_interest)
     {
-        printf ("Discovery interest received: %.*s\n", *size, buffer);
+        sat_discovery_handle_frame_interest (service, frame);
     }
 
-    if (strcmp (buffer, service->service_name) == 0)
-        return; // Ignore messages from itself
-
-    // Handle received discovery message
-    printf ("Discovery message received: %.*s\n", *size, buffer);
+     else if (frame.header.type == sat_discovery_frame_type_vanish)
+    {
+        sat_discovery_handle_frame_vanish (service, frame);
+    }
 }
 
 sat_status_t sat_discovery_init (sat_discovery_t *object)
@@ -101,47 +106,61 @@ sat_status_t sat_discovery_open (sat_discovery_t *object, sat_discovery_args_t *
             break;
         }
 
-        status = sat_set_create (&object->set, &(sat_set_args_t)
-                                        {
-                                            .size = 10,
-                                            .object_size = sizeof (sat_discovery_interest_t),
-                                            .is_equal = sat_discovery_is_equal,
-                                            .mode = sat_set_mode_dynamic
-                                        });
+        status = sat_set_create (&object->interests, &(sat_set_args_t)
+                                {
+                                    .size = 10,
+                                    .object_size = sizeof (sat_discovery_interest_t),
+                                    .is_equal = sat_discovery_is_equal,
+                                    .mode = sat_set_mode_dynamic
+                                });
         if (sat_status_get_result (&status) == false)
         {
             break;
         }
 
-        strncpy (object->service_name, args->name, SAT_DISCOVERY_SERVICE_NAME_MAX_LENGTH);
+        status = sat_set_create (&object->nodes, &(sat_set_args_t)
+                                {
+                                    .size = 10,
+                                    .object_size = sizeof (sat_discovery_node_t),
+                                    .is_equal = sat_discovery_is_equal,
+                                    .mode = sat_set_mode_dynamic
+                                });
+        if (sat_status_get_result (&status) == false)
+        {
+            break;
+        }
+
+        strncpy (object->service_name, args->service_name, SAT_DISCOVERY_SERVICE_NAME_MAX_LENGTH);
         strncpy (object->channel.service, args->channel.service, SAT_DISCOVERY_SERVICE_MAX_LENGTH);
         strncpy (object->channel.address, args->channel.address, SAT_DISCOVERY_ADDRESS_MAX_LENGTH);
+
+        sat_uuid_generate_bin (object->uuid);
 
     } while (false);
 
     return status;
 }
 
-sat_status_t sat_discovery_add_interest (sat_discovery_t *object, const char *name)
+sat_status_t sat_discovery_add_interest (sat_discovery_t *object, const char *service_name)
 {
     sat_status_t status = sat_status_set (&status, false, "sat discovery add interest error");
 
     do
     {
-        if (object == NULL || name == NULL)
+        if (object == NULL || service_name == NULL)
         {
             sat_status_set (&status, false, "Invalid parameters");
             break;
         }
 
         sat_discovery_interest_t interest;
-        status = sat_discovery_interest_create (&interest, name);
+        status = sat_discovery_interest_create (&interest, service_name);
         if (sat_status_get_result (&status) == false)
         {
             break;
         }
 
-        status = sat_set_add (object->set, &interest);
+        status = sat_set_add (object->interests, &interest);
 
     } while (false);
 
@@ -228,7 +247,7 @@ static sat_status_t sat_discovery_scheduler_setup (sat_discovery_t *object)
 
     do
     {
-        status = sat_scheduler_open (&object->scheduler, &(sat_scheduler_args_t){.event_amount = 4});
+        status = sat_scheduler_open (&object->scheduler, &(sat_scheduler_args_t){.event_amount = 5});
         if (sat_status_get_result (&status) == false)
         {
             break;
@@ -237,7 +256,7 @@ static sat_status_t sat_discovery_scheduler_setup (sat_discovery_t *object)
                                              {
                                                 .name = "discovery announce",
                                                 .object = object,
-                                                .handler = (sat_scheduler_handler_t)sat_discovery_announce,
+                                                .handler = (sat_scheduler_handler_t)sat_discovery_service_announce,
                                                 .ran = false,
                                                 .timeout = 500
                                              });
@@ -250,7 +269,7 @@ static sat_status_t sat_discovery_scheduler_setup (sat_discovery_t *object)
                                              {
                                                 .name = "discovery scan",
                                                 .object = object,
-                                                .handler = (sat_scheduler_handler_t)sat_discovery_scan,
+                                                .handler = (sat_scheduler_handler_t)sat_discovery_service_scan,
                                                 .ran = false,
                                                 .timeout = 100
                                              });
@@ -263,9 +282,9 @@ static sat_status_t sat_discovery_scheduler_setup (sat_discovery_t *object)
                                              {
                                                 .name = "discovery heartbeat",
                                                 .object = object,
-                                                .handler = (sat_scheduler_handler_t)sat_discovery_heartbeat,
+                                                .handler = (sat_scheduler_handler_t)sat_discovery_service_heartbeat,
                                                 .ran = false,
-                                                .timeout = 1000
+                                                .timeout = 5000
                                              });
         if (sat_status_get_result (&status) == false)
         {
@@ -276,7 +295,21 @@ static sat_status_t sat_discovery_scheduler_setup (sat_discovery_t *object)
                                              {
                                                 .name = "discovery interest",
                                                 .object = object,
-                                                .handler = (sat_scheduler_handler_t)sat_discovery_interest,
+                                                .handler = (sat_scheduler_handler_t)sat_discovery_service_interest,
+                                                .ran = false,
+                                                .timeout = 1000
+                                             });
+
+        if (sat_status_get_result (&status) == false)
+        {
+            break;
+        }
+
+        status = sat_scheduler_add_event (&object->scheduler, &(sat_scheduler_event_t)
+                                             {
+                                                .name = "discovery ageing",
+                                                .object = object,
+                                                .handler = (sat_scheduler_handler_t)sat_discovery_service_node_ageing,
                                                 .ran = false,
                                                 .timeout = 1000
                                              });
@@ -286,52 +319,3 @@ static sat_status_t sat_discovery_scheduler_setup (sat_discovery_t *object)
     return status;
 }
 
-static void sat_discovery_scan (void *object)
-{
-    sat_discovery_t *discovery = (sat_discovery_t *)object;
-
-    sat_udp_run (&discovery->udp);
-}
-
-static void sat_discovery_announce (void *object)
-{
-    sat_discovery_t *discovery = (sat_discovery_t *)object;
-
-    sat_udp_send (&discovery->udp, discovery->service_name, strlen (discovery->service_name), &(sat_udp_destination_t)
-                                                                          {
-                                                                            .hostname = discovery->channel.address,
-                                                                            .service = discovery->channel.service
-                                                                          });
-}
-
-static void sat_discovery_heartbeat (void *object)
-{
-    sat_discovery_t *discovery = (sat_discovery_t *)object;
-
-
-
-
-}
-
-static void sat_discovery_interest (void *object)
-{
-    sat_discovery_t *discovery = (sat_discovery_t *)object;
-
-    sat_iterator_t iterator;
-
-    sat_status_t status = sat_iterator_open (&iterator, (sat_iterator_base_t *)discovery->set);
-    if (sat_status_get_result (&status) == true)
-    {
-        sat_discovery_interest_t *interest = sat_iterator_next (&iterator);
-        while (interest != NULL)
-        {
-            // Send interest message
-            sat_udp_send (&discovery->udp, interest->name, strlen (interest->name), &(sat_udp_destination_t)
-                                                                              {
-                                                                                .hostname = discovery->channel.address,
-                                                                                .service = discovery->channel.service
-                                                                              });
-            interest = sat_iterator_next (&iterator);
-        }
-    }
-}
