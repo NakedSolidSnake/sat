@@ -9,6 +9,7 @@
 #include <sat_time.h>
 #include <sat_discovery_services.h>
 #include <sat_discovery_handle_frames.h>
+#include <unistd.h>
 
 
 static sat_status_t sat_discovery_is_args_valid (sat_discovery_args_t *args);
@@ -186,7 +187,11 @@ sat_status_t sat_discovery_stop (sat_discovery_t *object)
     if (object != NULL )
     {
         // Stop the discovery process
+        sat_discovery_service_vanish (object);
+
         status = sat_scheduler_stop (&object->scheduler);
+
+        sleep (1); // Wait a moment to ensure all messages are sent
     }
 
     return status;
@@ -257,8 +262,8 @@ static sat_status_t sat_discovery_scheduler_setup (sat_discovery_t *object)
                                                 .name = "discovery announce",
                                                 .object = object,
                                                 .handler = (sat_scheduler_handler_t)sat_discovery_service_announce,
-                                                .type = sat_scheduler_type_periodic,
-                                                .timeout = 500
+                                                .type = sat_scheduler_type_one_shot,
+                                                .timeout = 10
                                              });
         if (sat_status_get_result (&status) == false)
         {
