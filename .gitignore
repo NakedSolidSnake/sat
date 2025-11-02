@@ -1,5 +1,5 @@
 build
-.vscode
+.vscode/settings.json
 database
 *.db
 *.log

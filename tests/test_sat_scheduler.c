@@ -21,7 +21,7 @@ int main (int argc, char *argv [])
                                             .name = "counter",
                                             .object = &scheduler,
                                             .handler = sat_scheduler_handler_counter,
-                                            .ran = false,
+                                            .type = sat_scheduler_type_periodic,
                                             .timeout = 10
                                          });
     assert (sat_status_get_result (&status) == true);
@@ -31,13 +31,30 @@ int main (int argc, char *argv [])
                                             .name = "counter fast",
                                             .object = &scheduler,
                                             .handler = sat_scheduler_handler_counter_fast,
-                                            .ran = false,
+                                            .type = sat_scheduler_type_periodic,
+                                            .timeout = 1
+                                         });
+    assert (sat_status_get_result (&status) == true);
+
+    sat_scheduler_add_event (&scheduler, &(sat_scheduler_event_t)
+                                         {
+                                            .name = "counter one shot",
+                                            .object = &scheduler,
+                                            .handler = sat_scheduler_handler_counter_fast,
+                                            .type = sat_scheduler_type_one_shot,
                                             .timeout = 1
                                          });
     assert (sat_status_get_result (&status) == true);
 
     status = sat_scheduler_start (&scheduler);
     assert (sat_status_get_result (&status) == true);
+
+     sleep (1);
+
+    uint16_t amount = 0;
+    sat_scheduler_get_amount (&scheduler, &amount);
+
+    assert (amount == 2);
 
     do
     {
