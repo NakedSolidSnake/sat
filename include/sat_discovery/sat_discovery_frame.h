@@ -53,6 +53,11 @@ typedef struct __attribute__ ((packed))
 
 typedef struct __attribute__ ((packed))
 {
+    char service_name [SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE];
+} sat_discovery_frame_vanish_t;
+
+typedef struct __attribute__ ((packed))
+{
     sat_discovery_frame_header_t header;
     
     union
@@ -60,7 +65,7 @@ typedef struct __attribute__ ((packed))
         sat_discovery_frame_announce_t announce;
         sat_discovery_frame_interest_t interest;
         sat_discovery_frame_heartbeat_t heartbeat;
-        // sat_discovery_frame_vanish_t vanish;
+        sat_discovery_frame_vanish_t vanish;
     } payload;
     
 } sat_discovery_frame_t;
