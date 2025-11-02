@@ -43,6 +43,7 @@ list (APPEND SAT_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/sat_uuid.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_iterator.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_process/sat_process.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_process/sat_process_monitor.c
+                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_network.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_interest.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_frame.c

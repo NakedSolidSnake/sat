@@ -20,6 +20,7 @@ create_test (test_sat_channel)
 create_test (test_sat_shared_memory)
 create_test (test_sat_queue_ipc)
 create_test (test_sat_iterator)
+create_test (test_sat_network)
 
 
 add_subdirectory (test_sat_array)
