@@ -22,6 +22,12 @@ typedef enum
     sat_scheduler_mode_dynamic,
 } sat_scheduler_mode_t;
 
+typedef enum
+{
+    sat_scheduler_type_periodic,
+    sat_scheduler_type_one_shot,
+} sat_scheduler_type_t;
+
 typedef struct
 {
     uint16_t event_amount;
@@ -33,9 +39,9 @@ typedef struct
     void *object;
     char *name;
     sat_scheduler_handler_t handler;
+    sat_scheduler_type_t type;
     uint64_t timeout;
     uint64_t last_update;
-    bool ran;
 } sat_scheduler_event_t;
 
 sat_status_t sat_scheduler_init (sat_scheduler_t *object);
@@ -44,6 +50,7 @@ sat_status_t sat_scheduler_add_event (sat_scheduler_t *object, sat_scheduler_eve
 sat_status_t sat_scheduler_start (sat_scheduler_t *object);
 sat_status_t sat_scheduler_stop (sat_scheduler_t *object);
 sat_status_t sat_scheduler_is_running (sat_scheduler_t *object);
+sat_status_t sat_scheduler_get_amount (sat_scheduler_t *object, uint16_t *amount);
 sat_status_t sat_scheduler_close (sat_scheduler_t *object);
 
 
