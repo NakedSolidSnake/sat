@@ -6,6 +6,7 @@
 #define SAT_UDP_HOSTNAME_SIZE       1024
 
 typedef void (*sat_udp_event_t) (char *buffer, uint32_t *size, void *data);
+typedef void (*sat_udp_multicast_event_t) (void *data);
 
 typedef enum 
 {
@@ -42,6 +43,8 @@ typedef struct
     {
         sat_udp_event_t on_receive;
         sat_udp_event_t on_send;
+        sat_udp_multicast_event_t on_multicast_join;
+        // sat_udp_multicast_event_t on_multicast_leave;
         
     } events;
 

@@ -30,6 +30,7 @@ static void sat_udp_server_abstract_copy_to_context (sat_udp_server_abstract_t *
     object->service = args->service;
     object->events.on_receive = args->events.on_receive;
     object->events.on_send = args->events.on_send;
+    object->events.on_multicast_join = args->events.on_multicast_join;
     object->data = args->data;
 }
 
@@ -72,10 +73,10 @@ sat_status_t sat_udp_server_abstract_open (sat_udp_server_abstract_t *object, sa
             break;
         }
 
+        sat_udp_server_abstract_copy_to_context (object, args);
+
         status = sat_udp_server_abstract_multicast_enable (object, args);
         
-
-        sat_udp_server_abstract_copy_to_context (object, args);
 
     } while (false);
 
@@ -211,6 +212,10 @@ static sat_status_t sat_udp_server_abstract_try_enable_multicast_ipv4 (sat_udp_s
 
             if (setsockopt (object->socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&mreq, sizeof (mreq)) == 0)
             {
+                if (object->events.on_multicast_join != NULL)
+                {
+                    object->events.on_multicast_join (object->data);
+                }
                 sat_status_set (&status, true, "");
             }
         }
@@ -237,6 +242,11 @@ static sat_status_t sat_udp_server_abstract_try_enable_multicast_ipv6 (sat_udp_s
 
         if (setsockopt (object->socket, IPPROTO_IPV6, IPV6_ADD_MEMBERSHIP, &mreq, sizeof (mreq)) == 0)
         {
+            if (object->events.on_multicast_join != NULL)
+            {
+                object->events.on_multicast_join (object->data);
+            }
+
             sat_status_set (&status, true, "");
         }
     }
