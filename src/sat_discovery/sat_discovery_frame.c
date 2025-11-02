@@ -45,20 +45,10 @@ sat_status_t sat_discovery_frame_create (sat_discovery_frame_t *const object, sa
 
             case sat_discovery_frame_type_interest:
             case sat_discovery_frame_type_heartbeat:
+            case sat_discovery_frame_type_vanish:
                 strncpy (object->payload.interest.service_name, args->service_name, SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE - 1);
                 object->payload.interest.service_name [SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE - 1] = '\0';
                 break;
-
-            // case sat_discovery_frame_type_heartbeat:
-            //     strncpy (object->payload.heartbeat.service_name, args->service_name, SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE - 1);
-            //     object->payload.heartbeat.service_name [SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE - 1] = '\0';
-            //     object->payload.heartbeat.timestamp = sat_time_get_epoch_now_ms ();
-            //     break;
-
-            // case sat_discovery_frame_type_vanish:
-            //     strncpy (object->payload.vanish.service_name, args->service_name, SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE - 1);
-            //     object->payload.vanish.service_name [SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE - 1] = '\0';
-            //     break;
 
             default:
                 sat_status_failure (&status, "Invalid frame type");
@@ -102,39 +92,25 @@ sat_status_t sat_discovery_frame_pack (const sat_discovery_frame_t *const object
         buffer [1] = object->header.type;
         memcpy (&buffer [2], object->header.uuid, SAT_UUID_BINARY_SIZE);
 
-        // Copy the frame data into the buffer
-        // memcpy (buffer->data, object, sizeof (sat_discovery_frame_t));
-
-        // Convert multi-byte fields to network byte order
-        // uint16_t *service_port_ptr = NULL;
-        // uint32_t *address_ptr = NULL;
-        // uint64_t *timestamp_ptr = NULL;
-
         switch (object->header.type)
         {
             case sat_discovery_frame_type_announce:
                 memcpy (&buffer [sizeof (sat_discovery_frame_header_t)], object->payload.announce.service_name, SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE);
+                // Convert service_port and address to network byte order
                 // service_port_ptr = (uint16_t *) &buffer [sizeof (sat_discovery_frame_header_t) + offsetof (sat_discovery_frame_announce_t, service_port)];
-                // *service_port_ptr = htons (*service_port_ptr);
-
-                // address_ptr = (uint32_t *) &buffer [sizeof (sat_discovery_frame_header_t) + offsetof (sat_discovery_frame_announce_t, address)];
-                // *address_ptr = htonl (*address_ptr);
+                //
                 break;
 
             case sat_discovery_frame_type_interest:
-                // No multi-byte fields to convert
                 memcpy (&buffer [sizeof (sat_discovery_frame_header_t)], object->payload.interest.service_name, SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE);
                 break;
 
             case sat_discovery_frame_type_heartbeat:
                 memcpy (&buffer [sizeof (sat_discovery_frame_header_t)], object->payload.heartbeat.service_name, SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE);
-                // be64toh (object->payload.heartbeat.timestamp);
-                // timestamp_ptr = (uint64_t *) &buffer [sizeof (sat_discovery_frame_header_t) + offsetof (sat_discovery_frame_heartbeat_t, timestamp)];
-                // *timestamp_ptr = htobe64 (*timestamp_ptr);
                 break;
 
             case sat_discovery_frame_type_vanish:
-                // No multi-byte fields to convert
+                memcpy (&buffer [sizeof (sat_discovery_frame_header_t)], object->payload.vanish.service_name, SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE);
                 break;
 
             default:
@@ -164,7 +140,6 @@ sat_status_t sat_discovery_frame_unpack (sat_discovery_frame_t *const object, co
         }
 
         // Copy the frame data from the buffer
-        // memcpy (object, buffer->data, sizeof (sat_discovery_frame_t));
         object->header.version = buffer [0];
         object->header.type = buffer[1];
         memcpy (object->header.uuid, &buffer [2], SAT_UUID_BINARY_SIZE);
@@ -194,17 +169,14 @@ sat_status_t sat_discovery_frame_unpack (sat_discovery_frame_t *const object, co
                 break;
 
             case sat_discovery_frame_type_heartbeat:
+                strncpy (object->payload.heartbeat.service_name, (const char *)&buffer [18], SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE - 1);
+                break;
             case sat_discovery_frame_type_interest:
-                // No multi-byte fields to convert
                 strncpy (object->payload.interest.service_name, (const char *)&buffer [18], SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE - 1);
                 break;
-
-            // case sat_discovery_frame_type_heartbeat:
-                // object->payload.heartbeat.timestamp = be64toh (object->payload.heartbeat.timestamp);
-                break;
-
             case sat_discovery_frame_type_vanish:
                 // No multi-byte fields to convert
+                strncpy (object->payload.vanish.service_name, (const char *)&buffer [18], SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE - 1);
                 break;
 
             default:
