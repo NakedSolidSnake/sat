@@ -34,9 +34,6 @@ typedef struct
 sat_status_t sat_network_get_ip_class (const char *const ip_address, sat_network_class_t *const ip_class);
 const char *const sat_network_get_ip_class_string (const sat_network_class_t ip_class);
 
-sat_status_t sat_network_get_ip_class (const char *const ip_address, sat_network_class_t *const ip_class);
-const char *const sat_network_get_ip_class_string (const sat_network_class_t ip_class);
-
 sat_status_t sat_network_get_public_ip (const char *const dns_address, uint16_t dns_port, char ip_address [SAT_NETWORK_IP_MAX_LEN + 1]);
 
 sat_status_t sat_network_get_socket_info (int socket, sat_network_socket_info_t *const socket_info);
