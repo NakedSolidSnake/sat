@@ -5,10 +5,15 @@
 #include <ifaddrs.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdio.h>
 
 #define SAT_NETWORK_DNS_SERVER_DEFAULT "8.8.8.8"
 #define SAT_NETWORK_DNS_SERVER_IPV6_DEFAULT "2001:4860:4860::8888"
 #define SAT_NETWORK_DNS_PORT_DEFAULT 53
+
+
+static void sat_network_info_get_ipv4 (sat_network_info_t *info, struct ifaddrs *ifa);
+static void sat_network_info_get_ipv6 (sat_network_info_t *info, struct ifaddrs *ifa);
 
 static struct sockaddr_storage sat_network_create_address (const char *const ip_address, uint16_t port)
 {
@@ -269,4 +274,208 @@ sat_status_t sat_network_get_public_ip (const char *const dns_address, uint16_t 
     } while (false);
 
     return status;
+}
+
+sat_status_t sat_network_get_socket_info (int socket, sat_network_socket_info_t *const socket_info)
+{
+    sat_status_t status;
+
+    do
+    {
+        if (socket_info == NULL)
+        {
+            sat_status_set (&status, false, "socket_info is NULL");
+            break;
+        }
+
+        struct sockaddr_storage address;
+        socklen_t address_len = sizeof (address);
+
+        if (getsockname (socket, (struct sockaddr*)&address, &address_len) < 0)
+        {
+            sat_status_set (&status, false, "Failed to get socket name");
+            break;
+        }
+
+        if (address.ss_family == AF_INET)
+        {
+            struct sockaddr_in *addr4 = (struct sockaddr_in*)&address;
+            inet_ntop (AF_INET, &addr4->sin_addr, socket_info->address, SAT_NETWORK_ADDRESS_SIZE + 1);
+            socket_info->port = ntohs (addr4->sin_port);
+        }
+        else if (address.ss_family == AF_INET6)
+        {
+            struct sockaddr_in6 *addr6 = (struct sockaddr_in6*)&address;
+            inet_ntop (AF_INET6, &addr6->sin6_addr, socket_info->address, SAT_NETWORK_ADDRESS_SIZE + 1);
+            socket_info->port = ntohs (addr6->sin6_port);
+        }
+        else
+        {
+            sat_status_set (&status, false, "Unknown address family");
+            break;
+        }
+
+        sat_status_set (&status, true, "");
+
+    } while (false);
+
+    return status;
+}
+
+sat_status_t sat_network_get_info_by_interface (sat_network_info_t *const info, const char *const interface_name)
+{
+    sat_status_t status;
+    struct ifaddrs *ifaddr;
+    struct ifaddrs *ifa;
+
+    do 
+    {
+        if (getifaddrs (&ifaddr) == -1)
+        {
+            sat_status_failure (&status, "getifaddrs failed");
+            break;
+        }
+
+        for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next)
+        {
+            if (ifa->ifa_addr == NULL ||
+                (ifa->ifa_addr->sa_family != AF_INET &&
+                ifa->ifa_addr->sa_family != AF_INET6) || 
+                strcmp(ifa->ifa_name, interface_name) != 0)
+            {
+                continue;
+            }
+
+            strncpy(info->interface_name, ifa->ifa_name, INET6_ADDRSTRLEN);
+            
+            if (ifa->ifa_addr->sa_family == AF_INET)
+            {
+                sat_network_info_get_ipv4 (info, ifa);
+            }
+            else
+            {
+                sat_network_info_get_ipv6 (info, ifa);
+            }
+
+            sat_status_success (&status);
+
+            break;
+        }
+
+        freeifaddrs (ifaddr);
+
+    } while (false);
+
+    return status;
+}
+
+sat_status_t sat_network_get_info_list (sat_network_info_t *info, uint16_t info_count)
+{
+    sat_status_t status;
+    struct ifaddrs *ifaddr;
+    struct ifaddrs *ifa;
+    uint16_t index = 0;
+
+    do 
+    {
+        if (getifaddrs (&ifaddr) == -1)
+        {
+            sat_status_failure (&status, "getifaddrs failed");
+            break;
+        }
+
+        for (ifa = ifaddr; ifa != NULL && index < info_count; ifa = ifa->ifa_next)
+        {
+            if (ifa->ifa_addr == NULL ||
+                (ifa->ifa_addr->sa_family != AF_INET &&
+                ifa->ifa_addr->sa_family != AF_INET6))
+            {
+                continue;
+            }
+
+            strncpy(info [index].interface_name, ifa->ifa_name, INET6_ADDRSTRLEN);
+            
+            if (ifa->ifa_addr->sa_family == AF_INET)
+            {
+                sat_network_info_get_ipv4 (&info [index], ifa);
+            }
+            else
+            {
+                sat_network_info_get_ipv6 (&info [index], ifa);
+            }
+
+            index ++;
+        }
+
+        freeifaddrs (ifaddr);
+
+        sat_status_success (&status);
+
+    } while (false);
+
+    return status;
+}
+
+void sat_network_socket_info_debug (const sat_network_socket_info_t *const socket_info)
+{
+    if (socket_info != NULL)
+    {
+        printf ("Socket Info:\n");
+        printf ("  Address: %s\n", socket_info->address);
+        printf ("  Port   : %u\n", socket_info->port);
+    }
+}
+
+void sat_network_info_debug (const sat_network_info_t *const network_info)
+{
+    if (network_info != NULL)
+    {
+        printf ("Network Info:\n");
+        printf ("  Interface Name: %s\n", network_info->interface_name);
+        printf ("  IP Address    : %s\n", network_info->ip_address);
+        printf ("  Netmask       : %s\n", network_info->netmask);
+    }
+}
+
+void sat_network_info_list_debug (const sat_network_info_t *const network_info, uint16_t info_count)
+{
+    if (network_info != NULL)
+    {
+        for (uint16_t i = 0; i < info_count; i++)
+        {
+            printf ("Network Info [%u]:\n", i);
+            printf ("  Interface Name: %s\n", network_info [i].interface_name);
+            printf ("  IP Address    : %s\n", network_info [i].ip_address);
+            printf ("  Netmask       : %s\n", network_info [i].netmask);
+        }
+    }
+}
+
+
+static void sat_network_info_get_ipv4 (sat_network_info_t *info, struct ifaddrs *ifa)
+{
+    struct sockaddr_in *addr_in = (struct sockaddr_in *)ifa->ifa_addr;
+    
+    inet_ntop (AF_INET, &addr_in->sin_addr, info->ip_address, sizeof (info->ip_address));
+    
+    if (ifa->ifa_netmask != NULL)
+    {
+        struct sockaddr_in *mask_in = (struct sockaddr_in *)ifa->ifa_netmask;
+
+        inet_ntop (AF_INET, &mask_in->sin_addr, info->netmask, sizeof (info->netmask));
+    }
+}
+
+static void sat_network_info_get_ipv6 (sat_network_info_t *info, struct ifaddrs *ifa)
+{
+    struct sockaddr_in6 *addr_in6 = (struct sockaddr_in6 *)ifa->ifa_addr;
+
+    inet_ntop (AF_INET6, &addr_in6->sin6_addr, info->ip_address, sizeof (info->ip_address));
+
+    if (ifa->ifa_netmask != NULL)
+    {
+        struct sockaddr_in6 *mask_in6 = (struct sockaddr_in6 *)ifa->ifa_netmask;
+
+        inet_ntop (AF_INET6, &mask_in6->sin6_addr, info->netmask, sizeof (info->netmask));
+    }
 }
