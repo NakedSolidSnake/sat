@@ -92,9 +92,9 @@ int main (int argc, char *argv[])
                                                                     .service = info.port
                                                                 });
 
-            // status = sat_udp_receive (&app.client, buffer, &size);
-            // assert (sat_status_get_result (&status) == true);
-            // printf ("%s\n", buffer);
+            status = sat_udp_receive (&app.client, buffer, &size);
+            assert (sat_status_get_result (&status) == true);
+            printf ("%s\n", buffer);
         }
     }
     
