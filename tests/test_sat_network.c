@@ -10,7 +10,6 @@ int main (void)
     sat_status_t status = sat_network_get_public_ip (NULL, 0, ip_address);
 
     assert (sat_status_get_result (&status) == true);
-<<<<<<< HEAD
 
     sat_network_class_t ip_class;
 
@@ -119,10 +118,6 @@ int main (void)
     {
         printf ("IPv6 connectivity not available or failed\n");
     }
-=======
-    
-    printf ("Public IP Address: %s\n", ip_address);
->>>>>>> c0257ca (Create sat network)
 
     return 0;
 }
