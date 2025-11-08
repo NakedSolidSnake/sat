@@ -5,6 +5,7 @@
 #include <sat_discovery_node.h>
 #include <sat_discovery_interest.h>
 #include <sat_discovery_handle_frames.h>
+#include <sat_log.h>
 
 void sat_discovery_handle_frame_announce (sat_discovery_t *const service, sat_discovery_frame_t frame)
 {
@@ -22,6 +23,8 @@ void sat_discovery_handle_frame_announce (sat_discovery_t *const service, sat_di
                 break;
             }
 
+            sat_log_debug ("Scanning interests for service: %s\n", frame.payload.announce.service_name);
+
             if (strcmp (interest->name, frame.payload.announce.service_name) == 0)
             {
                 sat_discovery_node_t node;
@@ -29,7 +32,7 @@ void sat_discovery_handle_frame_announce (sat_discovery_t *const service, sat_di
                 {
                     .uuid = &frame.header.uuid,
                     .name = frame.payload.announce.service_name,
-                    .address = "", // TODO: get address from frame or UDP source
+                    .address = frame.payload.announce.address,
                     .port = frame.payload.announce.service_port
                 };
 

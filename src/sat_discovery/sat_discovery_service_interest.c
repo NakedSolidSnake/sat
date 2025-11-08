@@ -3,6 +3,7 @@
 #include <sat_discovery.h>
 #include <sat_iterator.h>
 #include <sat_discovery_interest.h>
+#include <sat_log.h>
 
 
 void sat_discovery_service_interest (void *object)
@@ -28,10 +29,18 @@ void sat_discovery_service_interest (void *object)
                                                     .address = 0
                                                 });
 
+            sat_log_debug ("Service %s sending interest for service: %s", discovery->service_name, interest->name);
+
             // sat_discovery_frame_print (&frame);
 
-            sat_discovery_frame_pack (&frame, buffer);
+            status = sat_discovery_frame_pack (&frame, buffer);
+            if (sat_status_get_result (&status) == false)
+            {
+                sat_log_error ("Failed to pack discovery frame for interest: %s Reason: %s", interest->name, sat_status_get_motive (&status));
+                break;
+            }
 
+            sat_log_debug ("Frame: Version: %d Type: %d Interest Service: %s", frame.header.version, frame.header.type, frame.payload.interest.service_name);
 
             // Send interest message
             sat_udp_send (&discovery->udp, (void *)&buffer, sizeof (buffer), &(sat_udp_destination_t)

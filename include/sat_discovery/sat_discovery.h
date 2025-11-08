@@ -5,11 +5,14 @@
 #include <sat_udp.h>
 #include <sat_scheduler.h>
 #include <sat_set.h>
+#include <sat_array.h>
 #include <sat_uuid.h>
 
 #define SAT_DISCOVERY_SERVICE_NAME_MAX_LENGTH 128
 #define SAT_DISCOVERY_ADDRESS_MAX_LENGTH 64
 #define SAT_DISCOVERY_SERVICE_MAX_LENGTH 6
+#define SAT_DISCOVERY_INTERFACE_NAME_SIZE  64
+#define SAT_DISCOVERY_APP_PORT_SIZE 5
 
 typedef struct
 {
@@ -17,7 +20,10 @@ typedef struct
     sat_scheduler_t scheduler;
     sat_set_t *interests;
     sat_set_t *nodes;
-    uuid_binary_t uuid;
+    sat_uuid_binary_t uuid;
+
+    sat_array_t *interfaces;
+    
     
     char service_name [SAT_DISCOVERY_SERVICE_NAME_MAX_LENGTH + 1];
 
@@ -26,12 +32,20 @@ typedef struct
         char service [SAT_DISCOVERY_SERVICE_MAX_LENGTH + 1];
         char address [SAT_DISCOVERY_ADDRESS_MAX_LENGTH + 1];
     } channel;
+
+    char app_port [SAT_DISCOVERY_APP_PORT_SIZE + 1];
     
 } sat_discovery_t;
 
 typedef struct
 {
-    char *service_name;
+    struct 
+    {
+        char *name;
+        char *interface;
+        char *port;
+    } service;
+
     struct 
     {
         char *service;

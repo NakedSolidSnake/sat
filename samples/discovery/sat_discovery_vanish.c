@@ -12,7 +12,7 @@ int main (int argc, char *argv[])
     sat_discovery_t discovery;
     sat_discovery_args_t args = 
     {
-        .service_name = argv [1],
+        .service.name = argv [1],
         .channel = 
         {
             .service = argv [3],

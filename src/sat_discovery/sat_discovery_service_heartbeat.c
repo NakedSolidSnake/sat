@@ -1,10 +1,13 @@
 #include <sat_discovery_services.h>
 #include <sat_discovery.h>
 #include <sat_discovery_frame.h>
+#include <sat_log.h>
 
 void sat_discovery_service_heartbeat (void *object)
 {
     sat_discovery_t *discovery = (sat_discovery_t *)object;
+
+    sat_log_debug ("Sending heartbeat for service: %s", discovery->service_name);
     
     sat_discovery_frame_t frame;
     sat_discovery_frame_buffer_t buffer = {0};

@@ -1,6 +1,7 @@
 #include <sat_discovery_services.h>
 #include <sat_discovery.h>
 #include <sat_discovery_frame.h>
+#include <sat_log.h>
 
 void sat_discovery_service_vanish (void *object)
 {
@@ -14,6 +15,8 @@ void sat_discovery_service_vanish (void *object)
                                             .uuid = &discovery->uuid,
                                             .service_name = discovery->service_name,
                                         });
+
+    sat_log_debug ("Sending vanish for service: %s", discovery->service_name);
 
     sat_discovery_frame_pack (&frame, buffer);
 

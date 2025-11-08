@@ -6,6 +6,7 @@
 #include <sat_discovery_interest.h>
 #include <stdio.h>
 #include <string.h>
+#include <sat_log.h>
 
 #define SAT_DISCOVERY_NODE_HEARTBEAT_TIMEOUT_S 10
 
@@ -26,7 +27,7 @@ void sat_discovery_service_node_ageing (void *object)
         {
             if (sat_time_get_utc_epoch_now () - node->last_heartbeat > SAT_DISCOVERY_NODE_HEARTBEAT_TIMEOUT_S)
             {
-                printf ("Node %s timed out, removing...\n", node->name);
+                sat_log_debug ("Node %s timed out, removing...\n", node->name);
                 int32_t index = find_by_name (discovery->nodes, node->name);
                 if (index >= 0)
                 {
@@ -40,7 +41,7 @@ void sat_discovery_service_node_ageing (void *object)
                             if (strcmp (interest->name, node->name) == 0)
                             {
                                 // Mark interest as unregistered
-                                printf ("Marking interest %s as unregistered\n", interest->name);
+                                sat_log_debug ("Marking interest %s as unregistered\n", interest->name);
                                 interest->registered = false;
                                 break;
                             }

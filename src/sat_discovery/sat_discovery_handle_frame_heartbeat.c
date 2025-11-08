@@ -4,11 +4,14 @@
 #include <sat_iterator.h>
 #include <stdio.h>
 #include <string.h>
+#include <sat_log.h>
 
 void sat_discovery_handle_frame_heartbeat (sat_discovery_t *const service, sat_discovery_frame_t frame)
 {
     // verify if the server which is sending heartbeat is registered
     // and update its last seen timestamp
+
+    sat_log_debug ("Received heartbeat for service: %s", frame.payload.heartbeat.service_name);
 
     sat_iterator_t iterator;
     
