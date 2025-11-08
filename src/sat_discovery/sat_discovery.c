@@ -1,4 +1,5 @@
 #include <sat_discovery.h>
+#include <sat_network.h>
 #include <string.h>
 #include <stdio.h>
 #include <pthread.h>
@@ -10,6 +11,7 @@
 #include <sat_discovery_services.h>
 #include <sat_discovery_handle_frames.h>
 #include <unistd.h>
+#include <sat_log.h>
 
 
 static sat_status_t sat_discovery_is_args_valid (sat_discovery_args_t *args);
@@ -40,8 +42,6 @@ static void sat_discovery_on_receive (char *buffer, uint32_t *size, void *data)
     sat_discovery_frame_t frame;
 
     sat_discovery_frame_unpack (&frame, (uint8_t *)buffer);
-
-    // sat_discovery_frame_print (&frame);
 
     if (sat_uuid_compare_bin (frame.header.uuid, service->uuid) == true )
     {
@@ -131,9 +131,16 @@ sat_status_t sat_discovery_open (sat_discovery_t *object, sat_discovery_args_t *
             break;
         }
 
-        strncpy (object->service_name, args->service_name, SAT_DISCOVERY_SERVICE_NAME_MAX_LENGTH);
+        status = sat_network_get_info_list (&object->interfaces);
+        if (sat_status_get_result (&status) == false)
+        {
+            break;
+        }
+
+        strncpy (object->service_name, args->service.name, SAT_DISCOVERY_SERVICE_NAME_MAX_LENGTH);
         strncpy (object->channel.service, args->channel.service, SAT_DISCOVERY_SERVICE_MAX_LENGTH);
         strncpy (object->channel.address, args->channel.address, SAT_DISCOVERY_ADDRESS_MAX_LENGTH);
+        strncpy (object->app_port, args->service.port, SAT_DISCOVERY_APP_PORT_SIZE);
 
         sat_uuid_generate_bin (object->uuid);
 

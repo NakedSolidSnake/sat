@@ -2,7 +2,7 @@
 #include <uuid/uuid.h>
 #include <string.h>
 
-bool sat_uuid_generate_string (uuid_string_t uuid_string, sat_uuid_format_t format)
+bool sat_uuid_generate_string (sat_uuid_string_t uuid_string, sat_uuid_format_t format)
 {
     uuid_t binuuid;
 
@@ -28,7 +28,7 @@ bool sat_uuid_generate_string (uuid_string_t uuid_string, sat_uuid_format_t form
     return true;
 }
 
-bool sat_uuid_generate_bin (uuid_binary_t uuid_bin)
+bool sat_uuid_generate_bin (sat_uuid_binary_t uuid_bin)
 {
     uuid_t binuuid;
 
@@ -38,14 +38,14 @@ bool sat_uuid_generate_bin (uuid_binary_t uuid_bin)
     return true;
 }
 
-bool sat_uuid_string_to_bin (const uuid_string_t uuid_string, uuid_binary_t uuid)
+bool sat_uuid_string_to_bin (const sat_uuid_string_t uuid_string, sat_uuid_binary_t uuid)
 {
     uuid_parse ((const char *)uuid_string, uuid);
 
     return true;
 }
 
-bool sat_uuid_bin_to_string (const uuid_binary_t uuid_bin, uuid_string_t uuid_string, sat_uuid_format_t format)
+bool sat_uuid_bin_to_string (const sat_uuid_binary_t uuid_bin, sat_uuid_string_t uuid_string, sat_uuid_format_t format)
 {
     memset (uuid_string, 0, SAT_UUID_STRING_SIZE);
 
@@ -67,12 +67,12 @@ bool sat_uuid_bin_to_string (const uuid_binary_t uuid_bin, uuid_string_t uuid_st
     return true;
 }
 
-bool sat_uuid_compare_bin (const uuid_binary_t uuid1, const uuid_binary_t uuid2)
+bool sat_uuid_compare_bin (const sat_uuid_binary_t uuid1, const sat_uuid_binary_t uuid2)
 {
     return uuid_compare (uuid1, uuid2) == 0;
 }
 
-bool sat_uuid_compare_string (const uuid_string_t uuid1, const uuid_string_t uuid2, sat_uuid_format_t format)
+bool sat_uuid_compare_string (const sat_uuid_string_t uuid1, const sat_uuid_string_t uuid2, sat_uuid_format_t format)
 {
     bool status = true;
 

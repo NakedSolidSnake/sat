@@ -11,7 +11,7 @@ static bool is_hex_digit (char c)
 }
 
 // Helper function to validate UUID string format
-static bool is_valid_uuid_format (const uuid_string_t uuid, sat_uuid_format_t format)
+static bool is_valid_uuid_format (const sat_uuid_string_t uuid, sat_uuid_format_t format)
 {
     const char *str = (const char *)uuid;
     
@@ -56,7 +56,7 @@ static bool is_valid_uuid_format (const uuid_string_t uuid, sat_uuid_format_t fo
 // Test sat_uuid_generate_string with upper case format
 static void test_uuid_generate_string_upper_case (void)
 {
-    uuid_string_t uuid = {0};
+    sat_uuid_string_t uuid = {0};
     bool result = sat_uuid_generate_string (uuid, sat_uuid_format_upper_case);
     
     assert (result == true);
@@ -69,7 +69,7 @@ static void test_uuid_generate_string_upper_case (void)
 // Test sat_uuid_generate_string with lower case format
 static void test_uuid_generate_string_lower_case (void)
 {
-    uuid_string_t uuid = {0};
+    sat_uuid_string_t uuid = {0};
     bool result = sat_uuid_generate_string (uuid, sat_uuid_format_lower_case);
     
     assert (result == true);
@@ -82,7 +82,7 @@ static void test_uuid_generate_string_lower_case (void)
 // Test sat_uuid_generate_bin
 static void test_uuid_generate_bin (void)
 {
-    uuid_binary_t uuid_bin = {0};
+    sat_uuid_binary_t uuid_bin = {0};
     bool result = sat_uuid_generate_bin (uuid_bin);
     
     assert (result == true);
@@ -110,8 +110,8 @@ static void test_uuid_generate_bin (void)
 // Test sat_uuid_string_to_bin
 static void test_uuid_string_to_bin (void)
 {
-    uuid_string_t uuid_string = {0};
-    uuid_binary_t uuid_bin = {0};
+    sat_uuid_string_t uuid_string = {0};
+    sat_uuid_binary_t uuid_bin = {0};
     
     // First generate a string UUID
     bool result = sat_uuid_generate_string (uuid_string, sat_uuid_format_upper_case);
@@ -139,8 +139,8 @@ static void test_uuid_string_to_bin (void)
 // Test sat_uuid_bin_to_string
 static void test_uuid_bin_to_string (void)
 {
-    uuid_binary_t uuid_bin = {0};
-    uuid_string_t uuid_string = {0};
+    sat_uuid_binary_t uuid_bin = {0};
+    sat_uuid_string_t uuid_string = {0};
     
     // First generate a binary UUID
     bool result = sat_uuid_generate_bin (uuid_bin);
@@ -160,10 +160,10 @@ static void test_uuid_bin_to_string (void)
 // Test round-trip conversion (string -> binary -> string)
 static void test_uuid_round_trip_conversion (void)
 {
-    uuid_string_t original_string = {0};
-    uuid_string_t final_string = {0};
-    uuid_binary_t uuid_bin = {0};
-    
+    sat_uuid_string_t original_string = {0};
+    sat_uuid_string_t final_string = {0};
+    sat_uuid_binary_t uuid_bin = {0};
+
     // Generate original string
     bool result = sat_uuid_generate_string (original_string, sat_uuid_format_upper_case);
     assert (result == true);

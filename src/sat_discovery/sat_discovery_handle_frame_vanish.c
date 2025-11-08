@@ -5,11 +5,15 @@
 #include <sat_uuid.h>
 #include <stdio.h>
 #include <string.h>
+#include <sat_log.h>
 
 static int32_t find_by_name (sat_set_t *set, const char *name);
 
 void sat_discovery_handle_frame_vanish (sat_discovery_t *const service, sat_discovery_frame_t frame)
 {
+
+    sat_log_debug ("Received vanish for service: %s", frame.payload.vanish.service_name);
+
     int32_t index = find_by_name (service->nodes, frame.payload.vanish.service_name);
 
     if (index >= 0)
