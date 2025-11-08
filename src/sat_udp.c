@@ -130,6 +130,26 @@ sat_status_t sat_udp_close (sat_udp_t *object)
     return status;
 }
 
+sat_status_t sat_udp_get_port (sat_udp_t *object, uint16_t *port)
+{
+    sat_status_t status = sat_status_set (&status, false, "sat udp get port error");
+
+    if (object != NULL && port != NULL)
+    {
+        if (object->type == sat_udp_type_server)
+        {
+            status = sat_udp_server_get_port (object->server, port);
+        }
+        
+        else if (object->type == sat_udp_type_client)
+        {
+            status = sat_udp_client_get_port (object->client, port);
+        }
+    }
+
+    return status;
+}
+
 static int sat_udp_get_socket (sat_udp_t *object)
 {
     int socket = -1;

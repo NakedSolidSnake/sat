@@ -6,5 +6,6 @@
 
 sat_status_t sat_udp_client_open (sat_udp_client_t **object, sat_udp_client_args_t *args);
 int sat_udp_client_get_socket (sat_udp_client_t *object);
+sat_status_t sat_udp_client_get_port (sat_udp_client_t *object, uint16_t *port);
 
 #endif/* SAT_UDP_CLIENT_H_ */

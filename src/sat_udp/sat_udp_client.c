@@ -50,6 +50,50 @@ int sat_udp_client_get_socket (sat_udp_client_t *object)
     return object->socket;
 }
 
+sat_status_t sat_udp_client_get_port (sat_udp_client_t *object, uint16_t *port)
+{
+    sat_status_t status = sat_status_set (&status, false, "sat udp client get port error");
+
+    do 
+    {
+        if (object == NULL || port == NULL)
+        {
+            sat_status_set (&status, false, "Invalid parameters");
+            break;
+        }
+
+        struct sockaddr_storage address;
+        socklen_t address_len = sizeof (address);
+
+        if (getsockname (object->socket, (struct sockaddr*)&address, &address_len) < 0)
+        {
+            sat_status_set (&status, false, "Failed to get socket name");
+            break;
+        }
+
+        if (address.ss_family == AF_INET)
+        {
+            struct sockaddr_in *addr4 = (struct sockaddr_in*)&address;
+            *port = ntohs (addr4->sin_port);
+        }
+        else if (address.ss_family == AF_INET6)
+        {
+            struct sockaddr_in6 *addr6 = (struct sockaddr_in6*)&address;
+            *port = ntohs (addr6->sin6_port);
+        }
+        else
+        {
+            sat_status_set (&status, false, "Unknown address family");
+            break;
+        }
+
+        sat_status_set (&status, true, "");
+
+    } while (false);
+
+    return status;
+}
+
 static sat_status_t sat_udp_client_set_socket (sat_udp_client_t *object, struct addrinfo *info)
 {
     sat_status_t status = sat_status_set (&status, false, "sat udp client set socket error");

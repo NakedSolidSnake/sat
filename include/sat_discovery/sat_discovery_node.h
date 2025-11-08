@@ -7,7 +7,7 @@
 
 #define SAT_DISCOVERY_SERVICE_NAME         31
 #define SAT_DISCOVERY_SERVICE_ADDRESS      64
-#define SAT_DISCOVERY_SERVICE_PORT         5
+#define SAT_DISCOVERY_SERVICE_PORT         6
 
 typedef struct
 {

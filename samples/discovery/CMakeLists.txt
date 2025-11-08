@@ -1,3 +1,5 @@
 create_sample (sat_discovery_sample discovery)
 create_sample (sat_discovery_vanish discovery)
 create_sample (sat_discovery_protocol_sample discovery)
+create_sample (sat_discovery_server discovery)
+create_sample (sat_discovery_client discovery)
