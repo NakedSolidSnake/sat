@@ -204,6 +204,66 @@ sat_status_t sat_discovery_stop (sat_discovery_t *object)
     return status;
 }
 
+sat_status_t sat_discovery_get_service_info (sat_discovery_t *object, const char *const service, sat_discovery_service_info_t *const info)
+{
+    sat_status_t status = sat_status_set (&status, false, "sat discovery get service info error");
+
+    do
+    {
+        if (object == NULL || service == NULL || info == NULL)
+        {
+            sat_status_set (&status, false, "Invalid parameters");
+            break;
+        }
+
+        sat_iterator_t iterator;
+        status = sat_iterator_open (&iterator, (sat_iterator_base_t *)object->nodes);
+        if (sat_status_get_result (&status) == false)
+        {
+            break;
+        }
+
+        sat_discovery_node_t *node = sat_iterator_next (&iterator);
+        while (node != NULL)
+        {
+            if (strcmp (node->name, service) == 0)
+            {
+                memset (info, 0, sizeof (sat_discovery_service_info_t));
+
+                strncpy (info->name, node->name, SAT_DISCOVERY_SERVICE_NAME_MAX_LENGTH);
+                strncpy (info->address, node->address, SAT_DISCOVERY_ADDRESS_MAX_LENGTH);
+                strncpy (info->port, node->port, SAT_DISCOVERY_APP_PORT_SIZE);
+
+                sat_status_set (&status, true, "Service info retrieved");
+                return status;
+            }
+
+            node = sat_iterator_next (&iterator);
+        }
+
+        sat_status_set (&status, false, "Service not found");
+
+    } while (false);
+
+    return status;
+}
+
+void sat_discovery_registered_services (sat_discovery_t *object)
+{
+    sat_iterator_t iterator;
+
+    sat_status_t status = sat_iterator_open (&iterator, (sat_iterator_base_t *)object->nodes);
+    if (sat_status_get_result (&status) == true)
+    {
+        sat_discovery_node_t *node = sat_iterator_next (&iterator);
+        while (node != NULL)
+        {
+            sat_log_info ("Registered service: %s at %s:%s", node->name, node->address, node->port);
+            node = sat_iterator_next (&iterator);
+        }
+    }
+}
+
 static sat_status_t sat_discovery_is_args_valid (sat_discovery_args_t *args)
 {
     sat_status_t status = sat_status_set (&status, false, "sat discovery args invalid");

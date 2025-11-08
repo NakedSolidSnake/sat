@@ -73,7 +73,12 @@ int main (int argc, char *argv[])
     // Cleanup
     sat_log_debug ("Discovery service running. Press Ctrl+C to stop.");
 
-    sleep (300); // Let the discovery run for 30 seconds
+    while (true)
+    {
+        sat_discovery_registered_services (&discovery);
+        sleep (10);
+    }
+
     sat_discovery_stop (&discovery);
 
     return EXIT_SUCCESS;

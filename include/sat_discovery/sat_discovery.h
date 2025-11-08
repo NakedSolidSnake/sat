@@ -12,7 +12,14 @@
 #define SAT_DISCOVERY_ADDRESS_MAX_LENGTH 64
 #define SAT_DISCOVERY_SERVICE_MAX_LENGTH 6
 #define SAT_DISCOVERY_INTERFACE_NAME_SIZE  64
-#define SAT_DISCOVERY_APP_PORT_SIZE 5
+#define SAT_DISCOVERY_APP_PORT_SIZE 6
+
+typedef struct
+{
+    char name [SAT_DISCOVERY_SERVICE_NAME_MAX_LENGTH + 1];
+    char address [SAT_DISCOVERY_ADDRESS_MAX_LENGTH + 1];
+    char port [SAT_DISCOVERY_APP_PORT_SIZE + 1];
+} sat_discovery_service_info_t;
 
 typedef struct
 {
@@ -61,5 +68,9 @@ sat_status_t sat_discovery_add_interest (sat_discovery_t *object, const char *se
 
 sat_status_t sat_discovery_start (sat_discovery_t *object);
 sat_status_t sat_discovery_stop (sat_discovery_t *object);
+
+sat_status_t sat_discovery_get_service_info (sat_discovery_t *object, const char *const service, sat_discovery_service_info_t *const info);
+
+void sat_discovery_registered_services (sat_discovery_t *object);
 
 #endif /* SAT_DISCOVERY_H */

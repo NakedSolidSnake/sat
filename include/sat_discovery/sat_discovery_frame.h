@@ -8,7 +8,7 @@
 #define SAT_DISCOVERY_FRAME_VERSION            1
 #define SAT_DISCOVERY_FRAME_SERVICE_NAME_SIZE 32
 #define SAT_DISCOVERY_FRAME_ADDRESS           16
-#define SAT_DISCOVERY_FRAME_PORT              5
+#define SAT_DISCOVERY_FRAME_PORT              6
 #define SAT_DISCOVERY_FRAME_SIZE              80
 
 

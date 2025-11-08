@@ -67,6 +67,27 @@ int sat_udp_server_get_socket (sat_udp_server_t *object)
     return object->base->get_socket (object->base);
 }
 
+sat_status_t sat_udp_server_get_port (sat_udp_server_t *object, uint16_t *port)
+{
+    sat_status_t status = sat_status_set (&status, false, "sat udp server get port error");
+
+    if (object != NULL && port != NULL)
+    {
+        struct sockaddr_in addr;
+        socklen_t addr_len = sizeof (addr);
+
+        int socket = sat_udp_server_get_socket (object);
+        
+        if (getsockname (socket, (struct sockaddr *)&addr, &addr_len) == 0)
+        {
+            *port = ntohs (addr.sin_port);
+            sat_status_success (&status);
+        }
+    }
+
+    return status;
+}
+
 static sat_status_t sat_udp_server_select_type (sat_udp_server_t *object, sat_udp_server_type_t type)
 {
     sat_status_t status = sat_status_set (&status, false, "sat udp server select type error");
