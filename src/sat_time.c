@@ -26,6 +26,19 @@ unsigned long long sat_time_get_epoch_now_ms (void)
     return miliseconds;
 }
 
+unsigned long long sat_time_get_epoch_now_ns (void)
+{
+    struct timeval tv;
+
+    gettimeofday (&tv, NULL);
+
+    unsigned long long nanoseconds = (unsigned long long)(tv.tv_sec) * 1000000000
+                                      +
+                                      (unsigned long long)(tv.tv_usec) * 1000;
+
+    return nanoseconds;
+}
+
 time_t sat_time_get_utc_epoch_now (void)
 {
     time_t now = 0;
