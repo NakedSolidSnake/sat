@@ -55,6 +55,19 @@ int main (int argc, char *argv[])
 
     assert (strcmp (recover.name, jane.name) == 0);
 
+    sat_iterator_t iterator;
+    sat_iterator_base_t *base = (sat_iterator_base_t *)linked;
+    status = sat_iterator_open (&iterator, base);
+    assert (sat_status_get_result (&status) == true);
+
+    person_t *current_person = (person_t *)sat_iterator_next (&iterator);
+    
+    while (current_person != NULL)
+    {
+        printf ("Iterated Person - Name: %s, Age: %d\n", current_person->name, current_person->age);
+        current_person = (person_t *)sat_iterator_next (&iterator);
+    }
+
     status = sat_linked_list_remove (linked, compare, "John");
     assert (sat_status_get_result (&status) == true);
 

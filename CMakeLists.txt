@@ -43,7 +43,6 @@ list (APPEND SAT_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/sat_uuid.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_iterator.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_process/sat_process.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_process/sat_process_monitor.c
-                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_network.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_interest.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_frame.c
@@ -58,7 +57,8 @@ list (APPEND SAT_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/sat_uuid.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_handle_frame_interest.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_handle_frame_vanish.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_service_vanish.c
-                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_network.c)
+                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_network.c
+                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_directory.c)
 
 
 list (APPEND SAT_LIBRARIES uuid m pthread dl pthread)
@@ -121,5 +121,8 @@ install (FILES include/sat_queue_ipc.h   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 install (FILES include/sat_iterator.h    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install (FILES include/sat_process/sat_process.h    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sat_process)
 install (FILES include/sat_process/sat_process_monitor.h    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sat_process)
+install (FILES include/sat_network.h    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install (FILES include/sat_discovery.h    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install (FILES include/sat_directory.h    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 install (FILES include/sat_optionals.h   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})

@@ -73,6 +73,7 @@ RUN git clone https://github.com/NakedSolidSnake/sat && \
 	-DSAT_POSTGRES=ON \
 	-DSAT_REDIS=ON \
 	-DSAT_SQLITE=ON \
+	-DSAT_LOKI=ON \
 	.. && \
 	make install && \
 	rm -rf /development/sat && \
