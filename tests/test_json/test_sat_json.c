@@ -75,6 +75,7 @@ void sat_json_print_values (values_t *object);
 bool sat_json_test_serialize_object (void);
 bool sat_json_test_serialize_object_object (void);
 bool sat_json_test_serialize_array (void);
+bool sat_json_test_serialize_array2 (void);
 
 bool sat_json_test_deserialize_object_array (void);
 bool sat_json_test_deserialize_array (void);
@@ -87,6 +88,7 @@ int main (int argc, char *argv[])
     sat_json_test_serialize_object ();
     sat_json_test_serialize_object_object ();
     sat_json_test_serialize_array ();
+    sat_json_test_serialize_array2 ();
     sat_json_test_deserialize_object_array ();
     sat_json_test_deserialize_array ();
     sat_json_test_deserialize_array_primitives ();
@@ -268,6 +270,32 @@ bool sat_json_test_serialize_array (void)
     sat_json_serialize_add (&object, sat_json_type_int, "age", &person.age);
 
     sat_json_serialize_add (&array, sat_json_type_object, "", object.json);
+
+    sat_json_to_string (&array, &s);
+
+    printf ("%s\n", s);
+    
+    sat_json_close (&array);
+    
+    return false;
+}
+
+bool sat_json_test_serialize_array2 (void)
+{
+    sat_json_t array;
+
+    char buffer_array [1024] = {0};
+
+    char *s = NULL;
+
+
+    sat_json_init (&array);
+
+    sat_json_open (&array, &(sat_json_args_t){.buffer = buffer_array, .size = 1024});
+
+    sat_json_serialize_create_array (&array);
+
+    sat_json_serialize_add (&array, sat_json_type_string, "", "hello");
 
     sat_json_to_string (&array, &s);
 

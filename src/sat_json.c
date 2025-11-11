@@ -302,6 +302,9 @@ static sat_status_t sat_json_add_to_array (sat_json_t *object, sat_json_type_t t
     case sat_json_type_float:
     case sat_json_type_double:
     case sat_json_type_string:
+        cJSON_AddItemToArray (object->json, cJSON_CreateString (data));
+        break;
+        
     case sat_json_type_array:
     case sat_json_type_object:
         cJSON_AddItemToArray (object->json, (cJSON *)data);
