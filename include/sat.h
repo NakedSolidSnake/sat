@@ -27,8 +27,9 @@
 #include <sat_process/sat_process.h>
 #include <sat_process/sat_process_monitor.h>
 #include <sat_network.h>
-#include <sat_discovery/sat_discovery.h>
+#include <sat_discovery.h>
 #include <sat_network.h>
+#include <sat_directory.h>
 
 #include <sat_optionals.h>
 

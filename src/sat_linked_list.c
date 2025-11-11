@@ -1,8 +1,14 @@
 #include <sat_linked_list.h>
 #include <string.h>
 #include <stdlib.h>
+#include <sat_iterator.h>
 
 typedef struct sat_linked_list_internal_t sat_linked_list_internal_t;
+
+static void *sat_linked_list_get_next_address (void *object, void *address);
+static void *sat_linked_list_get_address (void *object);
+static void *sat_linked_list_get_data (void *address);
+static void sat_linked_list_configure_iterator (sat_linked_list_t *object);
 
 struct sat_linked_list_internal_t
 {
@@ -12,6 +18,7 @@ struct sat_linked_list_internal_t
 
 struct sat_linked_list_t
 {
+    sat_iterator_base_t base;
     uint32_t object_size;
     uint32_t amount;
     sat_linked_list_internal_t *list;
@@ -31,6 +38,8 @@ sat_status_t sat_linked_list_create (sat_linked_list_t **object, uint32_t object
         {
             (*object)->object_size = object_size;
             (*object)->list = NULL;
+
+            sat_linked_list_configure_iterator (*object);
 
             sat_status_set (&status, true, "");
         }
@@ -188,9 +197,49 @@ sat_status_t sat_linked_list_destroy (sat_linked_list_t *object)
         }
 
         free (object);
+
+        object = NULL;
         
         sat_status_set (&status, true, "");
     }
 
     return status;
+}
+
+static void sat_linked_list_configure_iterator (sat_linked_list_t *object)
+{
+    object->base.object = object;
+    object->base.get_address = sat_linked_list_get_address;
+    object->base.get_next_address = sat_linked_list_get_next_address;
+    object->base.get_data = sat_linked_list_get_data;
+    object->base.next = NULL;
+    object->base.get_amount = NULL;
+}
+
+
+static void *sat_linked_list_get_next_address (void *object, void *address)
+{
+    (void) object;
+    sat_linked_list_internal_t *current = (sat_linked_list_internal_t *) address;
+
+    if (current == NULL)
+    {
+        return NULL;
+    }
+
+    return current->next;
+}
+
+static void *sat_linked_list_get_address (void *object)
+{
+    sat_linked_list_t *ll = (sat_linked_list_t *) object;
+
+    return ll->list;
+}
+
+static void *sat_linked_list_get_data (void *address)
+{
+    sat_linked_list_internal_t *current = (sat_linked_list_internal_t *) address;
+
+    return current->data;
 }
