@@ -75,7 +75,7 @@ RUN git clone https://github.com/NakedSolidSnake/sat && \
 	-DSAT_SQLITE=ON \
 	-DSAT_LOKI=ON \
 	.. && \
-	make install && \
+	make -j4 install && \
 	rm -rf /development/sat && \
 	ldconfig
 

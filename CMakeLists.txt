@@ -122,7 +122,7 @@ install (FILES include/sat_iterator.h    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 install (FILES include/sat_process/sat_process.h    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sat_process)
 install (FILES include/sat_process/sat_process_monitor.h    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sat_process)
 install (FILES include/sat_network.h    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install (FILES include/sat_discovery.h    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install (FILES include/sat_discovery/sat_discovery.h    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install (FILES include/sat_directory.h    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 install (FILES include/sat_optionals.h   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
