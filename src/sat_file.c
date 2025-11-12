@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <sys/stat.h>
 
 static char *sat_file_get_mode_by (sat_file_mode_t mode);
 
@@ -137,6 +138,118 @@ bool sat_file_close (sat_file_t *object)
     return status;
 }
 
+sat_status_t sat_file_copy (const char *const source, const char *const destination)
+{
+    sat_status_t status;
+    char buffer [4096];
+    size_t bytes;
+    uint32_t permissions;
+
+    do
+    {
+        FILE *__source = fopen (source, "rb");
+        if (__source == NULL)
+        {
+            sat_status_failure (&status, "sat file copy error: unable to open source file");
+
+            break;
+        }
+
+        FILE * __destination = fopen (destination, "wb");
+        if (__destination == NULL)
+        {
+            fclose (__source);
+            
+            sat_status_failure (&status, "sat file copy error: unable to open destination file");
+
+            break;
+        }
+
+
+        while ((bytes = fread (buffer, 1, sizeof (buffer), __source)) > 0)
+        {
+            fwrite (buffer, 1, bytes, __destination);
+        }
+
+        fclose (__source);
+        fclose (__destination);
+
+        status = sat_file_get_permissions (source, &permissions);
+        if (sat_status_get_result (&status) == false)
+        {
+            break;
+        }
+        status = sat_file_set_permissions (destination, permissions);
+        if (sat_status_get_result (&status) == false)
+        {
+            break;
+        }
+
+        sat_status_success (&status);
+
+    } while (false);
+
+    return status;
+}
+
+sat_status_t sat_file_move (const char *const source, const char *const destination)
+{
+    sat_status_t status = sat_status_set (&status, false, "sat file move error");
+
+    if (rename (source, destination) == 0)
+    {
+        sat_status_set (&status, true, "");
+    }
+    else
+    {
+        sat_status_set (&status, false, "sat file move error: unable to move file");
+    }
+
+    return status;
+}
+
+sat_status_t sat_file_get_permissions (const char *const filename, uint32_t *permissions)
+{
+    sat_status_t status = sat_status_failure (&status, "sat file get permissions error: unable to get file status");
+
+    struct stat file_stat;
+
+    if (stat (filename, &file_stat) == 0)
+    {
+        *permissions = file_stat.st_mode;
+
+        sat_status_success (&status);
+    }
+
+    return status;
+}
+
+sat_status_t sat_file_set_permissions (const char *const filename, uint32_t permissions)
+{
+    sat_status_t status = sat_status_failure (&status, "sat file set permissions error: unable to set file permissions");
+
+    if (chmod (filename, permissions) == 0)
+    {
+        sat_status_success (&status);
+    }
+
+    return status;
+}
+
+sat_status_t sat_file_check_extension (const char *const filename, const char *const extension)
+{
+    sat_status_t status = sat_status_failure (&status, "sat file check extension error: file extension does not match");;
+
+    const char *file_ext = strrchr (filename, '.');
+
+    if (file_ext != NULL && strcmp (file_ext + 1, extension) == 0)
+    {
+        sat_status_success (&status);
+    }
+
+    return status;
+}
+
 static char *sat_file_get_mode_by (sat_file_mode_t mode)
 {
     char *_mode = "w";
@@ -149,3 +262,4 @@ static char *sat_file_get_mode_by (sat_file_mode_t mode)
 
     return _mode;
 }
+
