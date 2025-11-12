@@ -194,15 +194,14 @@ sat_status_t sat_file_copy (const char *const source, const char *const destinat
 
 sat_status_t sat_file_move (const char *const source, const char *const destination)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat file move error");
-
-    if (rename (source, destination) == 0)
+    sat_status_t status = sat_file_copy (source, destination);
+    if (sat_status_get_result (&status) == true)
     {
-        sat_status_set (&status, true, "");
+        status = sat_file_remove (source);
     }
     else
     {
-        sat_status_set (&status, false, "sat file move error: unable to move file");
+        status = sat_file_remove (destination);
     }
 
     return status;
@@ -243,6 +242,18 @@ sat_status_t sat_file_check_extension (const char *const filename, const char *c
     const char *file_ext = strrchr (filename, '.');
 
     if (file_ext != NULL && strcmp (file_ext + 1, extension) == 0)
+    {
+        sat_status_success (&status);
+    }
+
+    return status;
+}
+
+sat_status_t sat_file_remove (const char *const filename)
+{
+    sat_status_t status = sat_status_failure (&status, "sat file remove error: unable to remove file");
+
+    if (remove (filename) == 0)
     {
         sat_status_success (&status);
     }
