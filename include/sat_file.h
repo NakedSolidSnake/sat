@@ -35,6 +35,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <sat_status.h>
 
 /**
  * @brief File access modes
@@ -121,6 +122,8 @@ bool sat_file_exists (const char *filename);
  */
 bool sat_file_read_to_buffer (const char *filename, void **buffer, uint32_t size);
 
+
+
 /**
  * @brief Close file
  * 
@@ -128,5 +131,11 @@ bool sat_file_read_to_buffer (const char *filename, void **buffer, uint32_t size
  * @return true if successful, false otherwise
  */
 bool sat_file_close (sat_file_t *object);
+
+sat_status_t sat_file_copy (const char *const source, const char *const destination);
+sat_status_t sat_file_move (const char *const source, const char *const destination);
+sat_status_t sat_file_get_permissions (const char *const filename, uint32_t *permissions);
+sat_status_t sat_file_set_permissions (const char *const filename, uint32_t permissions);
+sat_status_t sat_file_check_extension (const char *const filename, const char *const extension);
 
 #endif/* SAT_FILE_H */
