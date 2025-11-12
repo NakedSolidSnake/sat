@@ -137,5 +137,6 @@ sat_status_t sat_file_move (const char *const source, const char *const destinat
 sat_status_t sat_file_get_permissions (const char *const filename, uint32_t *permissions);
 sat_status_t sat_file_set_permissions (const char *const filename, uint32_t permissions);
 sat_status_t sat_file_check_extension (const char *const filename, const char *const extension);
+sat_status_t sat_file_remove (const char *const filename);
 
 #endif/* SAT_FILE_H */
