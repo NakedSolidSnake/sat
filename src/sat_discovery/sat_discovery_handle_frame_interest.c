@@ -7,10 +7,6 @@
 
 void sat_discovery_handle_frame_interest (sat_discovery_t *const discovery, sat_discovery_frame_t frame)
 {
-    // Respond to interest if service is offered
-
-    sat_log_debug ("Received interest for service: %s", frame.payload.interest.service_name);
-
     if (strcmp (frame.payload.interest.service_name, discovery->service_name) == 0)
     {
         sat_iterator_t iter;
@@ -29,8 +25,6 @@ void sat_discovery_handle_frame_interest (sat_discovery_t *const discovery, sat_
                                                     .address = interface->ip_address
                                                 });
 
-            sat_log_debug ("Service %s announcing on address: %s", discovery->service_name, interface->ip_address);
-
             sat_discovery_frame_pack (&frame, buffer);
 
             sat_udp_send (&discovery->udp, (void *)&buffer, sizeof (buffer), &(sat_udp_destination_t)
@@ -39,6 +33,10 @@ void sat_discovery_handle_frame_interest (sat_discovery_t *const discovery, sat_
                                                                             .service = discovery->channel.service
                                                                             });
             
+            sat_log_debug ("Sent announce for service: %s on interface: %s (%s)", 
+                           discovery->service_name,
+                           interface->interface_name,
+                           interface->ip_address);
             
             interface = sat_iterator_next (&iter);
         }

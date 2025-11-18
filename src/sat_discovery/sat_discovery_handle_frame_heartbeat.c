@@ -8,11 +8,6 @@
 
 void sat_discovery_handle_frame_heartbeat (sat_discovery_t *const service, sat_discovery_frame_t frame)
 {
-    // verify if the server which is sending heartbeat is registered
-    // and update its last seen timestamp
-
-    sat_log_debug ("Received heartbeat for service: %s", frame.payload.heartbeat.service_name);
-
     sat_iterator_t iterator;
     
     sat_status_t status = sat_iterator_open (&iterator, (sat_iterator_base_t *)service->interests);
@@ -24,6 +19,8 @@ void sat_discovery_handle_frame_heartbeat (sat_discovery_t *const service, sat_d
             if (strcmp (interest->name, frame.payload.heartbeat.service_name) == 0 
                 && interest->registered == true)
             {
+                sat_log_debug ("Received heartbeat for service: %s", frame.payload.heartbeat.service_name);
+
                 sat_iterator_t iterator;
 
                 sat_status_t status = sat_iterator_open (&iterator, (sat_iterator_base_t *)service->nodes);
@@ -36,6 +33,11 @@ void sat_discovery_handle_frame_heartbeat (sat_discovery_t *const service, sat_d
                         if (sat_uuid_compare_bin (frame.header.uuid, node->uuid) == true)
                         {
                             sat_discovery_node_update_last_seen (node);
+
+                            sat_log_debug ("Updated last seen for node: %s at %s:%s\n",
+                                           node->name,
+                                           node->address,
+                                           node->port);
 
                             break;
                         }

@@ -13,17 +13,14 @@ void sat_discovery_handle_frame_announce (sat_discovery_t *const service, sat_di
     sat_status_t status = sat_iterator_open (&iterator, (sat_iterator_base_t *)service->interests);
     if (sat_status_get_result (&status) == true)
     {
-        // printf ("Scanning interests for service: %s\n", frame.payload.announce.service_name);
         sat_discovery_interest_t *interest = sat_iterator_next (&iterator);
         while (interest != NULL)
         {
-            if (interest->registered == true)
+            if (interest->registered == true && sat_uuid_compare_bin (interest->uuid, frame.header.uuid) == true)
             {
-                // printf ("Interest %s already registered\n", interest->name);
+                sat_log_debug ("Discarding already registered interest: %s\n", interest->name);
                 break;
             }
-
-            sat_log_debug ("Scanning interests for service: %s\n", frame.payload.announce.service_name);
 
             if (strcmp (interest->name, frame.payload.announce.service_name) == 0)
             {
@@ -43,7 +40,11 @@ void sat_discovery_handle_frame_announce (sat_discovery_t *const service, sat_di
                     status = sat_set_add (service->nodes, &node);
                     if (sat_status_get_result (&status) == true)
                     {
-                        // printf ("Registered discovery node: %s\n", node.name);
+                        sat_log_debug ("Registered new node: %s at %s:%s\n", 
+                                       node.name,
+                                       node.address,
+                                       node.port);
+
                         interest->registered = true;
                     }
                 }

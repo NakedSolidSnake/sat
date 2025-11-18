@@ -25,7 +25,6 @@ void sat_discovery_service_announce (void *object)
                                                 .address = interface->ip_address
                                             });
 
-        sat_log_debug ("Service %s announcing on address: %s", discovery->service_name, interface->ip_address);
 
         sat_discovery_frame_pack (&frame, buffer);
 

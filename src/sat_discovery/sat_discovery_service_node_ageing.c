@@ -27,7 +27,7 @@ void sat_discovery_service_node_ageing (void *object)
         {
             if (sat_time_get_utc_epoch_now () - node->last_heartbeat > SAT_DISCOVERY_NODE_HEARTBEAT_TIMEOUT_S)
             {
-                sat_log_debug ("Node %s timed out, removing...\n", node->name);
+                sat_log_debug ("Node %s timed out, removing...", node->name);
                 int32_t index = find_by_name (discovery->nodes, node->name);
                 if (index >= 0)
                 {
@@ -40,9 +40,10 @@ void sat_discovery_service_node_ageing (void *object)
                         {
                             if (strcmp (interest->name, node->name) == 0)
                             {
-                                // Mark interest as unregistered
-                                sat_log_debug ("Marking interest %s as unregistered\n", interest->name);
                                 interest->registered = false;
+
+                                sat_log_debug ("Marking interest %s as unregistered", interest->name);
+
                                 break;
                             }
 

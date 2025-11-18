@@ -29,10 +29,6 @@ void sat_discovery_service_interest (void *object)
                                                     .address = 0
                                                 });
 
-            sat_log_debug ("Service %s sending interest for service: %s", discovery->service_name, interest->name);
-
-            // sat_discovery_frame_print (&frame);
-
             status = sat_discovery_frame_pack (&frame, buffer);
             if (sat_status_get_result (&status) == false)
             {
@@ -40,14 +36,15 @@ void sat_discovery_service_interest (void *object)
                 break;
             }
 
-            sat_log_debug ("Frame: Version: %d Type: %d Interest Service: %s", frame.header.version, frame.header.type, frame.payload.interest.service_name);
-
             // Send interest message
             sat_udp_send (&discovery->udp, (void *)&buffer, sizeof (buffer), &(sat_udp_destination_t)
                                                                     {
-                                                                    .hostname = discovery->channel.address,
-                                                                    .service = discovery->channel.service
+                                                                        .hostname = discovery->channel.address,
+                                                                        .service = discovery->channel.service
                                                                     });
+
+            sat_log_debug ("Sent interest for service: %s", interest->name);
+            
             interest = sat_iterator_next (&iterator);
         }
     }

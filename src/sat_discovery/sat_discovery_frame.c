@@ -124,8 +124,6 @@ sat_status_t sat_discovery_frame_pack (const sat_discovery_frame_t *const object
                 break;
         }
 
-        sat_log_debug ("Packed frame contents: %*.s\n", sizeof (sat_discovery_frame_buffer_t), buffer);
-
         // Only set success if we didn't encounter any errors
         sat_status_success (&status);
 

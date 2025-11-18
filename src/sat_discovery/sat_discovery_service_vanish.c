@@ -16,8 +16,6 @@ void sat_discovery_service_vanish (void *object)
                                             .service_name = discovery->service_name,
                                         });
 
-    sat_log_debug ("Sending vanish for service: %s", discovery->service_name);
-
     sat_discovery_frame_pack (&frame, buffer);
 
     sat_udp_send (&discovery->udp, (void *)&buffer, sizeof (buffer), &(sat_udp_destination_t)
@@ -25,4 +23,6 @@ void sat_discovery_service_vanish (void *object)
                                                                     .hostname = discovery->channel.address,
                                                                     .service = discovery->channel.service
                                                                     });
+
+    sat_log_debug ("Sent vanish for service: %s", discovery->service_name);
 }

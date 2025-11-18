@@ -162,7 +162,11 @@ sat_status_t sat_discovery_add_interest (sat_discovery_t *object, const char *se
         }
 
         sat_discovery_interest_t interest;
-        status = sat_discovery_interest_create (&interest, service_name);
+        status = sat_discovery_interest_create (&interest, &(sat_discovery_interest_args_t)
+                                                            {
+                                                                .service_name = service_name,
+                                                                .uuid = NULL
+                                                            });
         if (sat_status_get_result (&status) == false)
         {
             break;
