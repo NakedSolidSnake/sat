@@ -1,2 +1,3 @@
-create_sample (sample_sat_array datastructures)
-create_sample (sample_sat_linked_list_iterator datastructures)
+create_sample (sample_sat_array datastructures/array)
+create_sample (sample_sat_linked_list_iterator datastructures/linked_list)
+create_sample (sample_sat_set datastructures/set)

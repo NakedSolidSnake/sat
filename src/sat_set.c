@@ -127,6 +127,18 @@ sat_status_t sat_set_remove_by (sat_set_t *object, uint32_t index)
     return status;
 }
 
+sat_status_t sat_set_remove_by_parameter (sat_set_t *object, void *param, sat_set_compare_t compare ,void *data)
+{
+    sat_status_t status = sat_status_set (&status, false, "sat set remove by parameter error");
+
+    if (object != NULL)
+    {
+        status = sat_array_remove_by_parameter (object->array, param, (sat_array_compare_t)compare, data);
+    }
+
+    return status;
+}
+
 sat_status_t sat_set_get_object_by (sat_set_t *object, uint32_t index, void *data)
 {
     sat_status_t status = sat_status_set (&status, false, "sat set get object by error");

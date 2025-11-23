@@ -27,6 +27,7 @@ sat_status_t sat_set_create (sat_set_t **object, sat_set_args_t *args);
 sat_status_t sat_set_add (sat_set_t *object, void *data);
 sat_status_t sat_set_update_by (sat_set_t *object, void *data, uint32_t index);
 sat_status_t sat_set_remove_by (sat_set_t *object, uint32_t index);
+sat_status_t sat_set_remove_by_parameter (sat_set_t *object, void *param, sat_set_compare_t compare ,void *data);
 sat_status_t sat_set_get_object_by (sat_set_t *object, uint32_t index, void *data);
 sat_status_t sat_set_get_object_by_parameter (sat_set_t *object, void *param, sat_set_compare_t compare ,void *data);
 sat_status_t sat_set_get_size (sat_set_t *object, uint32_t *size);
