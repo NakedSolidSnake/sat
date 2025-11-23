@@ -118,7 +118,7 @@ static void *client_thread (void *args)
                                                                           });
     assert (sat_status_get_result (&status) == true);
 
-    status = sat_udp_receive (&client, buffer, &size);
+    status = sat_udp_receive (&client, buffer, &size, 5000);
     assert (sat_status_get_result (&status) == true);
 
     assert (strcmp (hello_message, buffer) == 0);

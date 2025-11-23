@@ -5,6 +5,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <math.h>
+#include <poll.h>
 
 static sat_status_t sat_udp_server_async_open (void *object, sat_udp_server_args_t *args);
 static sat_status_t sat_udp_server_async_run (void *object);
@@ -58,15 +59,45 @@ static sat_status_t sat_udp_server_async_run (void *object)
         struct sockaddr_storage source;
         socklen_t length = sizeof (source);
         uint32_t size;
+        struct pollfd pfd;
+        pfd.fd = async->abstract.socket;
+        pfd.events = POLLIN;
+        pfd.revents = 0;
 
-        size = recvfrom (async->abstract.socket,
+        int poll_result = poll (&pfd, 1, 5000);
+
+        if (poll_result > 0 && (pfd.revents & POLLIN))
+        {
+            // Data available, receive it
+            memset (async->abstract.buffer, 0, async->abstract.size);
+            size = recvfrom (async->abstract.socket,
                         async->abstract.buffer,
                         async->abstract.size,
                         0,
                         (struct sockaddr *)&source,
                         &length);
 
-        async->abstract.buffer [size] = 0;
+            async->abstract.buffer [size] = 0;
+        }
+        else if (poll_result == 0)
+        {
+            // Timeout occurred
+            sat_status_set (&status, false, "sat udp receive timeout");
+        }
+        else
+        {
+            // Error occurred
+            sat_status_set (&status, false, "sat udp receive poll error");
+        }
+
+        // size = recvfrom (async->abstract.socket,
+        //                 async->abstract.buffer,
+        //                 async->abstract.size,
+        //                 0,
+        //                 (struct sockaddr *)&source,
+        //                 &length);
+
+        // async->abstract.buffer [size] = 0;
 
         if (async->abstract.events.on_receive)
             async->abstract.events.on_receive (async->abstract.buffer, &size, async->abstract.data);

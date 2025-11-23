@@ -40,7 +40,8 @@ void sat_discovery_service_node_ageing (void *object)
                         {
                             if (strcmp (interest->name, node->name) == 0)
                             {
-                                interest->registered = false;
+                                sat_discovery_interest_clear (interest);
+                                
 
                                 sat_log_debug ("Marking interest %s as unregistered", interest->name);
 

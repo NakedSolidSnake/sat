@@ -23,6 +23,6 @@ typedef struct
 } sat_discovery_interest_args_t;
 
 sat_status_t sat_discovery_interest_create (sat_discovery_interest_t *object, const sat_discovery_interest_args_t *const args);
-
+sat_status_t sat_discovery_interest_clear (sat_discovery_interest_t *object);
 
 #endif /* SAT_DISCOVERY_INTEREST_H */

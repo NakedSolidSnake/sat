@@ -8,6 +8,8 @@
 #include <netinet/in.h>
 #include <netdb.h>
 
+#include <poll.h>
+
 #include <sat_udp_client.h>
 #include <sat_udp_server.h>
 
@@ -87,7 +89,7 @@ sat_status_t sat_udp_send (sat_udp_t *object, const char *data, uint32_t size, s
     return status;
 }
 
-sat_status_t sat_udp_receive (sat_udp_t *object, char *data, uint32_t *size)
+sat_status_t sat_udp_receive (sat_udp_t *object, char *data, uint32_t *size, int timeout_ms)
 {
     sat_status_t status = sat_status_set (&status, false, "sat udp receive error");
 
@@ -99,12 +101,43 @@ sat_status_t sat_udp_receive (sat_udp_t *object, char *data, uint32_t *size)
     {
         int socket = sat_udp_get_socket (object);
 
-        memset (data, 0, *size);
+        struct pollfd pfd;
+        pfd.fd = socket;
+        pfd.events = POLLIN;
+        pfd.revents = 0;
 
-        _size = recvfrom (socket, data, *size, 0, (struct sockaddr *)&source, &source_len);
-        data [_size] = 0;
+        int poll_result = poll (&pfd, 1, timeout_ms);
 
-        sat_status_set (&status, true, "");
+        if (poll_result > 0 && (pfd.revents & POLLIN))
+        {
+            // Data available, receive it
+            memset (data, 0, *size);
+            _size = recvfrom (socket, data, *size, 0, (struct sockaddr *)&source, &source_len);
+            
+            if (_size > 0)
+            {
+                data [_size] = 0;
+                *size = _size;
+                sat_status_set (&status, true, "");
+            }
+        }
+        else if (poll_result == 0)
+        {
+            // Timeout occurred
+            sat_status_set (&status, false, "sat udp receive timeout");
+        }
+        else
+        {
+            // Error occurred
+            sat_status_set (&status, false, "sat udp receive poll error");
+        }
+
+        // memset (data, 0, *size);
+
+        // _size = recvfrom (socket, data, *size, 0, (struct sockaddr *)&source, &source_len);
+        // data [_size] = 0;
+
+        // sat_status_set (&status, true, "");
     }
 
     return status;

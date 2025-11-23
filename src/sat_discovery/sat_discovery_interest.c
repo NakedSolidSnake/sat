@@ -15,7 +15,22 @@ sat_status_t sat_discovery_interest_create (sat_discovery_interest_t *object, co
         {
             memcpy (object->uuid, args->uuid, sizeof (sat_uuid_binary_t));
         }
-        
+
+        sat_status_success (&status);
+    }
+
+    return status;
+}
+
+sat_status_t sat_discovery_interest_clear (sat_discovery_interest_t *object)
+{
+    sat_status_t status = sat_status_failure (&status, "sat discovery interest clear error");
+
+    if (object != NULL)
+    {
+        memset (object->uuid, 0, sizeof (sat_uuid_binary_t));
+        object->registered = false;
+
         sat_status_success (&status);
     }
 

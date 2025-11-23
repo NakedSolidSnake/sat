@@ -32,7 +32,7 @@ sat_status_t sat_udp_init (sat_udp_t *object);
 sat_status_t sat_udp_open (sat_udp_t *object, sat_udp_args_t *args);
 sat_status_t sat_udp_run (sat_udp_t *object);
 sat_status_t sat_udp_send (sat_udp_t *object, const char *data, uint32_t size, sat_udp_destination_t *destination);
-sat_status_t sat_udp_receive (sat_udp_t *object, char *data, uint32_t *size);
+sat_status_t sat_udp_receive (sat_udp_t *object, char *data, uint32_t *size, int timeout_ms);
 sat_status_t sat_udp_close (sat_udp_t *object);
 sat_status_t sat_udp_get_port (sat_udp_t *object, uint16_t *port);
 

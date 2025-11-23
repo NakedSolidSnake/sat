@@ -92,8 +92,13 @@ int main (int argc, char *argv[])
                                                                     .service = info.port
                                                                 });
 
-            status = sat_udp_receive (&app.client, buffer, &size);
-            assert (sat_status_get_result (&status) == true);
+            status = sat_udp_receive (&app.client, buffer, &size, 5000);
+            if (sat_status_get_result (&status) == false)
+            {
+                sat_log_error ("Failed to receive response from service %s. Reason: %s", info.name, sat_status_get_motive (&status));
+                continue;
+            }
+            
             printf ("%s\n", buffer);
         }
     }
