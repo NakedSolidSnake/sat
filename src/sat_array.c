@@ -12,6 +12,12 @@ struct sat_array_t
     uint8_t *buffer;
     bool initialized;
     sat_array_mode_t mode;
+
+    struct
+    {
+        sat_array_memory_notify_t on_increase;
+        void *user;
+    } notification;
 };
 
 static void *sat_array_next (void *object, uint32_t index);
@@ -99,6 +105,10 @@ sat_status_t sat_array_add (sat_array_t *object, void *data)
             status = sat_array_realloc (object);
             // in future register a callback to handle situations where
             // there is no more memory to allocate.
+            if (object->notification.on_increase != NULL)
+            {
+                object->notification.on_increase (object->notification.user, object->size);
+            }
         }
 
         // Check if there is space to add the new element
@@ -504,6 +514,12 @@ static void sat_array_set_context (sat_array_t *object, sat_array_args_t *args)
     object->object_size = args->object_size;
     object->size = args->size;
     object->mode = args->mode;
+
+    if (args->notification.on_increase != NULL)
+    {
+        object->notification.on_increase = args->notification.on_increase;
+        object->notification.user = args->notification.user;
+    }
 }
 
 static sat_status_t sat_array_realloc (sat_array_t *object)

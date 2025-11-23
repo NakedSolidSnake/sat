@@ -22,6 +22,8 @@ static sat_status_t sat_set_is_args_valid (sat_set_args_t *args);
 static void sat_set_set_context (sat_set_t *object, sat_set_args_t *args);
 static sat_status_t sat_set_buffer_allocate (sat_set_t *object);
 
+static void sat_set_on_increase (void *user, uint32_t new_size);
+
 sat_status_t sat_set_create (sat_set_t **object, sat_set_args_t *args)
 {
     sat_status_t status;
@@ -219,7 +221,12 @@ static sat_status_t sat_set_buffer_allocate (sat_set_t *object)
                                              {
                                                 .size = object->size,
                                                 .object_size = object->object_size,
-                                                .mode = (sat_array_mode_t) object->mode
+                                                .mode = (sat_array_mode_t) object->mode,
+                                                .notification =
+                                                {
+                                                    .on_increase = sat_set_on_increase,
+                                                    .user = object,
+                                                },
                                              });
 }
 
@@ -246,4 +253,11 @@ static uint32_t sat_set_get_amount (void *object)
     sat_array_get_size (set->array, &amount);
 
     return amount;
+}
+
+static void sat_set_on_increase (void *user, uint32_t new_size)
+{
+    sat_set_t *set = (sat_set_t *) user;
+    
+    set->size = new_size;
 }

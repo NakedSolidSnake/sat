@@ -8,6 +8,8 @@ typedef struct sat_array_t sat_array_t;
 
 typedef bool (*sat_array_compare_t) (void *element, void *param);
 
+typedef void (*sat_array_memory_notify_t) (void *user, uint32_t new_size);
+
 typedef enum
 {
     sat_array_mode_static,
@@ -19,6 +21,13 @@ typedef struct
     uint32_t size;
     uint32_t object_size;
     sat_array_mode_t mode;
+    
+    struct
+    {
+        sat_array_memory_notify_t on_increase;
+        void *user;
+    } notification;
+
 } sat_array_args_t;
 
 sat_status_t sat_array_create (sat_array_t **object, sat_array_args_t *args);
