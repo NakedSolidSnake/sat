@@ -198,6 +198,56 @@ sat_status_t sat_array_remove_by (sat_array_t *object, uint32_t index)
     return status;
 }
 
+sat_status_t sat_array_remove_by_parameter (sat_array_t *object, void *param, sat_array_compare_t compare ,void *data)
+{
+    sat_status_t status;
+
+    do
+    {
+        if (sat_array_is_initialized (object) == false)
+        {
+            sat_status_set (&status, false, "sat array error: array is not initialized");
+            break;
+        }
+
+        if (compare == NULL)
+        {
+            sat_status_set (&status, false, "sat array error: compare function is NULL");
+            break;
+        }
+
+        if (param == NULL)
+        {
+            sat_status_set (&status, false, "sat array error: parameter is NULL");
+            break;
+        }
+
+        sat_status_set (&status, false, "sat array error: object not found");
+
+        for (uint32_t i = 0; i < object->amount; i ++)
+        {
+            if (compare (&object->buffer [i * object->object_size], param) == true)
+            {
+                // Copy the data to the provided pointer
+                if (data != NULL)
+                {
+                    memset (data, 0, object->object_size);
+                    memcpy (data, &object->buffer [i * object->object_size], object->object_size);
+                }
+
+                sat_array_remove_by (object, i);
+
+                sat_status_success (&status);
+
+                break;
+            }
+        }
+
+    } while (false);
+
+    return status;
+}
+
 sat_status_t sat_array_get_object_by (sat_array_t *object, uint32_t index, void *data)
 {
     sat_status_t status;

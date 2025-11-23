@@ -25,6 +25,7 @@ sat_status_t sat_array_create (sat_array_t **object, sat_array_args_t *args);
 sat_status_t sat_array_add (sat_array_t *object, void *data);
 sat_status_t sat_array_update_by (sat_array_t *object, void *data, uint32_t index);
 sat_status_t sat_array_remove_by (sat_array_t *object, uint32_t index);
+sat_status_t sat_array_remove_by_parameter (sat_array_t *object, void *param, sat_array_compare_t compare ,void *data);
 sat_status_t sat_array_get_object_by (sat_array_t *object, uint32_t index, void *data);
 sat_status_t sat_array_get_object_by_parameter (sat_array_t *object, void *param, sat_array_compare_t compare ,void *data);
 sat_status_t sat_array_get_size (sat_array_t *object, uint32_t *size);
