@@ -144,6 +144,50 @@ sat_status_t sat_linked_list_get (sat_linked_list_t *object, sat_linked_list_com
     return status;
 }
 
+sat_status_t sat_linked_list_is_present (sat_linked_list_t *object, sat_linked_list_compare_t compare, const void *param)
+{
+    sat_status_t status;
+
+    do
+    {
+        if (object == NULL)
+        {
+            sat_status_failure (&status, "sat liked list is present error: object is NULL");
+            break;
+        }
+
+        if (compare == NULL)
+        {
+            sat_status_failure (&status, "sat liked list is present error: compare function is NULL");
+            break;
+        }
+
+        if (param == NULL)
+        {
+            sat_status_failure (&status, "sat liked list is present error: parameter is NULL");
+            break;
+        }
+
+        sat_linked_list_internal_t *_element = object->list;
+
+        sat_status_failure (&status, "sat liked list is present not found error");
+
+        while (_element != NULL)
+        {
+            if (compare (_element->data, (void *)param) == true)
+            {
+                sat_status_success (&status);
+                break;
+            }
+
+            _element = _element->next;
+        }
+
+    } while (false);
+
+    return status;
+}
+
 sat_status_t sat_linked_list_get_size (sat_linked_list_t *object, uint32_t *size)
 {
     sat_status_t status = sat_status_set (&status, false, "sat liked list get size error");

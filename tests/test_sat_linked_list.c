@@ -50,6 +50,9 @@ int main (int argc, char *argv[])
 
     sat_linked_list_debug (linked, print);
 
+    status = sat_linked_list_is_present (linked, compare, "Jane");
+    assert (sat_status_get_result (&status) == true);
+
     status = sat_linked_list_get (linked, compare, "Jane", &recover);
     assert (sat_status_get_result (&status) == true);
 
