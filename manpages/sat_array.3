@@ -1,0 +1,461 @@
+.TH SAT_ARRAY 3 "December 2025" "SAT Library" "SAT Library Manual"
+.SH NAME
+sat_array \- dynamic array data structure with configurable growth modes
+.SH SYNOPSIS
+.nf
+.B #include <sat_array.h>
+.PP
+.BI "sat_status_t sat_array_create(sat_array_t **const " object ,
+.BI "                              const sat_array_args_t *const " args );
+.BI "sat_status_t sat_array_add(sat_array_t *const " object ,
+.BI "                           const void *const " data );
+.BI "sat_status_t sat_array_update_by(sat_array_t *const " object ,
+.BI "                                 const void *const " data ,
+.BI "                                 const uint32_t " index );
+.BI "sat_status_t sat_array_remove_by(sat_array_t *const " object ,
+.BI "                                 const uint32_t " index );
+.BI "sat_status_t sat_array_remove_by_parameter(sat_array_t *const " object ,
+.BI "                                           const void *const " param ,
+.BI "                                           sat_array_compare_t " compare ,
+.BI "                                           void *const " data );
+.BI "sat_status_t sat_array_get_object_by(const sat_array_t *const " object ,
+.BI "                                     const uint32_t " index ,
+.BI "                                     void *const " data );
+.BI "sat_status_t sat_array_get_object_by_parameter(sat_array_t *const " object ,
+.BI "                                               const void *const " param ,
+.BI "                                               sat_array_compare_t " compare ,
+.BI "                                               void *const " data );
+.BI "sat_status_t sat_array_get_size(const sat_array_t *const " object ,
+.BI "                                uint32_t *const " size );
+.BI "sat_status_t sat_array_get_capacity(const sat_array_t *const " object ,
+.BI "                                    uint32_t *const " capacity );
+.BI "sat_status_t sat_array_clear(sat_array_t *const " object );
+.BI "sat_status_t sat_array_destroy(sat_array_t *const " object );
+.BI "void *sat_array_get_reference_by(const sat_array_t *const " object ,
+.BI "                                 const uint32_t " index );
+.PP
+Link with \fI\-lsat\fP.
+.fi
+.SH DESCRIPTION
+The
+.B sat_array
+module provides a flexible dynamic array implementation that can store arbitrary
+data types. It supports two growth modes: static (fixed-size) and dynamic
+(automatic resizing).
+.PP
+The array is type-agnostic and uses
+.I void*
+pointers for data storage, making it suitable for storing any data type. Elements
+are stored contiguously in memory and accessed by zero-based indexing.
+.SS Types
+.TP
+.B sat_array_t
+Opaque structure representing the array. Users should not access its fields directly.
+.TP
+.B sat_array_mode_t
+Growth mode enumeration:
+.RS
+.IP \(bu 2
+.B sat_array_mode_static
+\- Fixed size, no automatic growth
+.IP \(bu 2
+.B sat_array_mode_dynamic
+\- Automatic resizing when capacity is reached
+.RE
+.TP
+.B sat_array_args_t
+Configuration structure with the following fields:
+.RS
+.IP \(bu 2
+.I uint32_t size
+\- Initial capacity
+.IP \(bu 2
+.I uint32_t object_size
+\- Size in bytes of each element
+.IP \(bu 2
+.I sat_array_mode_t mode
+\- Growth mode
+.IP \(bu 2
+.I notification.on_increase
+\- Optional callback invoked on growth
+.IP \(bu 2
+.I notification.user
+\- User context for callback
+.RE
+.TP
+.B sat_array_compare_t
+Function pointer type for element comparison:
+.RS
+.nf
+typedef bool (*sat_array_compare_t)(const void *element,
+                                    const void *param);
+.fi
+.RE
+.TP
+.B sat_array_memory_notify_t
+Callback type for memory growth notifications:
+.RS
+.nf
+typedef void (*sat_array_memory_notify_t)(void *user,
+                                          uint32_t new_size);
+.fi
+.RE
+.SS Initialization and Configuration
+.TP
+.BR sat_array_create ()
+Creates and initializes a new array with the specified configuration. Allocates
+initial capacity based on
+.IR args->size .
+The
+.I object
+pointer is set to the newly created array. Returns success status.
+.PP
+.SS Element Operations
+.TP
+.BR sat_array_add ()
+Appends an element to the end of the array. The data is copied using
+.BR memcpy (3).
+In dynamic mode, automatically grows the array if capacity is reached. In static
+mode, fails if the array is full. Returns success status.
+.TP
+.BR sat_array_update_by ()
+Replaces the element at
+.I index
+with new data. The index must be within the current size bounds. Returns success
+status.
+.TP
+.BR sat_array_remove_by ()
+Removes the element at
+.I index
+and shifts all subsequent elements down by one position. This is an O(n) operation.
+Returns success status.
+.TP
+.BR sat_array_remove_by_parameter ()
+Searches for and removes the first element matching
+.I param
+using the
+.I compare
+function. If
+.I data
+is not NULL, the removed element is copied to it before removal. Returns success
+if a matching element was found and removed.
+.PP
+.SS Retrieval Operations
+.TP
+.BR sat_array_get_object_by ()
+Copies the element at
+.I index
+into the
+.I data
+buffer. The buffer must be at least
+.I object_size
+bytes. Returns success if the index is valid.
+.TP
+.BR sat_array_get_object_by_parameter ()
+Searches for the first element matching
+.I param
+using the
+.I compare
+function, then copies it to
+.IR data .
+Returns success if a matching element was found.
+.TP
+.BR sat_array_get_reference_by ()
+Returns a direct pointer to the element at
+.I index
+without copying. This provides zero-copy access but the pointer becomes invalid
+if the array is resized or destroyed. Returns NULL if the index is out of bounds.
+.PP
+.SS Query Operations
+.TP
+.BR sat_array_get_size ()
+Returns the number of elements currently stored in the array via the
+.I size
+output parameter.
+.TP
+.BR sat_array_get_capacity ()
+Returns the maximum number of elements the array can hold without reallocation
+via the
+.I capacity
+output parameter.
+.PP
+.SS Cleanup Operations
+.TP
+.BR sat_array_clear ()
+Removes all elements from the array, resetting size to 0. The allocated memory
+and capacity remain unchanged.
+.TP
+.BR sat_array_destroy ()
+Frees all memory associated with the array and invalidates the object pointer.
+After calling this function, the array must not be used.
+.SH RETURN VALUE
+All functions except
+.BR sat_array_get_reference_by ()
+return a
+.B sat_status_t
+structure containing:
+.IP \(bu 2
+A boolean result indicating success or failure
+.IP \(bu 2
+An error message string if the operation failed
+.PP
+Use
+.BR sat_status_get_result ()
+to check if the operation succeeded, and
+.BR sat_status_get_message ()
+to retrieve error details.
+.PP
+.BR sat_array_get_reference_by ()
+returns a pointer to the element, or NULL on failure.
+.SH ERRORS
+Common error conditions include:
+.TP
+.B "NULL pointer arguments"
+Most functions will fail if passed NULL pointers for required parameters.
+.TP
+.B "Index out of bounds"
+Operations with
+.I index
+parameter fail if index >= size.
+.TP
+.B "Array full (static mode)"
+.BR sat_array_add ()
+fails in static mode when size equals capacity.
+.TP
+.B "Memory allocation failure"
+.BR sat_array_create ()
+and dynamic growth operations may fail if memory allocation fails.
+.TP
+.B "Element not found"
+Search operations return failure if no matching element is found.
+.SH EXAMPLES
+.SS Basic Usage
+.nf
+#include <sat_array.h>
+#include <stdio.h>
+
+int main(void)
+{
+    sat_array_t *array;
+    sat_status_t status;
+    
+    /* Create dynamic array for integers */
+    sat_array_args_t args = {
+        .size = 10,
+        .object_size = sizeof(int),
+        .mode = sat_array_mode_dynamic,
+        .notification = { NULL, NULL }
+    };
+    
+    status = sat_array_create(&array, &args);
+    if (!sat_status_get_result(&status)) {
+        fprintf(stderr, "Create failed: %s\\n", 
+                sat_status_get_message(&status));
+        return 1;
+    }
+    
+    /* Add elements */
+    for (int i = 0; i < 20; i++) {
+        status = sat_array_add(array, &i);
+        if (!sat_status_get_result(&status)) {
+            fprintf(stderr, "Add failed: %s\\n",
+                    sat_status_get_message(&status));
+            sat_array_destroy(array);
+            return 1;
+        }
+    }
+    
+    /* Get array size */
+    uint32_t size;
+    sat_array_get_size(array, &size);
+    printf("Array size: %u\\n", size);
+    
+    /* Retrieve element */
+    int value;
+    sat_array_get_object_by(array, 5, &value);
+    printf("Element at index 5: %d\\n", value);
+    
+    /* Update element */
+    int new_value = 999;
+    sat_array_update_by(array, &new_value, 5);
+    
+    /* Remove element */
+    sat_array_remove_by(array, 10);
+    
+    /* Cleanup */
+    sat_array_destroy(array);
+    
+    return 0;
+}
+.fi
+.SS Using Comparison Functions
+.nf
+#include <sat_array.h>
+#include <string.h>
+
+typedef struct {
+    int id;
+    char name[32];
+} person_t;
+
+bool compare_by_id(const void *element, const void *param)
+{
+    const person_t *p = element;
+    const int *id = param;
+    return p->id == *id;
+}
+
+int main(void)
+{
+    sat_array_t *array;
+    sat_array_args_t args = {
+        .size = 5,
+        .object_size = sizeof(person_t),
+        .mode = sat_array_mode_dynamic,
+        .notification = { NULL, NULL }
+    };
+    
+    sat_array_create(&array, &args);
+    
+    /* Add people */
+    person_t p1 = { 1, "Alice" };
+    person_t p2 = { 2, "Bob" };
+    person_t p3 = { 3, "Charlie" };
+    
+    sat_array_add(array, &p1);
+    sat_array_add(array, &p2);
+    sat_array_add(array, &p3);
+    
+    /* Find by ID */
+    int search_id = 2;
+    person_t found;
+    sat_status_t status = sat_array_get_object_by_parameter(
+        array, &search_id, compare_by_id, &found);
+    
+    if (sat_status_get_result(&status)) {
+        printf("Found: %s (ID: %d)\\n", found.name, found.id);
+    }
+    
+    /* Remove by ID */
+    sat_array_remove_by_parameter(array, &search_id, 
+                                   compare_by_id, NULL);
+    
+    sat_array_destroy(array);
+    return 0;
+}
+.fi
+.SS Zero-Copy Access
+.nf
+#include <sat_array.h>
+
+int main(void)
+{
+    sat_array_t *array;
+    sat_array_args_t args = {
+        .size = 100,
+        .object_size = sizeof(double),
+        .mode = sat_array_mode_static,
+        .notification = { NULL, NULL }
+    };
+    
+    sat_array_create(&array, &args);
+    
+    /* Add elements */
+    for (int i = 0; i < 100; i++) {
+        double value = i * 3.14;
+        sat_array_add(array, &value);
+    }
+    
+    /* Direct access without copying */
+    for (int i = 0; i < 100; i++) {
+        double *ptr = sat_array_get_reference_by(array, i);
+        if (ptr) {
+            *ptr *= 2.0;  /* Modify in-place */
+        }
+    }
+    
+    sat_array_destroy(array);
+    return 0;
+}
+.fi
+.SS Memory Growth Notification
+.nf
+#include <sat_array.h>
+#include <stdio.h>
+
+void on_growth(void *user, uint32_t new_size)
+{
+    int *count = user;
+    (*count)++;
+    printf("Array grew to capacity: %u\\n", new_size);
+}
+
+int main(void)
+{
+    sat_array_t *array;
+    int growth_count = 0;
+    
+    sat_array_args_t args = {
+        .size = 4,
+        .object_size = sizeof(int),
+        .mode = sat_array_mode_dynamic,
+        .notification = {
+            .on_increase = on_growth,
+            .user = &growth_count
+        }
+    };
+    
+    sat_array_create(&array, &args);
+    
+    /* Add enough elements to trigger growth */
+    for (int i = 0; i < 20; i++) {
+        sat_array_add(array, &i);
+    }
+    
+    printf("Array grew %d times\\n", growth_count);
+    
+    sat_array_destroy(array);
+    return 0;
+}
+.fi
+.SH NOTES
+.IP \(bu 2
+Elements are stored contiguously in memory, enabling efficient cache usage.
+.IP \(bu 2
+In dynamic mode, the array typically doubles in capacity when full.
+.IP \(bu 2
+The
+.BR sat_array_remove_by ()
+operation has O(n) time complexity due to element shifting.
+.IP \(bu 2
+The array is not thread-safe. External synchronization is required for
+concurrent access.
+.IP \(bu 2
+Pointers returned by
+.BR sat_array_get_reference_by ()
+become invalid after array modification or destruction.
+.IP \(bu 2
+The comparison function for search operations receives the array element as
+the first parameter and the search parameter as the second.
+.IP \(bu 2
+Static mode is useful for performance-critical code where allocations must
+be predictable and bounded.
+.SH SEE ALSO
+.BR sat_linked_list (3),
+.BR sat_stack (3),
+.BR sat_queue (3),
+.BR sat_map (3),
+.BR sat_set (3),
+.BR sat_iterator (3),
+.BR sat_status (3),
+.BR memcpy (3)
+.PP
+SAT Library Documentation: <https://github.com/solidcris/sat>
+.SH BUGS
+No known bugs at this time. Report bugs to the SAT Library issue tracker.
+.SH AUTHOR
+Written by the SAT Library contributors.
+.SH COPYRIGHT
+Copyright \(co 2025 SAT Library Project.
+.br
+Licensed under the MIT License.
