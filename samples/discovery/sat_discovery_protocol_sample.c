@@ -1,5 +1,6 @@
 #include <sat_discovery/sat_discovery_frame.h>
 #include <sat_uuid.h>
+#include <stdio.h>
 
 int main (void)
 {

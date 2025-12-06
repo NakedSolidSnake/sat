@@ -49,7 +49,7 @@ sat_status_t sat_opengl_program_link (sat_opengl_program_t *object)
             break;
         }
 
-        status = sat_iterator_open (&iterator, object->shaders);
+        status = sat_iterator_open (&iterator, (sat_iterator_base_t *)object->shaders);
 
         sat_opengl_shader_t *shader = (sat_opengl_shader_t *) sat_iterator_next (&iterator);
 
@@ -61,7 +61,7 @@ sat_status_t sat_opengl_program_link (sat_opengl_program_t *object)
 
         glLinkProgram (object->id);
 
-        status = sat_opengl_program_check_link_status (object);
+        status = sat_opengl_program_check_link_status ((sat_opengl_shader_t*)object);
 
         if (sat_status_get_result (&status) == false)
         {
@@ -90,7 +90,7 @@ sat_status_t sat_opengl_program_shader_delete (sat_opengl_program_t *object)
             break;
         }
 
-        status = sat_iterator_open (&iterator, object->shaders);
+        status = sat_iterator_open (&iterator, (sat_iterator_base_t *)object->shaders);
 
         sat_opengl_shader_t *shader = (sat_opengl_shader_t *) sat_iterator_next (&iterator);
 
@@ -155,7 +155,7 @@ static sat_status_t sat_opengl_program_check_link_status (sat_opengl_shader_t *o
     return status;    
 }
 
-sat_status_t sat_opengl_program_set_bool (sat_opengl_program_t *object, const char *name, sat_opengl_value_send_t send, sat_opengl_value_bool_t *value)
+sat_status_t sat_opengl_program_set_bool (sat_opengl_program_t *object, const char *const name, sat_opengl_value_send_t send, const sat_opengl_value_bool_t *const value)
 {
     sat_status_t status = sat_status_set (&status, false, "sat opengl program set bool error");
 
@@ -189,7 +189,7 @@ sat_status_t sat_opengl_program_set_bool (sat_opengl_program_t *object, const ch
     return status;
 }
 
-sat_status_t sat_opengl_program_set_int (sat_opengl_program_t *object, const char *name, sat_opengl_value_send_t send, sat_opengl_value_int_t *value)
+sat_status_t sat_opengl_program_set_int (sat_opengl_program_t *object, const char *const name, sat_opengl_value_send_t send, const sat_opengl_value_int_t *const value)
 {
     sat_status_t status = sat_status_set (&status, false, "sat opengl program set int error");
 
@@ -223,7 +223,7 @@ sat_status_t sat_opengl_program_set_int (sat_opengl_program_t *object, const cha
     return status;
 }
 
-sat_status_t sat_opengl_program_set_float (sat_opengl_program_t *object, const char *name, sat_opengl_value_send_t send, sat_opengl_value_float_t *value)
+sat_status_t sat_opengl_program_set_float (sat_opengl_program_t *object, const char *const name, sat_opengl_value_send_t send, const sat_opengl_value_float_t *const value)
 {
     sat_status_t status = sat_status_set (&status, false, "sat opengl program set float error");
 
@@ -257,7 +257,7 @@ sat_status_t sat_opengl_program_set_float (sat_opengl_program_t *object, const c
     return status;
 }
 
-sat_status_t sat_opengl_program_set_matrix (sat_opengl_program_t *object, const char *name, sat_opengl_matrix_t *matrix)
+sat_status_t sat_opengl_program_set_matrix (sat_opengl_program_t *object, const char *const name, const sat_opengl_matrix_t *const matrix)
 {
     sat_status_t status = sat_status_set (&status, false, "sat opengl program set matrix error");
 
@@ -268,17 +268,17 @@ sat_status_t sat_opengl_program_set_matrix (sat_opengl_program_t *object, const 
     switch (matrix->type)
     {
         case sat_opengl_matrix_type_2x2:
-            glUniformMatrix2fv (location, 1, GL_FALSE, matrix->matrix_2x2);
+            glUniformMatrix2fv (location, 1, GL_FALSE, (const GLfloat *)matrix->matrix_2x2);
             sat_status_set (&status, true, "");
         break;
 
         case sat_opengl_matrix_type_3x3:
-            glUniformMatrix3fv (location, 1, GL_FALSE, matrix->matrix_3x3);
+            glUniformMatrix3fv (location, 1, GL_FALSE, (const GLfloat *)matrix->matrix_3x3);
             sat_status_set (&status, true, "");
         break;
 
         case sat_opengl_matrix_type_4x4:
-            glUniformMatrix4fv (location, 1, GL_FALSE, matrix->matrix_4x4);
+            glUniformMatrix4fv (location, 1, GL_FALSE, (const GLfloat *)matrix->matrix_4x4);
             sat_status_set (&status, true, "");
         break;
     }

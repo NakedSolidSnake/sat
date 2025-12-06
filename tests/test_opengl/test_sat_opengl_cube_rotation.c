@@ -199,13 +199,13 @@ int main (int argc, char *argv [])
       status = sat_opengl_enable_program (opengl, "triangle");
       assert (sat_status_get_result (&status) == true);
 
-      status = sat_opengl_send_shader_matrix (opengl, "triangle", "model", &(sat_opengl_matrix_t){.type = sat_opengl_matrix_type_4x4, .matrix_4x4 = model});
+      status = sat_opengl_send_shader_matrix (opengl, "triangle", "model", &(sat_opengl_matrix_t){.type = sat_opengl_matrix_type_4x4, .matrix_4x4 = &model});
       assert (sat_status_get_result (&status) == true);
 
-      status = sat_opengl_send_shader_matrix (opengl, "triangle", "view", &(sat_opengl_matrix_t){.type = sat_opengl_matrix_type_4x4, .matrix_4x4 = view});
+      status = sat_opengl_send_shader_matrix (opengl, "triangle", "view", &(sat_opengl_matrix_t){.type = sat_opengl_matrix_type_4x4, .matrix_4x4 = &view});
       assert (sat_status_get_result (&status) == true);
 
-      status = sat_opengl_send_shader_matrix (opengl, "triangle", "projection", &(sat_opengl_matrix_t){.type = sat_opengl_matrix_type_4x4, .matrix_4x4 = projection});
+      status = sat_opengl_send_shader_matrix (opengl, "triangle", "projection", &(sat_opengl_matrix_t){.type = sat_opengl_matrix_type_4x4, .matrix_4x4 = &projection});
       assert (sat_status_get_result (&status) == true);
 
       status = sat_opengl_enable_vao (opengl, "triangle");

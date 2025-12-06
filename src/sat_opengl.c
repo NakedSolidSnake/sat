@@ -27,9 +27,9 @@ struct sat_opengl_t
 
 static sat_status_t sat_opengl_check_args (sat_opengl_args_t *args);
 static sat_status_t sat_opengl_init (void);
-static bool sat_opengl_is_program_equal (void *element, void *new_element);
-static bool sat_opengl_is_vao_equal (void *element, void *new_element);
-static bool sat_opengl_is_textures_equal (void *element, void *new_element);
+static bool sat_opengl_is_program_equal (const void *element, const void *new_element);
+static bool sat_opengl_is_vao_equal (const void *element, const void *new_element);
+static bool sat_opengl_is_textures_equal (const void *element, const void *new_element);
 static void sat_opengl_draw_by (sat_opengl_draw_type_t type, uint32_t vertices_amount);
 
 sat_status_t sat_opengl_create (sat_opengl_t **object, sat_opengl_args_t *args)
@@ -195,7 +195,7 @@ sat_status_t sat_opengl_add_shader_to_program (sat_opengl_t *object, const char 
 
         do 
         {
-            status = sat_iterator_open (&iterator, object->programs);
+            status = sat_iterator_open (&iterator, (sat_iterator_base_t *)object->programs);
             if (sat_status_get_result (&status) == false)
             {
                 break;
@@ -238,7 +238,7 @@ sat_status_t sat_opengl_compile_program (sat_opengl_t *object, const char *name)
 
         do 
         {
-            status = sat_iterator_open (&iterator, object->programs);
+            status = sat_iterator_open (&iterator, (sat_iterator_base_t *)object->programs);
             if (sat_status_get_result (&status) == false)
             {
                 break;
@@ -329,7 +329,7 @@ sat_status_t sat_opengl_enable_vao (sat_opengl_t *object, const char *name)
 
         do 
         {
-            status = sat_iterator_open (&iterator, object->vaos);
+            status = sat_iterator_open (&iterator, (sat_iterator_base_t *)object->vaos);
             if (sat_status_get_result (&status) == false)
             {
                 break;
@@ -365,7 +365,7 @@ sat_status_t sat_opengl_enable_program (sat_opengl_t *object, const char *name)
 
         do 
         {
-            status = sat_iterator_open (&iterator, object->programs);
+            status = sat_iterator_open (&iterator, (sat_iterator_base_t *)object->programs);
             if (sat_status_get_result (&status) == false)
             {
                 break;
@@ -449,7 +449,7 @@ sat_status_t sat_opengl_add_vbo_to_vao (sat_opengl_t *object, const char *name, 
 
         do 
         {
-            status = sat_iterator_open (&iterator, object->programs);
+            status = sat_iterator_open (&iterator, (sat_iterator_base_t *)object->vaos);
             if (sat_status_get_result (&status) == false)
             {
                 break;
@@ -524,7 +524,7 @@ sat_status_t sat_opengl_texture_container_add (sat_opengl_t *object, const char 
 
         do 
         {
-            status = sat_iterator_open (&iterator, object->textures);
+            status = sat_iterator_open (&iterator, (sat_iterator_base_t *)object->textures);
             if (sat_status_get_result (&status) == false)
             {
                 break;
@@ -567,7 +567,7 @@ sat_status_t sat_opengl_texture_container_enable (sat_opengl_t *object, const ch
 
         do 
         {
-            status = sat_iterator_open (&iterator, object->textures);
+            status = sat_iterator_open (&iterator, (sat_iterator_base_t *)object->textures);
             if (sat_status_get_result (&status) == false)
             {
                 break;
@@ -604,7 +604,7 @@ sat_status_t sat_opengl_send_shader_value (sat_opengl_t *object, const char *nam
 
         do 
         {
-            status = sat_iterator_open (&iterator, object->programs);
+            status = sat_iterator_open (&iterator, (sat_iterator_base_t *)object->programs);
             if (sat_status_get_result (&status) == false)
             {
                 break;
@@ -652,7 +652,7 @@ sat_status_t sat_opengl_send_shader_matrix (sat_opengl_t *object, const char *na
 
         do 
         {
-            status = sat_iterator_open (&iterator, object->programs);
+            status = sat_iterator_open (&iterator, (sat_iterator_base_t *)object->programs);
             if (sat_status_get_result (&status) == false)
             {
                 break;
@@ -734,12 +734,12 @@ static sat_status_t sat_opengl_init (void)
     return status;
 }
 
-static bool sat_opengl_is_program_equal (void *element, void *new_element)
+static bool sat_opengl_is_program_equal (const void *element, const void *new_element)
 {
     bool status = false;
 
-    sat_opengl_program_t *program = (sat_opengl_program_t *)element;
-    sat_opengl_program_t *new_program= (sat_opengl_program_t *)new_element;
+    const sat_opengl_program_t *program = (const sat_opengl_program_t *)element;
+    const sat_opengl_program_t *new_program= (const sat_opengl_program_t *)new_element;
 
     if (strcmp (program->name, new_program->name) == 0)
     {
@@ -749,12 +749,12 @@ static bool sat_opengl_is_program_equal (void *element, void *new_element)
     return status;
 }
 
-static bool sat_opengl_is_vao_equal (void *element, void *new_element)
+static bool sat_opengl_is_vao_equal (const void *element, const void *new_element)
 {
     bool status = false;
 
-    sat_opengl_vao_t *vao = (sat_opengl_vao_t *)element;
-    sat_opengl_vao_t *new_vao= (sat_opengl_vao_t *)new_element;
+    const sat_opengl_vao_t *vao = (const sat_opengl_vao_t *)element;
+    const sat_opengl_vao_t *new_vao= (const sat_opengl_vao_t *)new_element;
 
     if (strcmp (vao->name, new_vao->name) == 0)
     {
@@ -764,12 +764,12 @@ static bool sat_opengl_is_vao_equal (void *element, void *new_element)
     return status;
 }
 
-static bool sat_opengl_is_textures_equal (void *element, void *new_element)
+static bool sat_opengl_is_textures_equal (const void *element, const void *new_element)
 {
     bool status = false;
 
-    sat_opengl_container_texture_t *container = (sat_opengl_container_texture_t *)element;
-    sat_opengl_container_texture_t *new_container = (sat_opengl_container_texture_t *)new_element;
+    const sat_opengl_container_texture_t *container = (const sat_opengl_container_texture_t *)element;
+    const sat_opengl_container_texture_t *new_container = (const sat_opengl_container_texture_t *)new_element;
 
     if (strcmp (container->name, new_container->name) == 0)
     {

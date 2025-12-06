@@ -20,19 +20,18 @@ struct sat_array_t
     } notification;
 };
 
-static void *sat_array_next (void *object, uint32_t index);
-static uint32_t sat_array_get_amount (void *object);
+static void *sat_array_next (const void *const object, const uint32_t index);
+static uint32_t sat_array_get_amount (const void *const object);
 
-static bool sat_array_is_initialized (sat_array_t *object);
-static sat_status_t sat_array_is_args_valid (sat_array_args_t *args);
+static bool sat_array_is_initialized (const sat_array_t *const object);
+static sat_status_t sat_array_is_args_valid (const sat_array_args_t *const args);
 
-static void sat_array_set_context (sat_array_t *object, sat_array_args_t *args);
-static sat_status_t sat_array_realloc (sat_array_t *object);
+static void sat_array_set_context (sat_array_t *const object, const sat_array_args_t *const args);
+static sat_status_t sat_array_realloc (sat_array_t *const object);
 
-static void sat_array_configure_iterator (sat_array_t *object);
+static void sat_array_configure_iterator (sat_array_t *const object);
 
-
-sat_status_t sat_array_create (sat_array_t **object, sat_array_args_t *args)
+sat_status_t sat_array_create (sat_array_t **const object, const sat_array_args_t *const args)
 {
     sat_status_t status;
 
@@ -46,7 +45,7 @@ sat_status_t sat_array_create (sat_array_t **object, sat_array_args_t *args)
 
         if (object == NULL)
         {
-            sat_status_set (&status, false, "sat array error: object is NULL");
+            sat_status_failure (&status, "sat array error: object is NULL");
 
             break;
         }
@@ -54,7 +53,7 @@ sat_status_t sat_array_create (sat_array_t **object, sat_array_args_t *args)
         sat_array_t *__object = calloc (1, sizeof (struct sat_array_t));
         if (__object == NULL)
         {
-            sat_status_set (&status, false, "sat array error: memory allocation failed");
+            sat_status_failure (&status, "sat array error: memory allocation failed");
 
             break;
         }
@@ -64,7 +63,7 @@ sat_status_t sat_array_create (sat_array_t **object, sat_array_args_t *args)
         __object->buffer = (uint8_t *) calloc (1, __object->size * __object->object_size);
         if (__object->buffer == NULL)
         {
-            sat_status_set (&status, false, "sat array error: buffer allocation failed");
+            sat_status_failure (&status, "sat array error: buffer allocation failed");
 
             free (__object);
             break;
@@ -75,14 +74,14 @@ sat_status_t sat_array_create (sat_array_t **object, sat_array_args_t *args)
         __object->initialized = true;
         *object = __object;
 
-        sat_status_set (&status, true, "");
+        sat_status_success (&status);
 
     } while (false);
 
     return status;
 }
 
-sat_status_t sat_array_add (sat_array_t *object, void *data)
+sat_status_t sat_array_add (sat_array_t *const object, const void *const data)
 {
     sat_status_t status;
 
@@ -90,13 +89,13 @@ sat_status_t sat_array_add (sat_array_t *object, void *data)
     {
         if (sat_array_is_initialized (object) == false)
         {
-            sat_status_set (&status, false, "sat array error: array is not initialized");
+            sat_status_failure (&status, "sat array error: array is not initialized");
             break;
         }
 
         if (data == NULL)
         {
-            sat_status_set (&status, false, "sat array error: data is NULL");
+            sat_status_failure (&status, "sat array error: data is NULL");
             break;
         }
 
@@ -115,7 +114,7 @@ sat_status_t sat_array_add (sat_array_t *object, void *data)
         // if the array is static, we do not allow adding more elements than the size
         if (object->amount >= object->size)
         {
-            sat_status_set (&status, false, "sat array error: array is full");
+            sat_status_failure (&status, "sat array error: array is full");
             break;
         }
 
@@ -125,14 +124,14 @@ sat_status_t sat_array_add (sat_array_t *object, void *data)
 
         object->amount ++;
 
-        sat_status_set (&status, true, "");
+        sat_status_success (&status);
 
     } while (false);
 
     return status;
 }
 
-sat_status_t sat_array_update_by (sat_array_t *object, void *data, uint32_t index)
+sat_status_t sat_array_update_by (sat_array_t *const object, const void *const data, const uint32_t index)
 {
     sat_status_t status;
 
@@ -140,51 +139,51 @@ sat_status_t sat_array_update_by (sat_array_t *object, void *data, uint32_t inde
     {
         if (sat_array_is_initialized (object) == false)
         {
-            sat_status_set (&status, false, "sat array error: array is not initialized");
+            sat_status_failure (&status, "sat array error: array is not initialized");
             break;
         }
 
         if (data == NULL)
         {
-            sat_status_set (&status, false, "sat array error: data is NULL");
+            sat_status_failure (&status, "sat array error: data is NULL");
             break;
         }
         if (index >= object->amount)
         {
-            sat_status_set (&status, false, "sat array error: index out of bounds");
+            sat_status_failure (&status, "sat array error: index out of bounds");
             break;
         }
 
         memcpy (&object->buffer [index * object->object_size], data, object->object_size);
 
-        sat_status_set (&status, true, "");
+        sat_status_success (&status);
 
     } while (false);
     
     return status;
 }
 
-sat_status_t sat_array_remove_by (sat_array_t *object, uint32_t index)
+sat_status_t sat_array_remove_by (sat_array_t *const object, uint32_t const index)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat array remove error");
+    sat_status_t status = sat_status_failure (&status, "sat array remove error");
 
     do
     {
         if (sat_array_is_initialized (object) == false)
         {
-            sat_status_set (&status, false, "sat array error: array is not initialized");
+            sat_status_failure (&status, "sat array error: array is not initialized");
             break;
         }
 
         if (index >= object->amount)
         {
-            sat_status_set (&status, false, "sat array error: index out of bounds");
+            sat_status_failure (&status, "sat array error: index out of bounds");
             break;
         }
 
         if (object->amount == 0)
         {
-            sat_status_set (&status, false, "sat array error: no elements to remove");
+            sat_status_failure (&status, "sat array error: no elements to remove");
             break;
         }
 
@@ -201,14 +200,14 @@ sat_status_t sat_array_remove_by (sat_array_t *object, uint32_t index)
 
         object->amount --;
 
-        sat_status_set (&status, true, "");
+        sat_status_success (&status);
 
     } while (false);
 
     return status;
 }
 
-sat_status_t sat_array_remove_by_parameter (sat_array_t *object, void *param, sat_array_compare_t compare ,void *data)
+sat_status_t sat_array_remove_by_parameter (sat_array_t *const object, const void *const param, sat_array_compare_t compare , void *const data)
 {
     sat_status_t status;
 
@@ -216,24 +215,23 @@ sat_status_t sat_array_remove_by_parameter (sat_array_t *object, void *param, sa
     {
         if (sat_array_is_initialized (object) == false)
         {
-            sat_status_set (&status, false, "sat array error: array is not initialized");
+            sat_status_failure (&status, "sat array error: array is not initialized");
             break;
         }
 
         if (compare == NULL)
         {
-            sat_status_set (&status, false, "sat array error: compare function is NULL");
+            sat_status_failure (&status, "sat array error: compare function is NULL");
             break;
         }
 
         if (param == NULL)
         {
-            sat_status_set (&status, false, "sat array error: parameter is NULL");
+            sat_status_failure (&status, "sat array error: parameter is NULL");
             break;
         }
 
-        sat_status_set (&status, false, "sat array error: object not found");
-
+        sat_status_failure (&status, "sat array error: object not found");
         for (uint32_t i = 0; i < object->amount; i ++)
         {
             if (compare (&object->buffer [i * object->object_size], param) == true)
@@ -258,7 +256,7 @@ sat_status_t sat_array_remove_by_parameter (sat_array_t *object, void *param, sa
     return status;
 }
 
-sat_status_t sat_array_get_object_by (sat_array_t *object, uint32_t index, void *data)
+sat_status_t sat_array_get_object_by (const sat_array_t *const object, const uint32_t index, void *const data)
 {
     sat_status_t status;
 
@@ -266,19 +264,19 @@ sat_status_t sat_array_get_object_by (sat_array_t *object, uint32_t index, void 
     {
         if (sat_array_is_initialized (object) == false)
         {
-            sat_status_set (&status, false, "sat array error: array is not initialized");
+            sat_status_failure (&status, "sat array error: array is not initialized");
             break;
         }
 
         if (data == NULL)
         {
-            sat_status_set (&status, false, "sat array error: data is NULL");
+            sat_status_failure (&status, "sat array error: data is NULL");
             break;
         }
 
         if (index >= object->amount)
         {
-            sat_status_set (&status, false, "sat array error: index out of bounds");
+            sat_status_failure (&status, "sat array error: index out of bounds");
             break;
         }
 
@@ -286,14 +284,14 @@ sat_status_t sat_array_get_object_by (sat_array_t *object, uint32_t index, void 
 
         memcpy (data, &object->buffer [index * object->object_size], object->object_size);
 
-        sat_status_set (&status, true, "");
+        sat_status_success (&status);
 
     } while (false);
 
     return status;
 }
 
-sat_status_t sat_array_get_object_by_parameter (sat_array_t *object, void *param, sat_array_compare_t compare ,void *data)
+sat_status_t sat_array_get_object_by_parameter (sat_array_t *const object, const void *const param, sat_array_compare_t compare, void *const data)
 {
     sat_status_t status;
 
@@ -301,30 +299,29 @@ sat_status_t sat_array_get_object_by_parameter (sat_array_t *object, void *param
     {
         if (sat_array_is_initialized (object) == false)
         {
-            sat_status_set (&status, false, "sat array error: array is not initialized");
+            sat_status_failure (&status, "sat array error: array is not initialized");
             break;
         }
 
         if (data == NULL)
         {
-            sat_status_set (&status, false, "sat array error: data is NULL");
+            sat_status_failure (&status, "sat array error: data is NULL");
             break;
         }
 
         if (compare == NULL)
         {
-            sat_status_set (&status, false, "sat array error: compare function is NULL");
+            sat_status_failure (&status, "sat array error: compare function is NULL");
             break;
         }
 
         if (param == NULL)
         {
-            sat_status_set (&status, false, "sat array error: parameter is NULL");
+            sat_status_failure (&status, "sat array error: parameter is NULL");
             break;
         }
 
-        sat_status_set (&status, false, "sat array error: object not found");
-
+        sat_status_failure (&status, "sat array error: object not found");
         for (uint32_t i = 0; i < object->amount; i ++)
         {
             if (compare (&object->buffer [i * object->object_size], param) == true)
@@ -333,7 +330,7 @@ sat_status_t sat_array_get_object_by_parameter (sat_array_t *object, void *param
 
                 memcpy (data, &object->buffer [i * object->object_size], object->object_size);
 
-                sat_status_set (&status, true, "");
+                sat_status_success (&status);
 
                 break;
             }
@@ -344,34 +341,34 @@ sat_status_t sat_array_get_object_by_parameter (sat_array_t *object, void *param
     return status;
 }
 
-sat_status_t sat_array_get_size (sat_array_t *object, uint32_t *size)
+sat_status_t sat_array_get_size (const sat_array_t *const object, uint32_t *const size)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat array get size error");
+    sat_status_t status = sat_status_failure (&status, "sat array get size error");
 
     do
     {
         if (sat_array_is_initialized (object) == false)
         {
-            sat_status_set (&status, false, "sat array error: array is not initialized");
+            sat_status_failure (&status, "sat array error: array is not initialized");
             break;
         }
 
         if (size == NULL)
         {
-            sat_status_set (&status, false, "sat array error: size pointer is NULL");
+            sat_status_failure (&status, "sat array error: size pointer is NULL");
             break;
         }
 
         *size = object->amount;
 
-        sat_status_set (&status, true, "");
+        sat_status_success (&status);
 
     } while (false);
 
     return status;
 }
 
-sat_status_t sat_array_clear (sat_array_t *object)
+sat_status_t sat_array_clear (sat_array_t *const object)
 {
     sat_status_t status;
 
@@ -379,7 +376,7 @@ sat_status_t sat_array_clear (sat_array_t *object)
     {
         if (sat_array_is_initialized (object) == false)
         {
-            sat_status_set (&status, false, "sat array error: array is not initialized");
+            sat_status_failure (&status, "sat array error: array is not initialized");
             break;
         }
 
@@ -387,14 +384,14 @@ sat_status_t sat_array_clear (sat_array_t *object)
 
         object->amount = 0;
 
-        sat_status_set (&status, true, "");
+        sat_status_success (&status);
 
     } while (false);
 
     return status;
 }
 
-sat_status_t sat_array_get_capacity (sat_array_t *object, uint32_t *capacity)
+sat_status_t sat_array_get_capacity (const sat_array_t *const object, uint32_t *const capacity)
 {
     sat_status_t status;
 
@@ -402,27 +399,27 @@ sat_status_t sat_array_get_capacity (sat_array_t *object, uint32_t *capacity)
     {
         if (sat_array_is_initialized (object) == false)
         {
-            sat_status_set (&status, false, "sat array error: array is not initialized");
+            sat_status_failure (&status, "sat array error: array is not initialized");
             break;
         }
 
         if (capacity == NULL)
         {
-            sat_status_set (&status, false, "sat array error: capacity pointer is NULL");
+            sat_status_failure (&status, "sat array error: capacity pointer is NULL");
             break;
         }
 
         // Return the current size of the array
         *capacity = object->size;
 
-        sat_status_set (&status, true, "");
+        sat_status_success (&status);
 
     } while (false);
 
     return status;
 }
 
-sat_status_t sat_array_destroy (sat_array_t *object)
+sat_status_t sat_array_destroy (sat_array_t *const object)
 {
     sat_status_t status;
 
@@ -430,13 +427,13 @@ sat_status_t sat_array_destroy (sat_array_t *object)
     {
         if (sat_array_is_initialized (object) == false)
         {
-            sat_status_set (&status, false, "sat array error: array is not initialized");
+            sat_status_failure (&status, "sat array error: array is not initialized");
             break;
         }
 
         if (object->buffer == NULL)
         {
-            sat_status_set (&status, false, "sat array error: buffer is NULL");
+            sat_status_failure (&status, "sat array error: buffer is NULL");
             break;
         }
 
@@ -446,20 +443,17 @@ sat_status_t sat_array_destroy (sat_array_t *object)
 
         object->initialized = false;
 
-        sat_status_set (&status, true, "");
-
         // Free the object itself
         free (object);
-        object = NULL;
         
-        sat_status_set (&status, true, "");
+        sat_status_success (&status);
 
     } while (false);
 
     return status;
 }
 
-static bool sat_array_is_initialized (sat_array_t *object)
+static bool sat_array_is_initialized (const sat_array_t *const object)
 {
     bool status = false;
 
@@ -472,7 +466,7 @@ static bool sat_array_is_initialized (sat_array_t *object)
     return status;
 }
 
-static sat_status_t sat_array_is_args_valid (sat_array_args_t *args)
+static sat_status_t sat_array_is_args_valid (const sat_array_args_t *const args)
 {
     sat_status_t status;
 
@@ -480,36 +474,35 @@ static sat_status_t sat_array_is_args_valid (sat_array_args_t *args)
     {
         if (args == NULL)
         {
-            sat_status_set (&status, false, "sat array error: args is NULL");
+            sat_status_failure (&status, "sat array error: args is NULL");
             break;
         }
 
         if (args->size == 0)
         {
-            sat_status_set (&status, false, "sat array error: size is 0");
+            sat_status_failure (&status, "sat array error: size is 0");
             break;
         }
 
         if (args->object_size == 0)
         {
-            sat_status_set (&status, false, "sat array error: object size is 0");
+            sat_status_failure (&status, "sat array error: object size is 0");
             break;
         }
 
         if (args->mode != sat_array_mode_static && args->mode != sat_array_mode_dynamic)
         {
-            sat_status_set (&status, false, "sat array error: invalid mode");
+            sat_status_failure (&status, "sat array error: invalid mode");
             break;
         }
 
-        sat_status_set (&status, true, "");
-
+        sat_status_success (&status);
     } while (false);
 
     return status;
 }
 
-static void sat_array_set_context (sat_array_t *object, sat_array_args_t *args)
+static void sat_array_set_context (sat_array_t *const object, const sat_array_args_t *const args)
 {
     object->object_size = args->object_size;
     object->size = args->size;
@@ -522,7 +515,7 @@ static void sat_array_set_context (sat_array_t *object, sat_array_args_t *args)
     }
 }
 
-static sat_status_t sat_array_realloc (sat_array_t *object)
+static sat_status_t sat_array_realloc (sat_array_t *const object)
 {
     sat_status_t status;
     
@@ -532,7 +525,7 @@ static sat_status_t sat_array_realloc (sat_array_t *object)
                                           object->size * 2 * object->object_size);    
         if (__new == NULL)
         {
-            sat_status_set (&status, false, "sat array error: memory reallocation failed");
+            sat_status_failure (&status, "sat array error: memory reallocation failed");
             break;
         }
 
@@ -542,14 +535,14 @@ static sat_status_t sat_array_realloc (sat_array_t *object)
         // Update the buffer pointer to the new memory location
         object->buffer = __new;
 
-        sat_status_set (&status, true, "");
+        sat_status_success (&status);
 
     } while (false);
 
     return status;
 }
 
-static void *sat_array_next (void *object, uint32_t index)
+static void *sat_array_next (const void *const object, const uint32_t index)
 {
     sat_array_t *array = (sat_array_t *) object;
 
@@ -563,7 +556,7 @@ static void *sat_array_next (void *object, uint32_t index)
     return item;
 }
 
-static uint32_t sat_array_get_amount (void *object)
+static uint32_t sat_array_get_amount (const void *const object)
 {
     sat_array_t *array = (sat_array_t *) object;
     uint32_t amount = 0;
@@ -573,7 +566,7 @@ static uint32_t sat_array_get_amount (void *object)
     return amount;
 }
 
-void *sat_array_get_reference_by (sat_array_t *object, uint32_t index)
+void *sat_array_get_reference_by (const sat_array_t *const object, const uint32_t index)
 {
     void *item = NULL;
 
@@ -585,7 +578,7 @@ void *sat_array_get_reference_by (sat_array_t *object, uint32_t index)
     return item;
 }
 
-static void sat_array_configure_iterator (sat_array_t *object)
+static void sat_array_configure_iterator (sat_array_t *const object)
 {
     object->base.object = object;
     object->base.get_amount = sat_array_get_amount;

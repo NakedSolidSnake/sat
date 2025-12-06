@@ -151,7 +151,7 @@ int main (int argc, char *argv [])
       status = sat_opengl_enable_program (opengl, "triangle");
       assert (sat_status_get_result (&status) == true);
 
-      status = sat_opengl_send_shader_matrix (opengl, "triangle", "transform", &(sat_opengl_matrix_t){.type = sat_opengl_matrix_type_4x4, .matrix_4x4 = transform});
+      status = sat_opengl_send_shader_matrix (opengl, "triangle", "transform", &(sat_opengl_matrix_t){.type = sat_opengl_matrix_type_4x4, .matrix_4x4 = &transform});
       assert (sat_status_get_result (&status) == true);
 
       status = sat_opengl_enable_vao (opengl, "triangle");

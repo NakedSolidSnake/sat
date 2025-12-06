@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <sat_time.h>
 
-static bool sat_scheduler_is_equal (void *element, void *new_element);
+static bool sat_scheduler_is_equal (const void *const element, const void *const new_element);
 static bool sat_scheduler_is_event_valid (sat_scheduler_event_t *event);
 static void *sat_scheduler_main_handler (void *parameters);
 
@@ -129,7 +129,7 @@ sat_status_t sat_scheduler_close (sat_scheduler_t *object)
     return status;
 }
 
-static bool sat_scheduler_is_equal (void *element, void *new_element)
+static bool sat_scheduler_is_equal (const void *const element, const void *const new_element)
 {
     bool status = false;
 

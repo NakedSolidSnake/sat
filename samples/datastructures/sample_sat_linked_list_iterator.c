@@ -10,17 +10,17 @@ typedef struct
     int age;
 } person_t;
 
-bool compare_by_name (void *element, void *param)
+bool compare_by_name (const void *const element, const void *const param)
 {
-    char *name = (char *)param;
-    person_t *person = (person_t *)element;
+    const char *name = (const char *)param;
+    const person_t *person = (const person_t *)element;
 
     return strstr (person->name, name) != NULL;
 }
 
-void print_person (void *element)
+void print_person (const void *const element)
 {
-    person_t *person = (person_t *)element;
+    const person_t *person = (const person_t *)element;
     printf ("Name: %s, Age: %d\n", person->name, person->age);
 }
 

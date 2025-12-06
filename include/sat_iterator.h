@@ -14,18 +14,18 @@ typedef enum
 typedef struct 
 {
     void *object;
-    void *(*next) (void *object, uint32_t index);
-    uint32_t (*get_amount) (void *object);
-    void *(*get_address) (void *object);
-    void *(*get_next_address) (void *object, void *address);
-    void *(*get_data) (void *address);
+    void *(*next) (const void *const object, const uint32_t index);
+    uint32_t (*get_amount) (const void *const object);
+    void *(*get_address) (const void *const object);
+    void *(*get_next_address) (const void *const object, const void *const address);
+    void *(*get_data) (const void *const address);
 
 } sat_iterator_base_t;
 
 typedef struct 
 {
     uint32_t index;
-    sat_iterator_base_t *base;
+    const sat_iterator_base_t *base;
     uint32_t amount;
     bool initialized;
 
@@ -38,7 +38,7 @@ typedef struct
 
 } sat_iterator_t;
 
-sat_status_t sat_iterator_open (sat_iterator_t *object, sat_iterator_base_t *base);
-void *sat_iterator_next (sat_iterator_t *object);
+sat_status_t sat_iterator_open (sat_iterator_t *const object, const sat_iterator_base_t *const base);
+void *sat_iterator_next (sat_iterator_t *const object);
 
 #endif/* SAT_ITERATOR_H_ */

@@ -10,20 +10,20 @@ typedef struct
     int age;
 } person_t;
 
-bool compare (void *element, void *param)
+bool compare (const void *const element, const void *const param)
 {
-    char *name = (char *)param;
-    person_t *person = (person_t *)element;
+    const char *name = (const char *)param;
+    const person_t *person = (const person_t *)element;
 
     return strstr (person->name, name);
 }
 
-bool is_equal (void *element, void *new_element)
+bool is_equal (const void *const element, const void *const new_element)
 {
     bool status = false;
 
-    person_t *_element = (person_t *)element;
-    person_t *_new_element = (person_t *)new_element;
+    const person_t *_element = (const person_t *)element;
+    const person_t *_new_element = (const person_t *)new_element;
 
     if (_element->id == _new_element->id)
     {

@@ -9,18 +9,18 @@ typedef struct
     int age;
 } person_t;
 
-bool compare (void *element, void *param)
+bool compare (const void *const element, const void *const param)
 {
-    char *name = (char *)param;
-    person_t *person = (person_t *)element;
+    const char *name = (const char *)param;
+    const person_t *person = (const person_t *)element;
 
     return strstr (person->name, name);
 }
 
-bool compare_by_name (void *element, void *param)
+bool compare_by_name (const void *const element, const void *const param)
 {
-    char *name = (char *)param;
-    person_t *person = (person_t *)element;
+    const char *name = (const char *)param;
+    const person_t *person = (const person_t *)element;
 
     return strcmp (person->name, name) == 0;
 }

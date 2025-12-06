@@ -16,26 +16,26 @@ typedef struct
 } student_t;
 
 // Comparison function for search by ID
-bool compare_by_id (void *element, void *param)
+bool compare_by_id (const void *const element, const void *const param)
 {
-    student_t *student = (student_t *)element;
-    int *search_id = (int *)param;
+    const student_t *student = (const student_t *)element;
+    const int *search_id = (const int *)param;
     return student->id == *search_id;
 }
 
 // Comparison function for search by name
-bool compare_by_name (void *element, void *param)
+bool compare_by_name (const void *const element, const void *const param)
 {
-    student_t *student = (student_t *)element;
-    char *search_name = (char *)param;
+    const student_t *student = (const student_t *)element;
+    const char *search_name = (const char *)param;
     return strcmp (student->name, search_name) == 0;
 }
 
 // Comparison function for search by active status
-bool compare_by_active_status (void *element, void *param)
+bool compare_by_active_status (const void *const element, const void *const param)
 {
-    student_t *student = (student_t *)element;
-    bool *search_active = (bool *)param;
+    const student_t *student = (const student_t *)element;
+    const bool *search_active = (const bool *)param;
     return student->active == *search_active;
 }
 
@@ -245,7 +245,6 @@ void test_array_complex_data_operations (void)
         student_t *ref = (student_t *)sat_array_get_reference_by (array, i);
         if (ref && !ref->active)
         {
-            float old_score = ref->score;
             ref->score += 5.0f;  // Bonus para inativos
         }
     }

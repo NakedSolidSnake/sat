@@ -42,10 +42,7 @@ int handlers_index (struct mg_connection *conn, void *data)
 
 static int shutdown_handler (struct mg_connection *connection, void *data)
 {
-    char *json_string = NULL;
-    sat_status_t status;
     application_t *app = (application_t *) data;
-    sat_webserver_http_status_t http_status = sat_webserver_http_status_internal_server_error;
 
     sat_webserver_stop (&app->webserver);
 

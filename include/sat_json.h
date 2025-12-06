@@ -48,7 +48,7 @@ sat_status_t sat_json_open (sat_json_t *object, sat_json_args_t *args);
 
 sat_status_t sat_json_serialize_create_object (sat_json_t *object);
 sat_status_t sat_json_serialize_create_array (sat_json_t *object);
-sat_status_t sat_json_serialize_add (sat_json_t *object, sat_json_type_t type, const char *token, void *data);
+sat_status_t sat_json_serialize_add (sat_json_t *object, sat_json_type_t type, const char *token, const void *const data);
 
 sat_status_t sat_json_deserialize (sat_json_t *object, const char *json, sat_json_mapper_t *mapper, uint16_t fields);
 

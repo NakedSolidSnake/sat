@@ -19,7 +19,7 @@ static sat_status_t sat_discovery_server_setup (sat_discovery_t *object, sat_dis
 static sat_status_t sat_discovery_scheduler_setup (sat_discovery_t *object);
 
 
-static bool sat_discovery_is_equal (void *element, void *new_element)
+static bool sat_discovery_is_equal (const void *const element, const void *const new_element)
 {
     bool status = false;
 

@@ -27,10 +27,10 @@ sat_status_t sat_opengl_program_shader_delete (sat_opengl_program_t *object);
 sat_status_t sat_opengl_program_delete (sat_opengl_program_t *object);
 sat_status_t sat_opengl_program_enable (sat_opengl_program_t *object);
 
-sat_status_t sat_opengl_program_set_bool (sat_opengl_program_t *object, const char *name, sat_opengl_value_send_t send, sat_opengl_value_bool_t *value);
-sat_status_t sat_opengl_program_set_int (sat_opengl_program_t *object, const char *name, sat_opengl_value_send_t send, sat_opengl_value_int_t *value);
-sat_status_t sat_opengl_program_set_float (sat_opengl_program_t *object, const char *name, sat_opengl_value_send_t send, sat_opengl_value_float_t *value);
+sat_status_t sat_opengl_program_set_bool (sat_opengl_program_t *object, const char *const name, sat_opengl_value_send_t send, const sat_opengl_value_bool_t *const value);
+sat_status_t sat_opengl_program_set_int (sat_opengl_program_t *object, const char *const name, sat_opengl_value_send_t send, const sat_opengl_value_int_t *const value);
+sat_status_t sat_opengl_program_set_float (sat_opengl_program_t *object, const char *const name, sat_opengl_value_send_t send, const sat_opengl_value_float_t *const value);
 
-sat_status_t sat_opengl_program_set_matrix (sat_opengl_program_t *object, const char *name, sat_opengl_matrix_t *matrix);
+sat_status_t sat_opengl_program_set_matrix (sat_opengl_program_t *object, const char *const name, const sat_opengl_matrix_t *const matrix);
 
 #endif/* SAT_OPENGL_PROGRAM_H_ */

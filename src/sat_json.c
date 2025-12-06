@@ -6,8 +6,8 @@
 #include <stdlib.h>
 
 static bool sat_json_is_type_valid (sat_json_type_t type);
-static sat_status_t sat_json_add_to_object (sat_json_t *object, sat_json_type_t type, const char *token, void *data);
-static sat_status_t sat_json_add_to_array (sat_json_t *object, sat_json_type_t type, const char *token, void *data);
+static sat_status_t sat_json_add_to_object (sat_json_t *object, sat_json_type_t type, const char *token, const void *const data);
+static sat_status_t sat_json_add_to_array (sat_json_t *object, sat_json_type_t type, const char *token, const void *const data);
 static sat_status_t sat_json_deserialize_items (cJSON *json, sat_json_mapper_t *mapper, uint16_t fields);
 static sat_status_t sat_json_deserialize_array (cJSON *json, sat_json_mapper_t *mapper);
 static sat_status_t sat_json_deserialize_primitives (cJSON *json, sat_json_mapper_t *mapper);
@@ -72,7 +72,7 @@ sat_status_t sat_json_serialize_create_array (sat_json_t *object)
     return status;
 }
 
-sat_status_t sat_json_serialize_add (sat_json_t *object, sat_json_type_t type, const char *token, void *data)
+sat_status_t sat_json_serialize_add (sat_json_t *object, sat_json_type_t type, const char *token, const void *const data)
 {
     sat_status_t status = sat_status_set (&status, false, "sat json serialize add error");
 
@@ -251,7 +251,7 @@ static bool sat_json_is_type_valid (sat_json_type_t type)
     return status;
 }
 
-static sat_status_t sat_json_add_to_object (sat_json_t *object, sat_json_type_t type, const char *token, void *data)
+static sat_status_t sat_json_add_to_object (sat_json_t *object, sat_json_type_t type, const char *token, const void *const data)
 {
     sat_status_t status = sat_status_set (&status, true, "");
 
@@ -281,7 +281,7 @@ static sat_status_t sat_json_add_to_object (sat_json_t *object, sat_json_type_t 
 
     case sat_json_type_array:
     case sat_json_type_object:
-        cJSON_AddItemToObject (object->json, token, data);
+        cJSON_AddItemToObject (object->json, token, (cJSON *)data);
         break;
     
     default:
@@ -292,7 +292,7 @@ static sat_status_t sat_json_add_to_object (sat_json_t *object, sat_json_type_t 
     return status;
 }
 
-static sat_status_t sat_json_add_to_array (sat_json_t *object, sat_json_type_t type, const char *token, void *data)
+static sat_status_t sat_json_add_to_array (sat_json_t *object, sat_json_type_t type, const char *token, const void *const data)
 {
     sat_status_t status = sat_status_set (&status, true, "");
 

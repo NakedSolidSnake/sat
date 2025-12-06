@@ -11,7 +11,7 @@ typedef struct
 
 static void sat_array_iterator_test (void);
 static void sat_set_iterator_test (void);
-static bool is_equal (void *element, void *new_element);
+static bool is_equal (const void *const element, const void *const new_element);
 
 int main (int argc, char *argv[])
 {
@@ -105,7 +105,7 @@ static void sat_set_iterator_test (void)
 }
 
 
-static bool is_equal (void *element, void *new_element)
+static bool is_equal (const void *const element, const void *const new_element)
 {
     return false;
 }

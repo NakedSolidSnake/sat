@@ -15,16 +15,15 @@ struct sat_set_t
     sat_set_mode_t mode;
 };
 
-static void *sat_set_next (void *object, uint32_t index);
-static uint32_t sat_set_get_amount (void *object);
+static void *sat_set_next (const void *const object, const uint32_t index);
+static uint32_t sat_set_get_amount (const void *const object);
 
-static sat_status_t sat_set_is_args_valid (sat_set_args_t *args);
-static void sat_set_set_context (sat_set_t *object, sat_set_args_t *args);
-static sat_status_t sat_set_buffer_allocate (sat_set_t *object);
+static sat_status_t sat_set_is_args_valid (const sat_set_args_t *const args);
+static void sat_set_set_context (sat_set_t *const object, const sat_set_args_t *const args);
+static sat_status_t sat_set_buffer_allocate (sat_set_t *const object);
 
-static void sat_set_on_increase (void *user, uint32_t new_size);
-
-sat_status_t sat_set_create (sat_set_t **object, sat_set_args_t *args)
+static void sat_set_on_increase (void *const user, uint32_t new_size);
+sat_status_t sat_set_create (sat_set_t **const object, const sat_set_args_t *const args)
 {
     sat_status_t status;
 
@@ -73,7 +72,7 @@ sat_status_t sat_set_create (sat_set_t **object, sat_set_args_t *args)
     return status;
 }
 
-sat_status_t sat_set_add (sat_set_t *object, void *data)
+sat_status_t sat_set_add (sat_set_t *const object, const void *const data)
 {
     sat_status_t status = sat_status_set (&status, false, "sat set add error");
 
@@ -105,7 +104,7 @@ sat_status_t sat_set_add (sat_set_t *object, void *data)
     return status;
 }
 
-sat_status_t sat_set_update_by (sat_set_t *object, void *data, uint32_t index)
+sat_status_t sat_set_update_by (sat_set_t *const object, const void *const data, const uint32_t index)
 {
     sat_status_t status = sat_status_set (&status, false, "sat set update by error");
 
@@ -117,7 +116,7 @@ sat_status_t sat_set_update_by (sat_set_t *object, void *data, uint32_t index)
     return status;
 }
 
-sat_status_t sat_set_remove_by (sat_set_t *object, uint32_t index)
+sat_status_t sat_set_remove_by (sat_set_t *const object, const uint32_t index)
 {
     sat_status_t status = sat_status_set (&status, false, "sat set remove by error");
 
@@ -129,7 +128,7 @@ sat_status_t sat_set_remove_by (sat_set_t *object, uint32_t index)
     return status;
 }
 
-sat_status_t sat_set_remove_by_parameter (sat_set_t *object, void *param, sat_set_compare_t compare ,void *data)
+sat_status_t sat_set_remove_by_parameter (sat_set_t *const object, const void *const param, sat_set_compare_t compare, void *const data)
 {
     sat_status_t status = sat_status_set (&status, false, "sat set remove by parameter error");
 
@@ -141,7 +140,7 @@ sat_status_t sat_set_remove_by_parameter (sat_set_t *object, void *param, sat_se
     return status;
 }
 
-sat_status_t sat_set_get_object_by (sat_set_t *object, uint32_t index, void *data)
+sat_status_t sat_set_get_object_by (const sat_set_t *const object, const uint32_t index, void *const data)
 {
     sat_status_t status = sat_status_set (&status, false, "sat set get object by error");
 
@@ -153,7 +152,7 @@ sat_status_t sat_set_get_object_by (sat_set_t *object, uint32_t index, void *dat
     return status;
 }
 
-sat_status_t sat_set_get_object_by_parameter (sat_set_t *object, void *param, sat_set_compare_t compare ,void *data)
+sat_status_t sat_set_get_object_by_parameter (const sat_set_t *const object, const void *const param, sat_set_compare_t compare, void *const data)
 {
     sat_status_t status = sat_status_set (&status, false, "sat set get object by parameter error");
 
@@ -165,7 +164,7 @@ sat_status_t sat_set_get_object_by_parameter (sat_set_t *object, void *param, sa
     return status;
 }
 
-sat_status_t sat_set_get_size (sat_set_t *object, uint32_t *size)
+sat_status_t sat_set_get_size (const sat_set_t *const object, uint32_t *const size)
 {
     sat_status_t status = sat_status_set (&status, false, "sat set get size error");
 
@@ -192,7 +191,7 @@ sat_status_t sat_set_destroy (sat_set_t *object)
     return status;
 }
 
-static sat_status_t sat_set_is_args_valid (sat_set_args_t *args)
+static sat_status_t sat_set_is_args_valid (const sat_set_args_t *const args)
 {
     sat_status_t status = sat_status_set (&status, false, "sat set is args valid error");
 
@@ -207,7 +206,7 @@ static sat_status_t sat_set_is_args_valid (sat_set_args_t *args)
     return status;
 }
 
-static void sat_set_set_context (sat_set_t *object, sat_set_args_t *args)
+static void sat_set_set_context (sat_set_t *const object, const sat_set_args_t *const args)
 {
     object->object_size = args->object_size;
     object->is_equal = args->is_equal;
@@ -230,7 +229,7 @@ static sat_status_t sat_set_buffer_allocate (sat_set_t *object)
                                              });
 }
 
-static void *sat_set_next (void *object, uint32_t index)
+static void *sat_set_next (const void *const object, const uint32_t index)
 {
     sat_set_t *set = (sat_set_t *) object;
 
@@ -244,7 +243,7 @@ static void *sat_set_next (void *object, uint32_t index)
     return item;
 }
 
-static uint32_t sat_set_get_amount (void *object)
+static uint32_t sat_set_get_amount (const void *const object)
 {
     sat_set_t *set = (sat_set_t *) object;
 
@@ -255,7 +254,7 @@ static uint32_t sat_set_get_amount (void *object)
     return amount;
 }
 
-static void sat_set_on_increase (void *user, uint32_t new_size)
+static void sat_set_on_increase (void *const user, uint32_t new_size)
 {
     sat_set_t *set = (sat_set_t *) user;
     
