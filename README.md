@@ -185,7 +185,7 @@ All functions return `sat_status_t` for consistent error handling:
 sat_status_t status = sat_some_function ();
 if (!sat_status_get_result (&status))
 {
-    sat_log_error ("Operation failed: %s", sat_status_get_message (&status));
+    sat_log_error ("Operation failed: %s", sat_status_get_motive (&status));
     return -1;
 }
 ```

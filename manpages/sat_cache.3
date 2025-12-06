@@ -1,0 +1,447 @@
+.TH SAT_CACHE 3 "December 2025" "SAT Library" "SAT Library Manual"
+.SH NAME
+sat_cache \- simple buffer caching mechanism
+.SH SYNOPSIS
+.nf
+.B #include <sat_cache.h>
+.PP
+.BI "sat_status_t sat_cache_init (sat_cache_t *const " object);
+.BI "sat_status_t sat_cache_open (sat_cache_t *const " object ", const sat_cache_args_t *const " args);
+.BI "sat_status_t sat_cache_store (sat_cache_t *const " object ", const void *const " data ", uint32_t " size );
+.BI "sat_status_t sat_cache_restore (const sat_cache_t *const " object ", void *const " data ", uint32_t " size );
+.BI "sat_status_t sat_cache_is_cached (const sat_cache_t *const " object );
+.BI "sat_status_t sat_cache_clear (sat_cache_t *const " object );
+.BI "sat_status_t sat_cache_close (sat_cache_t *const " object );
+.PP
+Link with \fI\-lsat\fP.
+.fi
+.SH DESCRIPTION
+The
+.B sat_cache
+module provides a simple buffer caching mechanism for storing and retrieving
+arbitrary data. It allocates a fixed-size buffer and manages cached data with
+state tracking.
+.PP
+This module is useful for temporarily caching computed results, network responses,
+or frequently accessed data without implementing complex caching strategies.
+.SS Types
+.TP
+.B sat_cache_t
+Cache object structure containing:
+.RS
+.IP \(bu 2
+.I data.buffer
+\- Pointer to the data buffer
+.IP \(bu 2
+.I data.size
+\- Size of the cached data in bytes
+.IP \(bu 2
+.I is_cached
+\- Flag indicating whether valid data is cached
+.RE
+.TP
+.B sat_cache_args_t
+Configuration structure with the following field:
+.RS
+.IP \(bu 2
+.I buffer_size
+\- Size of the buffer to allocate in bytes
+.RE
+.SS Initialization and Configuration
+.TP
+.BR sat_cache_init ()
+Initializes a cache object, zeroing all fields. Must be called before any other
+operations. Returns success status.
+.TP
+.BR sat_cache_open ()
+Opens and configures the cache with the specified buffer size in
+.IR args .
+Allocates the internal buffer. The cache must be initialized with
+.BR sat_cache_init ()
+before calling this function. Returns success if allocation succeeds.
+.PP
+.SS Cache Operations
+.TP
+.BR sat_cache_store ()
+Stores
+.I data
+of
+.I size
+bytes into the cache buffer. The size must not exceed the buffer capacity.
+Sets the cached flag to true and overwrites any previous cached data.
+Returns success if data fits in buffer.
+.TP
+.BR sat_cache_restore ()
+Retrieves cached data into the provided
+.I data
+buffer of
+.I size
+bytes. Only succeeds if data is currently cached. Returns success if cache
+contains valid data.
+.TP
+.BR sat_cache_is_cached ()
+Checks if the cache currently contains valid data. Returns success if data
+is cached.
+.TP
+.BR sat_cache_clear ()
+Clears the cached data by zeroing the buffer and setting the cached flag to false.
+The buffer memory remains allocated. Returns success if cache was previously
+populated.
+.PP
+.SS Cleanup
+.TP
+.BR sat_cache_close ()
+Frees the allocated buffer and resets the cache object. Should be called when
+done using the cache. After this call, the cache can be reused by calling
+.BR sat_cache_init ()
+and
+.BR sat_cache_open ()
+again.
+.SH RETURN VALUE
+All functions return a
+.B sat_status_t
+structure containing:
+.IP \(bu 2
+A boolean result indicating success or failure
+.IP \(bu 2
+An error message string if the operation failed
+.PP
+Use
+.BR sat_status_get_result ()
+to check if the operation succeeded, and
+.BR sat_status_get_motive ()
+to retrieve error details.
+.SH ERRORS
+Common error conditions include:
+.TP
+.B "sat cache init error"
+NULL pointer passed to
+.BR sat_cache_init ().
+.TP
+.B "sat cache open error"
+NULL pointer or invalid buffer size (0) passed to
+.BR sat_cache_open ().
+.TP
+.B "sat cache store error"
+NULL pointer, invalid size, or size exceeds buffer capacity.
+.TP
+.B "sat cache restore error"
+NULL pointer, invalid size, or no data currently cached.
+.TP
+.B "sat cache is cached error"
+NULL pointer or no data in cache.
+.TP
+.B "sat cache clear error"
+NULL pointer or cache already empty.
+.TP
+.B "sat cache close error"
+NULL pointer passed to
+.BR sat_cache_close ().
+.SH EXAMPLES
+.SS Basic Usage
+.nf
+#include <sat_cache.h>
+#include <stdio.h>
+#include <string.h>
+
+int main(void)
+{
+    sat_cache_t cache;
+    sat_status_t status;
+    
+    /* Initialize cache */
+    status = sat_cache_init(&cache);
+    if (!sat_status_get_result(&status)) {
+        fprintf(stderr, "Init failed: %s\\n", 
+                sat_status_get_motive(&status));
+        return 1;
+    }
+    
+    /* Open with 256 byte buffer */
+    sat_cache_args_t args = { .buffer_size = 256 };
+    status = sat_cache_open(&cache, &args);
+    if (!sat_status_get_result(&status)) {
+        fprintf(stderr, "Open failed: %s\\n", 
+                sat_status_get_motive(&status));
+        return 1;
+    }
+    
+    /* Store data */
+    const char *data = "Hello, Cache!";
+    status = sat_cache_store(&cache, data, strlen(data) + 1);
+    if (!sat_status_get_result(&status)) {
+        fprintf(stderr, "Store failed: %s\\n", 
+                sat_status_get_motive(&status));
+        sat_cache_close(&cache);
+        return 1;
+    }
+    
+    /* Check if cached */
+    status = sat_cache_is_cached(&cache);
+    if (sat_status_get_result(&status)) {
+        printf("Data is cached\\n");
+    }
+    
+    /* Restore data */
+    char buffer[256];
+    status = sat_cache_restore(&cache, buffer, sizeof(buffer));
+    if (sat_status_get_result(&status)) {
+        printf("Restored: %s\\n", buffer);
+    }
+    
+    /* Clear cache */
+    sat_cache_clear(&cache);
+    
+    /* Cleanup */
+    sat_cache_close(&cache);
+    
+    return 0;
+}
+.fi
+.SS Caching Computed Results
+.nf
+#include <sat_cache.h>
+#include <stdio.h>
+
+typedef struct {
+    int input;
+    int result;
+    bool valid;
+} computation_cache_t;
+
+int expensive_computation(int input)
+{
+    /* Simulate expensive operation */
+    int result = 0;
+    for (int i = 0; i < input; i++) {
+        result += i * i;
+    }
+    return result;
+}
+
+int cached_computation(sat_cache_t *cache, int input)
+{
+    computation_cache_t comp;
+    sat_status_t status;
+    
+    /* Check if result is cached */
+    status = sat_cache_is_cached(cache);
+    if (sat_status_get_result(&status)) {
+        sat_cache_restore(cache, &comp, sizeof(comp));
+        if (comp.valid && comp.input == input) {
+            printf("Using cached result\\n");
+            return comp.result;
+        }
+    }
+    
+    /* Compute and cache result */
+    printf("Computing result\\n");
+    comp.input = input;
+    comp.result = expensive_computation(input);
+    comp.valid = true;
+    sat_cache_store(cache, &comp, sizeof(comp));
+    
+    return comp.result;
+}
+
+int main(void)
+{
+    sat_cache_t cache;
+    sat_cache_args_t args = { 
+        .buffer_size = sizeof(computation_cache_t) 
+    };
+    
+    sat_cache_init(&cache);
+    sat_cache_open(&cache, &args);
+    
+    /* First call computes */
+    int result1 = cached_computation(&cache, 1000);
+    printf("Result: %d\\n", result1);
+    
+    /* Second call uses cache */
+    int result2 = cached_computation(&cache, 1000);
+    printf("Result: %d\\n", result2);
+    
+    sat_cache_close(&cache);
+    return 0;
+}
+.fi
+.SS Network Response Caching
+.nf
+#include <sat_cache.h>
+#include <string.h>
+
+#define MAX_RESPONSE_SIZE 4096
+
+typedef struct {
+    char url[256];
+    char response[MAX_RESPONSE_SIZE];
+    size_t response_len;
+} http_cache_entry_t;
+
+/* Simulate HTTP request */
+int http_get(const char *url, char *buffer, size_t size)
+{
+    /* Simulated network call */
+    snprintf(buffer, size, "Response from %s", url);
+    return strlen(buffer);
+}
+
+int cached_http_get(sat_cache_t *cache, const char *url, 
+                    char *buffer, size_t size)
+{
+    http_cache_entry_t entry;
+    sat_status_t status;
+    
+    /* Check cache */
+    status = sat_cache_is_cached(cache);
+    if (sat_status_get_result(&status)) {
+        sat_cache_restore(cache, &entry, sizeof(entry));
+        if (strcmp(entry.url, url) == 0) {
+            /* Cache hit */
+            memcpy(buffer, entry.response, entry.response_len);
+            return entry.response_len;
+        }
+    }
+    
+    /* Cache miss - fetch from network */
+    int len = http_get(url, buffer, size);
+    
+    /* Store in cache */
+    strncpy(entry.url, url, sizeof(entry.url) - 1);
+    memcpy(entry.response, buffer, len);
+    entry.response_len = len;
+    sat_cache_store(cache, &entry, sizeof(entry));
+    
+    return len;
+}
+
+int main(void)
+{
+    sat_cache_t cache;
+    sat_cache_args_t args = { 
+        .buffer_size = sizeof(http_cache_entry_t) 
+    };
+    
+    sat_cache_init(&cache);
+    sat_cache_open(&cache, &args);
+    
+    char buffer[MAX_RESPONSE_SIZE];
+    
+    /* First call hits network */
+    int len1 = cached_http_get(&cache, "http://example.com", 
+                                buffer, sizeof(buffer));
+    printf("First call: %s (len=%d)\\n", buffer, len1);
+    
+    /* Second call uses cache */
+    int len2 = cached_http_get(&cache, "http://example.com", 
+                                buffer, sizeof(buffer));
+    printf("Second call: %s (len=%d)\\n", buffer, len2);
+    
+    /* Different URL invalidates cache */
+    int len3 = cached_http_get(&cache, "http://other.com", 
+                                buffer, sizeof(buffer));
+    printf("Third call: %s (len=%d)\\n", buffer, len3);
+    
+    sat_cache_close(&cache);
+    return 0;
+}
+.fi
+.SS Manual Cache Management
+.nf
+#include <sat_cache.h>
+#include <stdio.h>
+
+int main(void)
+{
+    sat_cache_t cache;
+    sat_cache_args_t args = { .buffer_size = 1024 };
+    
+    sat_cache_init(&cache);
+    sat_cache_open(&cache, &args);
+    
+    /* Store some data */
+    int values[] = {1, 2, 3, 4, 5};
+    sat_cache_store(&cache, values, sizeof(values));
+    
+    /* Check cache state */
+    if (sat_status_get_result(sat_cache_is_cached(&cache))) {
+        printf("Cache contains data\\n");
+        
+        /* Retrieve data */
+        int retrieved[5];
+        sat_cache_restore(&cache, retrieved, sizeof(retrieved));
+        printf("Values: ");
+        for (int i = 0; i < 5; i++) {
+            printf("%d ", retrieved[i]);
+        }
+        printf("\\n");
+    }
+    
+    /* Clear cache */
+    sat_cache_clear(&cache);
+    
+    /* Verify cache is empty */
+    if (!sat_status_get_result(sat_cache_is_cached(&cache))) {
+        printf("Cache is now empty\\n");
+    }
+    
+    /* Can reuse cache */
+    double pi = 3.14159;
+    sat_cache_store(&cache, &pi, sizeof(pi));
+    
+    double restored_pi;
+    sat_cache_restore(&cache, &restored_pi, sizeof(restored_pi));
+    printf("Restored pi: %f\\n", restored_pi);
+    
+    sat_cache_close(&cache);
+    return 0;
+}
+.fi
+.SH NOTES
+.IP \(bu 2
+The cache does not implement any eviction policy (e.g., LRU). It simply stores
+the most recently written data.
+.IP \(bu 2
+The buffer size is fixed at creation time and cannot be changed without closing
+and reopening the cache.
+.IP \(bu 2
+Data stored must not exceed the buffer capacity. There is no automatic resizing.
+.IP \(bu 2
+The cache is not thread-safe. External synchronization is required for concurrent
+access.
+.IP \(bu 2
+Memory is allocated once during
+.BR sat_cache_open ()
+and freed during
+.BR sat_cache_close ().
+.IP \(bu 2
+The
+.BR sat_cache_clear ()
+function zeros the buffer but does not free memory.
+.IP \(bu 2
+Multiple calls to
+.BR sat_cache_store ()
+overwrite previous data.
+.IP \(bu 2
+The cache is suitable for single-value caching, not for storing multiple entries.
+For multiple entries, consider using
+.BR sat_map (3)
+or
+.BR sat_set (3).
+.SH SEE ALSO
+.BR sat_map (3),
+.BR sat_set (3),
+.BR sat_array (3),
+.BR sat_status (3),
+.BR memcpy (3)
+.PP
+SAT Library Documentation: <https://github.com/solidcris/sat>
+.SH BUGS
+No known bugs at this time. Report bugs to the SAT Library issue tracker.
+.SH AUTHOR
+Written by Cristiano Silva de Souza and the SAT Library contributors.
+.SH COPYRIGHT
+Copyright \(co 2025 SAT Library Project.
+.br
+Licensed under the MIT License.

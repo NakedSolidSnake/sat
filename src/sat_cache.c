@@ -47,10 +47,10 @@ sat_status_t sat_cache_open (sat_cache_t *const object, const sat_cache_args_t *
             break;
         }
 
-        object->buffer_size = args->buffer_size;
-        object->buffer = calloc (1, sizeof (char) * args->buffer_size);
+        object->data.size = args->buffer_size;
+        object->data.buffer = calloc (1, sizeof (char) * args->buffer_size);
 
-        if (object->buffer == NULL)
+        if (object->data.buffer == NULL)
         {
             sat_status_failure (&status, "sat cache open error: buffer allocation failed");
             break;
@@ -81,15 +81,15 @@ sat_status_t sat_cache_store (sat_cache_t *const object, const void *const data,
             break;
         }
 
-        if (size > object->buffer_size)
+        if (size > object->data.size)
         {
             sat_status_failure (&status, "sat cache store error: size exceeds buffer size");
             break;
         }
 
-        memset (object->buffer, 0, object->buffer_size);
+        memset (object->data.buffer, 0, object->data.size);
 
-        memcpy (object->buffer, data, size);
+        memcpy (object->data.buffer, data, size);
 
         object->is_cached = true;
 
@@ -118,7 +118,7 @@ sat_status_t sat_cache_restore (const sat_cache_t *const object, void *const dat
             break;
         }
 
-        if (size > object->buffer_size)
+        if (size > object->data.size)
         {
             sat_status_failure (&status, "sat cache restore error: size exceeds buffer size");
             break;
@@ -126,7 +126,7 @@ sat_status_t sat_cache_restore (const sat_cache_t *const object, void *const dat
 
         memset (data, 0, size);
 
-        memcpy (data, object->buffer, size);
+        memcpy (data, object->data.buffer, size);
 
         sat_status_success (&status);
 
@@ -178,7 +178,7 @@ sat_status_t sat_cache_clear (sat_cache_t *const object)
             break;
         }
 
-        memset (object->buffer, 0, object->buffer_size);
+        memset (object->data.buffer, 0, object->data.size);
 
         object->is_cached = false;
 
@@ -201,13 +201,13 @@ sat_status_t sat_cache_close (sat_cache_t *const object)
             break;
         }
 
-        if (object->buffer == NULL)
+        if (object->data.buffer == NULL)
         {
             sat_status_set (&status, true, "buffer is already closed");
             break;
         }
 
-        free (object->buffer);
+        free (object->data.buffer);
 
         sat_status_success (&status);
 

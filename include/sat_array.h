@@ -1,7 +1,7 @@
 /**
  * @file sat_array.h
  * @brief Dynamic array data structure with static and dynamic growth modes
- * @author SAT Library Contributors
+ * @author Cristiano Silva de Souza
  * @date 2025
  * 
  * This module provides a flexible dynamic array implementation that supports

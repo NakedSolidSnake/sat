@@ -5,34 +5,18 @@ sat_array \- dynamic array data structure with configurable growth modes
 .nf
 .B #include <sat_array.h>
 .PP
-.BI "sat_status_t sat_array_create(sat_array_t **const " object ,
-.BI "                              const sat_array_args_t *const " args );
-.BI "sat_status_t sat_array_add(sat_array_t *const " object ,
-.BI "                           const void *const " data );
-.BI "sat_status_t sat_array_update_by(sat_array_t *const " object ,
-.BI "                                 const void *const " data ,
-.BI "                                 const uint32_t " index );
-.BI "sat_status_t sat_array_remove_by(sat_array_t *const " object ,
-.BI "                                 const uint32_t " index );
-.BI "sat_status_t sat_array_remove_by_parameter(sat_array_t *const " object ,
-.BI "                                           const void *const " param ,
-.BI "                                           sat_array_compare_t " compare ,
-.BI "                                           void *const " data );
-.BI "sat_status_t sat_array_get_object_by(const sat_array_t *const " object ,
-.BI "                                     const uint32_t " index ,
-.BI "                                     void *const " data );
-.BI "sat_status_t sat_array_get_object_by_parameter(sat_array_t *const " object ,
-.BI "                                               const void *const " param ,
-.BI "                                               sat_array_compare_t " compare ,
-.BI "                                               void *const " data );
-.BI "sat_status_t sat_array_get_size(const sat_array_t *const " object ,
-.BI "                                uint32_t *const " size );
-.BI "sat_status_t sat_array_get_capacity(const sat_array_t *const " object ,
-.BI "                                    uint32_t *const " capacity );
+.BI "sat_status_t sat_array_create(sat_array_t **const " object ", const sat_array_args_t *const " args );
+.BI "sat_status_t sat_array_add(sat_array_t *const " object ", const void *const " data );
+.BI "sat_status_t sat_array_update_by(sat_array_t *const " object ", const void *const " data ", const uint32_t " index );
+.BI "sat_status_t sat_array_remove_by(sat_array_t *const " object ", const uint32_t " index );
+.BI "sat_status_t sat_array_remove_by_parameter(sat_array_t *const " object ", const void *const " param ", sat_array_compare_t " compare ", void *const " data );
+.BI "sat_status_t sat_array_get_object_by(const sat_array_t *const " object ", const uint32_t " index ", void *const " data );
+.BI "sat_status_t sat_array_get_object_by_parameter(sat_array_t *const " object ", const void *const " param ", sat_array_compare_t " compare ", void *const " data );
+.BI "sat_status_t sat_array_get_size(const sat_array_t *const " object ", uint32_t *const " size );
+.BI "sat_status_t sat_array_get_capacity(const sat_array_t *const " object ", uint32_t *const " capacity );
 .BI "sat_status_t sat_array_clear(sat_array_t *const " object );
 .BI "sat_status_t sat_array_destroy(sat_array_t *const " object );
-.BI "void *sat_array_get_reference_by(const sat_array_t *const " object ,
-.BI "                                 const uint32_t " index );
+.BI "void *sat_array_get_reference_by(const sat_array_t *const " object ", const uint32_t " index );
 .PP
 Link with \fI\-lsat\fP.
 .fi
@@ -202,7 +186,7 @@ An error message string if the operation failed
 Use
 .BR sat_status_get_result ()
 to check if the operation succeeded, and
-.BR sat_status_get_message ()
+.BR sat_status_get_motive ()
 to retrieve error details.
 .PP
 .BR sat_array_get_reference_by ()
@@ -250,7 +234,7 @@ int main(void)
     status = sat_array_create(&array, &args);
     if (!sat_status_get_result(&status)) {
         fprintf(stderr, "Create failed: %s\\n", 
-                sat_status_get_message(&status));
+                sat_status_get_motive(&status));
         return 1;
     }
     
@@ -259,7 +243,7 @@ int main(void)
         status = sat_array_add(array, &i);
         if (!sat_status_get_result(&status)) {
             fprintf(stderr, "Add failed: %s\\n",
-                    sat_status_get_message(&status));
+                    sat_status_get_motive(&status));
             sat_array_destroy(array);
             return 1;
         }
