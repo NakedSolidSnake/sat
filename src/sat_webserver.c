@@ -16,7 +16,14 @@ typedef struct
     char *value;
 } sat_webserver_header_t;
 
-static int sat_webserver_fallback_handler (struct mg_connection *object, void *data); 
+typedef struct
+{
+    const char *method;
+    const char *endpoint;
+} sat_webserver_endpoint_t;
+
+static int sat_webserver_fallback_handler (struct mg_connection *object, void *data);
+static bool sat_webserver_endpoint_compare (const void *const element, const void *const param);
 
 static int sat_webserver_log_message (const struct mg_connection *connection, const char *message);
 sat_status_t sat_webserver_is_endpoint_valid (sat_webserver_request_t *object);
@@ -93,6 +100,24 @@ sat_status_t sat_webserver_add_endpoint (sat_webserver_t *object, const char *en
         {
             status = sat_array_add (object->array, &request);
         }        
+    }
+
+    return status;
+}
+
+sat_status_t sat_webserver_remove_endpoint (sat_webserver_t *object, const char *endpoint, const char *method)
+{
+    sat_status_t status = sat_status_set (&status, false, "sat webserver add enpoint error");
+
+    if (object != NULL)
+    {
+        sat_webserver_endpoint_t __endpoint =
+        {
+            .endpoint = endpoint,
+            .method = method,
+        };
+
+        status = sat_array_remove_by_parameter (object->array, &__endpoint, (sat_array_compare_t)sat_webserver_endpoint_compare, NULL);
     }
 
     return status;
@@ -459,6 +484,21 @@ static bool sat_webserver_is_extension_supported (const char *uri)
             status = true;
             break;
         }
+    }
+
+    return status;
+}
+
+static bool sat_webserver_endpoint_compare (const void *const element, const void *const param)
+{
+    const sat_webserver_request_t *endpoint = (const sat_webserver_request_t *)element;
+    const sat_webserver_endpoint_t *param_endpoint = (const sat_webserver_endpoint_t *)param;
+    bool status = false;
+
+    if (strcmp (endpoint->endpoint, param_endpoint->endpoint) == 0 &&
+        strcmp (endpoint->method, param_endpoint->method) == 0)
+    {
+        status = true;
     }
 
     return status;

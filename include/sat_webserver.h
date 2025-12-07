@@ -325,6 +325,8 @@ sat_status_t sat_webserver_open (sat_webserver_t *object, sat_webserver_args_t *
 sat_status_t sat_webserver_add_endpoint (sat_webserver_t *object, const char *endpoint, const char *method, sat_webserver_handler_t handler, void *data);
 
 
+sat_status_t sat_webserver_remove_endpoint (sat_webserver_t *object, const char *endpoint, const char *method);
+
 sat_status_t sat_webserver_fallback_register (sat_webserver_t *object, sat_webserver_handler_t handler, void *data);
 
 /**
