@@ -341,6 +341,53 @@ sat_status_t sat_array_get_object_by_parameter (sat_array_t *const object, const
     return status;
 }
 
+sat_status_t sat_array_get_object_ref_by_parameter (sat_array_t *const object, const void *const param, sat_array_compare_t compare, void **const data)
+{
+    sat_status_t status = sat_status_failure (&status, "sat array error: object not found");
+
+    do
+    {
+        if (sat_array_is_initialized (object) == false)
+        {
+            sat_status_failure (&status, "sat array error: array is not initialized");
+            break;
+        }
+
+        if (data == NULL)
+        {
+            sat_status_failure (&status, "sat array error: data pointer is NULL");
+            break;
+        }
+
+        if (compare == NULL)
+        {
+            sat_status_failure (&status, "sat array error: compare function is NULL");
+            break;
+        }
+
+        if (param == NULL)
+        {
+            sat_status_failure (&status, "sat array error: parameter is NULL");
+            break;
+        }
+
+        for (uint32_t i = 0; i < object->amount; i ++)
+        {
+            if (compare (&object->buffer [i * object->object_size], param) == true)
+            {
+                *data = &object->buffer [i * object->object_size];
+
+                sat_status_success (&status);
+
+                break;
+            }
+        }
+
+    } while (false);
+
+    return status;
+}
+
 sat_status_t sat_array_get_size (const sat_array_t *const object, uint32_t *const size)
 {
     sat_status_t status = sat_status_failure (&status, "sat array get size error");

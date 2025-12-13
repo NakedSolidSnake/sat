@@ -34,10 +34,12 @@ bool compare_by_name (const void *const element, const void *const param)
 }
 
 void test_remove_by_parameter (void);
+void test_get_object_ref_by_parameter (void);
 
 int main (int argc, char *argv[])
 {
     test_remove_by_parameter ();
+    test_get_object_ref_by_parameter ();
 
     return 0;
 }
@@ -81,6 +83,49 @@ void test_remove_by_parameter (void)
     assert (size == 2);
 
     printf ("Size after removal: %d\n", size);
+
+    status = sat_set_destroy (set);
+    assert (sat_status_get_result (&status) == true);
+}
+
+void test_get_object_ref_by_parameter (void)
+{
+    person_t john = {.id = 1, .name = "John Doe",   .age = 35};
+    person_t jane = {.id = 2, .name = "Jane Doe",   .age = 31};
+    person_t jack = {.id = 3, .name = "Jack Smith", .age = 28};
+
+    person_t *reference;
+    person_t recover;
+
+    sat_set_t *set;
+
+    sat_status_t status = sat_set_create (&set, &(sat_set_args_t)
+                                                    {
+                                                        .size = 2,
+                                                        .object_size = sizeof (person_t),
+                                                        .is_equal = is_equal,
+                                                        .mode = sat_set_mode_dynamic,
+                                                    });
+    assert (sat_status_get_result (&status) == true);
+
+    status = sat_set_add (set, &john);
+    assert (sat_status_get_result (&status) == true);
+
+    status = sat_set_add (set, &jane);
+    assert (sat_status_get_result (&status) == true);
+
+    status = sat_set_add (set, &jack);
+    assert (sat_status_get_result (&status) == true);
+
+    status = sat_set_get_object_ref_by_parameter (set, "Jack Smith", compare_by_name, (void **)&reference);
+    assert (sat_status_get_result (&status) == true);
+
+    reference->age += 1;
+
+    status = sat_set_get_object_by_parameter (set, "Jack Smith", compare_by_name, &recover);
+    assert (sat_status_get_result (&status) == true);
+
+    assert (recover.age == 29);
 
     status = sat_set_destroy (set);
     assert (sat_status_get_result (&status) == true);

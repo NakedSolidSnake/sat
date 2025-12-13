@@ -12,6 +12,7 @@ RUN apt-get update && \
 	curl \
 	uuid-dev \
 	iproute2 \
+	lsof \
 	-y && \
     apt-get clean
 

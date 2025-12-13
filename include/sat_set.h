@@ -92,6 +92,18 @@ sat_status_t sat_set_get_object_by (const sat_set_t *const object, uint32_t inde
  */
 sat_status_t sat_set_get_object_by_parameter (const sat_set_t *const object, const void *const param, sat_set_compare_t compare, void *const data);
 
+
+/**
+ * @brief  Get a reference to an element from the set by parameter
+ * 
+ * @param object Pointer to the set object
+ * @param param Pointer to the parameter to compare
+ * @param compare Comparison function
+ * @param data Pointer to the pointer to store the reference to the element
+ * @return sat_status_t Status of the operation
+ */
+sat_status_t sat_set_get_object_ref_by_parameter (sat_set_t *const object, const void *const param, sat_set_compare_t compare, void **const data);
+
 /**
  * @brief Get the size of the set
  * 

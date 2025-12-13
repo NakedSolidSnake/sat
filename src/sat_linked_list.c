@@ -133,6 +133,35 @@ sat_status_t sat_linked_list_get (const sat_linked_list_t *const object, sat_lin
             if (compare (_element->data, (void *)param) == true)
             {
                 memcpy (element, _element->data, object->object_size);
+                
+                sat_status_success (&status);
+                break;
+            }
+
+            _element = _element->next;
+        }
+        
+    }
+
+    return status;
+}
+
+sat_status_t sat_linked_list_get_ref (const sat_linked_list_t *const object, sat_linked_list_compare_t compare, const void *const param, void **const element)
+{
+    sat_status_t status = sat_status_failure (&status, "sat liked list get ref error");
+
+    if (object != NULL && compare != NULL && param != NULL && element != NULL)
+    {
+        sat_status_failure (&status, "sat liked list get ref not found error");
+        sat_linked_list_internal_t *_element = object->list;
+
+        while (_element != NULL)
+        {
+
+            if (compare (_element->data, (void *)param) == true)
+            {
+                *element = _element->data;
+
                 sat_status_success (&status);
                 break;
             }

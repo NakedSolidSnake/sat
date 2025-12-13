@@ -183,6 +183,9 @@ sat_status_t sat_array_get_object_by (const sat_array_t *const object, const uin
  */
 sat_status_t sat_array_get_object_by_parameter (sat_array_t *const object, const void *const param, sat_array_compare_t compare, void *const data);
 
+
+sat_status_t sat_array_get_object_ref_by_parameter (sat_array_t *const object, const void *const param, sat_array_compare_t compare, void **const data);
+
 /**
  * @brief Retrieves the current size of the array
  * 

@@ -47,6 +47,8 @@ sat_status_t sat_linked_list_remove (sat_linked_list_t *const object, sat_linked
  * @return sat_status_t Status of the operation.
  */
 sat_status_t sat_linked_list_get (const sat_linked_list_t *const object, sat_linked_list_compare_t compare, const void *const param, void *const element);
+
+sat_status_t sat_linked_list_get_ref (const sat_linked_list_t *const object, sat_linked_list_compare_t compare, const void *const param, void **const element);
 /**
  * Checks if an element is present in the linked list by using a comparison function.
  *

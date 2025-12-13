@@ -25,10 +25,12 @@ void print_person (const void *const element)
 }
 
 void test_linked_list_with_iterator (void);
+void test_linked_list_get_ref_by_parameter (void);
 
 int main (int argc, char *argv [])
 {
     test_linked_list_with_iterator ();
+    test_linked_list_get_ref_by_parameter ();
 
     return 0;
 }
@@ -112,4 +114,46 @@ void test_linked_list_with_iterator (void)
     status = sat_linked_list_destroy (list);
     assert (sat_status_get_result(&status) == true);
     printf ("\n✓ Linked list destroyed successfully\n");
+}
+
+
+void test_linked_list_get_ref_by_parameter (void)
+{
+    sat_linked_list_t *list;
+    sat_status_t status;
+
+    status = sat_linked_list_create (&list, sizeof(person_t));
+    assert (sat_status_get_result (&status) == true);
+
+    person_t john =  {.name = "John Doe",       .age = 35};
+    person_t jane =  {.name = "Jane Smith",     .age = 31};
+    person_t bob =   {.name = "Bob Johnson",    .age = 42};
+    person_t alice = {.name = "Alice Williams", .age = 28};
+
+    status = sat_linked_list_insert (list, &john);
+    assert (sat_status_get_result (&status) == true);
+
+    status = sat_linked_list_insert (list, &jane);
+    assert (sat_status_get_result (&status) == true);
+
+    status = sat_linked_list_insert (list, &bob);
+    assert (sat_status_get_result (&status) == true);
+
+    status = sat_linked_list_insert (list, &alice);
+    assert (sat_status_get_result (&status) == true);
+
+    person_t *reference;
+    status = sat_linked_list_get_ref (list, compare_by_name, "Alice", (void **)&reference);
+    assert (sat_status_get_result (&status) == true);
+
+    reference->age += 1;
+
+    person_t recovered;
+    status = sat_linked_list_get (list, compare_by_name, "Alice", &recovered);
+    assert (sat_status_get_result (&status) == true);
+
+    assert (recovered.age == 29);
+
+    status = sat_linked_list_destroy (list);
+    assert (sat_status_get_result(&status) == true);
 }

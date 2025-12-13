@@ -164,6 +164,18 @@ sat_status_t sat_set_get_object_by_parameter (const sat_set_t *const object, con
     return status;
 }
 
+sat_status_t sat_set_get_object_ref_by_parameter (sat_set_t *const object, const void *const param, sat_set_compare_t compare, void **const data)
+{
+    sat_status_t status = sat_status_set (&status, false, "sat set get object ref by parameter error");
+
+    if (object != NULL)
+    {
+        status = sat_array_get_object_ref_by_parameter (object->array, param, (sat_array_compare_t)compare, data);
+    }
+
+    return status;
+}
+
 sat_status_t sat_set_get_size (const sat_set_t *const object, uint32_t *const size)
 {
     sat_status_t status = sat_status_set (&status, false, "sat set get size error");
