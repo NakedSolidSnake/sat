@@ -44,16 +44,10 @@ sat_status_t sat_opengl_create (sat_opengl_t **object, sat_opengl_args_t *args)
         }
 
         status = sat_opengl_check_args (args);
-        if (sat_status_get_result (&status) == false)
-        {
-            break;
-        }
+        sat_status_break_on_error (status);
 
         status = sat_opengl_init ();
-        if (sat_status_get_result (&status) == false)
-        {
-            break;
-        }
+        sat_status_break_on_error (status);
 
         sat_opengl_t *opengl = calloc (1, sizeof (struct sat_opengl_t));
         if (opengl == NULL)
@@ -165,10 +159,7 @@ sat_status_t sat_opengl_create_program (sat_opengl_t *object, const char *name)
         do 
         {
             status = sat_opengl_program_create (&program, &(sat_opengl_program_args_t){.name = name});
-            if (sat_status_get_result (&status) == false)
-            {
-                break;
-            }
+            sat_status_break_on_error (status);
 
             status = sat_set_add (object->programs, &program);
             if (sat_status_get_result (&status) == false)
@@ -196,10 +187,7 @@ sat_status_t sat_opengl_add_shader_to_program (sat_opengl_t *object, const char 
         do 
         {
             status = sat_iterator_open (&iterator, (sat_iterator_base_t *)object->programs);
-            if (sat_status_get_result (&status) == false)
-            {
-                break;
-            }
+            sat_status_break_on_error (status);
 
             sat_opengl_program_t *program = (sat_opengl_program_t *) sat_iterator_next (&iterator);
 
@@ -209,10 +197,7 @@ sat_status_t sat_opengl_add_shader_to_program (sat_opengl_t *object, const char 
                 {
                     sat_opengl_shader_t shader;
                     status = sat_opengl_shader_create_from_file (&shader, type, filename);
-                    if (sat_status_get_result (&status) == false)
-                    {
-                        break;
-                    }
+                    sat_status_break_on_error (status);
 
                     status = sat_opengl_program_shader_add (program, &shader);
 
@@ -239,10 +224,7 @@ sat_status_t sat_opengl_compile_program (sat_opengl_t *object, const char *name)
         do 
         {
             status = sat_iterator_open (&iterator, (sat_iterator_base_t *)object->programs);
-            if (sat_status_get_result (&status) == false)
-            {
-                break;
-            }
+            sat_status_break_on_error (status);
 
             sat_opengl_program_t *program = (sat_opengl_program_t *) sat_iterator_next (&iterator);
 
@@ -299,10 +281,7 @@ sat_status_t sat_opengl_create_vao (sat_opengl_t *object, const char *name)
         do 
         {
             status = sat_opengl_vao_create (&vao, name);
-            if (sat_status_get_result (&status) == false)
-            {
-                break;
-            }
+            sat_status_break_on_error (status);
 
             status = sat_set_add (object->vaos, &vao);
             if (sat_status_get_result (&status) == false)
@@ -330,10 +309,7 @@ sat_status_t sat_opengl_enable_vao (sat_opengl_t *object, const char *name)
         do 
         {
             status = sat_iterator_open (&iterator, (sat_iterator_base_t *)object->vaos);
-            if (sat_status_get_result (&status) == false)
-            {
-                break;
-            }
+            sat_status_break_on_error (status);
 
             sat_opengl_vao_t *vao = (sat_opengl_vao_t *) sat_iterator_next (&iterator);
 
@@ -366,10 +342,7 @@ sat_status_t sat_opengl_enable_program (sat_opengl_t *object, const char *name)
         do 
         {
             status = sat_iterator_open (&iterator, (sat_iterator_base_t *)object->programs);
-            if (sat_status_get_result (&status) == false)
-            {
-                break;
-            }
+            sat_status_break_on_error (status);
 
             sat_opengl_program_t *program = (sat_opengl_program_t *) sat_iterator_next (&iterator);
 
@@ -418,7 +391,6 @@ sat_status_t sat_opengl_draw (sat_opengl_t *object)
         sat_opengl_window_draw (&object->window);
 
         sat_status_set (&status, true, "");
-
     }
 
     return status;
@@ -450,10 +422,7 @@ sat_status_t sat_opengl_add_vbo_to_vao (sat_opengl_t *object, const char *name, 
         do 
         {
             status = sat_iterator_open (&iterator, (sat_iterator_base_t *)object->vaos);
-            if (sat_status_get_result (&status) == false)
-            {
-                break;
-            }
+            sat_status_break_on_error (status);
 
             sat_opengl_vao_t *vao = (sat_opengl_vao_t *) sat_iterator_next (&iterator);
 
@@ -525,10 +494,7 @@ sat_status_t sat_opengl_texture_container_add (sat_opengl_t *object, const char 
         do 
         {
             status = sat_iterator_open (&iterator, (sat_iterator_base_t *)object->textures);
-            if (sat_status_get_result (&status) == false)
-            {
-                break;
-            }
+            sat_status_break_on_error (status);
 
             sat_opengl_container_texture_t *container = (sat_opengl_container_texture_t *) sat_iterator_next (&iterator);
 
@@ -568,10 +534,7 @@ sat_status_t sat_opengl_texture_container_enable (sat_opengl_t *object, const ch
         do 
         {
             status = sat_iterator_open (&iterator, (sat_iterator_base_t *)object->textures);
-            if (sat_status_get_result (&status) == false)
-            {
-                break;
-            }
+            sat_status_break_on_error (status);
 
             sat_opengl_container_texture_t *container = (sat_opengl_container_texture_t *) sat_iterator_next (&iterator);
 
@@ -605,10 +568,7 @@ sat_status_t sat_opengl_send_shader_value (sat_opengl_t *object, const char *nam
         do 
         {
             status = sat_iterator_open (&iterator, (sat_iterator_base_t *)object->programs);
-            if (sat_status_get_result (&status) == false)
-            {
-                break;
-            }
+            sat_status_break_on_error (status);
 
             sat_opengl_program_t *program = (sat_opengl_program_t *) sat_iterator_next (&iterator);
 
@@ -653,10 +613,7 @@ sat_status_t sat_opengl_send_shader_matrix (sat_opengl_t *object, const char *na
         do 
         {
             status = sat_iterator_open (&iterator, (sat_iterator_base_t *)object->programs);
-            if (sat_status_get_result (&status) == false)
-            {
-                break;
-            }
+            sat_status_break_on_error (status);
 
             sat_opengl_program_t *program = (sat_opengl_program_t *) sat_iterator_next (&iterator);
 

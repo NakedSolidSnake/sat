@@ -48,16 +48,10 @@ sat_status_t sat_directory_get_files (const char *directory, sat_linked_list_t *
         }
 
         status = sat_directory_exists (directory);
-        if (sat_status_get_result (&status) == false)
-        {
-            break;
-        }
+        sat_status_break_on_error (status);
 
         status = sat_linked_list_create (file_list, NAME_MAX + 1);
-        if (sat_status_get_result (&status) == false)
-        {
-            break;
-        }
+        sat_status_break_on_error (status);
 
         dir = opendir (directory);
         if (dir == NULL)

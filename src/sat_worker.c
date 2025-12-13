@@ -43,25 +43,20 @@ sat_status_t sat_worker_open (sat_worker_t *object, sat_worker_args_t *args)
         do 
         {
             status = sat_worker_is_args_valid (args);
-            if (sat_status_get_result (&status) == false)
-                break;
+            sat_status_break_on_error (status);
 
             object->object_size = args->object_size;
             object->threads_amount = args->pool_amount;
             object->handler = args->handler;
             
             status = sat_queue_create (&object->queue, args->object_size);
-            if (sat_status_get_result (&status) == false)
-                break;
+            sat_status_break_on_error (status);
 
             status = sat_worker_threads_allocation (object, args->pool_amount);
-            if (sat_status_get_result (&status) == false)
-                break;
+            sat_status_break_on_error (status);
 
             status = sat_worker_threads_start (object);
-            if (sat_status_get_result (&status) == false)
-                break;
-
+            sat_status_break_on_error (status);
             object->running = true;
 
         } while (false);

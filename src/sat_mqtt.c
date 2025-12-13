@@ -42,12 +42,10 @@ sat_status_t sat_mqtt_open (sat_mqtt_t *object, sat_mqtt_args_t *args)
         do
         {
             status = sat_mqtt_is_args_valid (args);
-            if (sat_status_get_result (&status) == false)
-                break;
+            sat_status_break_on_error (status);
 
             status = sat_mqtt_client_create (object, args);
-            if (sat_status_get_result (&status) == false)
-                break;
+            sat_status_break_on_error (status);
 
             sat_mqtt_args_copy_to (object, args);
 

@@ -3,6 +3,19 @@
 
 #include <stdbool.h>
 
+#define sat_status_break_on_error(status) \
+    if (sat_status_get_result (&status) == false) \
+    { \
+        break; \
+    }
+
+#define sat_status_continue_on_error(status) \
+    if (sat_status_get_result (&status) == false) \
+    { \
+        continue; \
+    }
+
+
 typedef struct 
 {
     bool result;

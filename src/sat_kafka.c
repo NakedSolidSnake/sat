@@ -41,16 +41,13 @@ sat_status_t sat_kafka_open (sat_kafka_t *object, sat_kafka_args_t *args)
         do 
         {
             status = sat_kafka_configuration_load (&configuration, args->file, &args->groups);
-            if (sat_status_get_result (&status) == false)
-                break;
+            sat_status_break_on_error (status);
 
             status = sat_kafka_instance_create (object, &configuration);
-            if (sat_status_get_result (&status) == false)
-                break;
+            sat_status_break_on_error (status);
 
             status = sat_kafka_configure_by_type (object, &configuration, args);
-            if (sat_status_get_result (&status) == false)
-                break;
+            sat_status_break_on_error (status);
 
             status = sat_kafka_configuration_unload (&configuration);
 

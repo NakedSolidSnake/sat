@@ -38,10 +38,7 @@ sat_status_t sat_array_create (sat_array_t **const object, const sat_array_args_
     do
     {
         status = sat_array_is_args_valid (args);
-        if (sat_status_get_result (&status) == false)
-        {
-            break;
-        }
+        sat_status_break_on_error (status);
 
         if (object == NULL)
         {

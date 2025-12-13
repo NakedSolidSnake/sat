@@ -36,26 +36,17 @@ sat_status_t sat_loki_open (const sat_loki_args_t *const args)
         memset (&loki, 0, sizeof (sat_loki_t));
 
         status = sat_loki_is_args_valid (args);
-        if (sat_status_get_result (&status) == false)
-        {
-            break;
-        }
+        sat_status_break_on_error (status);
 
         status = sat_curl_init (&loki.curl);
-        if (sat_status_get_result (&status) == false)
-        {
-            break;
-        }
+        sat_status_break_on_error (status);
 
         status = sat_curl_open (&loki.curl, &(sat_curl_args_t)
                                             {
                                                 .buffer = &loki.buffer,
                                                 .size = sizeof (char)
                                             });
-        if (sat_status_get_result (&status) == false)
-        {
-            break;
-        }
+        sat_status_break_on_error (status);
 
         gethostname (loki.hostname, SAT_LOKI_HOSTNAME_SIZE);
         strncpy (loki.service_name, args->service_name, SAT_LOKI_SERVICE_NAME_SIZE);
@@ -102,16 +93,10 @@ sat_status_t sat_loki_send (const char *const level, const char *fmt, ...)
                   message);
 
         status = sat_curl_header_add (&loki.curl, "Content-Type: application/json; charset=utf-8");
-        if (sat_status_get_result (&status) == false)
-        {
-            break;
-        }
+        sat_status_break_on_error (status);
 
         status = sat_curl_request (&loki.curl, sat_curl_method_post, loki.url, payload);
-        if (sat_status_get_result (&status) == false)
-        {
-            break;
-        }
+        sat_status_break_on_error (status);
 
         sat_status_success (&status);
 
@@ -133,10 +118,7 @@ sat_status_t sat_loki_close (void)
         }
 
         status = sat_curl_close (&loki.curl);
-        if (sat_status_get_result (&status) == false)
-        {
-            break;
-        }
+        sat_status_break_on_error (status);
 
         loki.is_open = false;
 

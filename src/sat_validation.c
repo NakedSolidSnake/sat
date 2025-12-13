@@ -38,8 +38,7 @@ sat_status_t sat_validation_verify (sat_validation_t *object, void *data)
         for (uint8_t i = 0; i < object->amount; i++)
         {
             status = object->criterias [i](data);
-            if(sat_status_get_result (&status) == false)
-                break;
+            sat_status_break_on_error (status);
         }
     }
 

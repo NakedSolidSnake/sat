@@ -380,10 +380,7 @@ sat_status_t sat_network_get_info_list (sat_array_t **array)
                                         .mode = sat_array_mode_dynamic
                                     });
 
-        if (sat_status_get_result (&status) == false)
-        {
-            break;
-        }
+        sat_status_break_on_error (status);
 
         if (getifaddrs (&ifaddr) == -1)
         {

@@ -175,15 +175,10 @@ sat_status_t sat_file_copy (const char *const source, const char *const destinat
         fclose (__destination);
 
         status = sat_file_get_permissions (source, &permissions);
-        if (sat_status_get_result (&status) == false)
-        {
-            break;
-        }
+        sat_status_break_on_error (status);
+
         status = sat_file_set_permissions (destination, permissions);
-        if (sat_status_get_result (&status) == false)
-        {
-            break;
-        }
+        sat_status_break_on_error (status);
 
         sat_status_success (&status);
 

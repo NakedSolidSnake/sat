@@ -23,10 +23,7 @@ sat_status_t sat_tcp_server_open (sat_tcp_server_t **object, sat_tcp_server_args
     do
     {
         status = sat_tcp_server_abstract_is_args_valid (args);
-        if (sat_status_get_result (&status) == false)
-        {
-            break;
-        }
+        sat_status_break_on_error (status);
 
         sat_tcp_server_t *__object = calloc (1, sizeof (sat_tcp_server_t));
         if (__object == NULL)

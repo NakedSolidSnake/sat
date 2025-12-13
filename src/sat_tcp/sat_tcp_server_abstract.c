@@ -50,12 +50,10 @@ sat_status_t sat_tcp_server_abstract_configure (sat_tcp_server_abstract_t *objec
     for (info = info_list; info != NULL; info = info->ai_next)
     {
         status = sat_tcp_server_abstract_set_socket (object, info);
-        if (sat_status_get_result (&status) == false)
-            continue;
+        sat_status_continue_on_error (status);
 
         status = sat_tcp_server_abstract_set_reuse_address (object);
-        if (sat_status_get_result (&status) == false)
-            break;
+        sat_status_continue_on_error (status);
 
         status = sat_tcp_server_abstract_set_bind (object, info);
         if (sat_status_get_result (&status) == false)
@@ -65,8 +63,7 @@ sat_status_t sat_tcp_server_abstract_configure (sat_tcp_server_abstract_t *objec
         }
 
         status = sat_tcp_server_abstract_select_type (object);
-        if (sat_status_get_result (&status) == false)
-            break;
+        sat_status_break_on_error (status);
 
         status = sat_tcp_server_abstract_listen (object);
 

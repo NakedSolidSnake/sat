@@ -62,11 +62,7 @@ sat_status_t sat_opengl_program_link (sat_opengl_program_t *object)
         glLinkProgram (object->id);
 
         status = sat_opengl_program_check_link_status ((sat_opengl_shader_t*)object);
-
-        if (sat_status_get_result (&status) == false)
-        {
-            break;
-        }
+        sat_status_break_on_error (status);
 
         status = sat_opengl_program_shader_delete (object);
 

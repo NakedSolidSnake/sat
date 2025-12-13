@@ -90,22 +90,13 @@ sat_status_t sat_discovery_open (sat_discovery_t *object, sat_discovery_args_t *
     do
     {
         status = sat_discovery_is_args_valid (args);
-        if (sat_status_get_result (&status) == false)
-        {
-            break;
-        }
+        sat_status_break_on_error (status);
 
         status = sat_discovery_server_setup (object, args);
-        if (sat_status_get_result (&status) == false)
-        {
-            break;
-        }
+        sat_status_break_on_error (status);
 
         status = sat_discovery_scheduler_setup (object);
-        if (sat_status_get_result (&status) == false)
-        {
-            break;
-        }
+        sat_status_break_on_error (status);
 
         status = sat_set_create (&object->interests, &(sat_set_args_t)
                                 {
@@ -114,10 +105,7 @@ sat_status_t sat_discovery_open (sat_discovery_t *object, sat_discovery_args_t *
                                     .is_equal = sat_discovery_is_equal,
                                     .mode = sat_set_mode_dynamic
                                 });
-        if (sat_status_get_result (&status) == false)
-        {
-            break;
-        }
+        sat_status_break_on_error (status);
 
         status = sat_set_create (&object->nodes, &(sat_set_args_t)
                                 {
@@ -126,16 +114,10 @@ sat_status_t sat_discovery_open (sat_discovery_t *object, sat_discovery_args_t *
                                     .is_equal = sat_discovery_is_equal,
                                     .mode = sat_set_mode_dynamic
                                 });
-        if (sat_status_get_result (&status) == false)
-        {
-            break;
-        }
+        sat_status_break_on_error (status);
 
         status = sat_network_get_info_list (&object->interfaces);
-        if (sat_status_get_result (&status) == false)
-        {
-            break;
-        }
+        sat_status_break_on_error (status);
 
         strncpy (object->service_name, args->service.name, SAT_DISCOVERY_SERVICE_NAME_MAX_LENGTH);
         strncpy (object->channel.service, args->channel.service, SAT_DISCOVERY_SERVICE_MAX_LENGTH);
@@ -167,10 +149,7 @@ sat_status_t sat_discovery_add_interest (sat_discovery_t *object, const char *se
                                                                 .service_name = service_name,
                                                                 .uuid = NULL
                                                             });
-        if (sat_status_get_result (&status) == false)
-        {
-            break;
-        }
+        sat_status_break_on_error (status);
 
         status = sat_set_add (object->interests, &interest);
 
@@ -222,10 +201,7 @@ sat_status_t sat_discovery_get_service_info (sat_discovery_t *object, const char
 
         sat_iterator_t iterator;
         status = sat_iterator_open (&iterator, (sat_iterator_base_t *)object->nodes);
-        if (sat_status_get_result (&status) == false)
-        {
-            break;
-        }
+        sat_status_break_on_error (status);
 
         sat_discovery_node_t *node = sat_iterator_next (&iterator);
         while (node != NULL)
@@ -324,10 +300,8 @@ static sat_status_t sat_discovery_scheduler_setup (sat_discovery_t *object)
     do
     {
         status = sat_scheduler_open (&object->scheduler, &(sat_scheduler_args_t){.event_amount = 5});
-        if (sat_status_get_result (&status) == false)
-        {
-            break;
-        }
+        sat_status_break_on_error (status);
+
         status = sat_scheduler_add_event (&object->scheduler, &(sat_scheduler_event_t)
                                              {
                                                 .name = "discovery announce",
@@ -336,10 +310,7 @@ static sat_status_t sat_discovery_scheduler_setup (sat_discovery_t *object)
                                                 .type = sat_scheduler_type_one_shot,
                                                 .timeout = 10
                                              });
-        if (sat_status_get_result (&status) == false)
-        {
-            break;
-        }
+        sat_status_break_on_error (status);
 
         status = sat_scheduler_add_event (&object->scheduler, &(sat_scheduler_event_t)
                                              {
@@ -349,10 +320,7 @@ static sat_status_t sat_discovery_scheduler_setup (sat_discovery_t *object)
                                                 .type = sat_scheduler_type_periodic,
                                                 .timeout = 100
                                              });
-        if (sat_status_get_result (&status) == false)
-        {
-            break;
-        }
+        sat_status_break_on_error (status);
 
         status = sat_scheduler_add_event (&object->scheduler, &(sat_scheduler_event_t)
                                              {
@@ -362,10 +330,7 @@ static sat_status_t sat_discovery_scheduler_setup (sat_discovery_t *object)
                                                 .type = sat_scheduler_type_periodic,
                                                 .timeout = 5000
                                              });
-        if (sat_status_get_result (&status) == false)
-        {
-            break;
-        }
+        sat_status_break_on_error (status);
 
         status = sat_scheduler_add_event (&object->scheduler, &(sat_scheduler_event_t)
                                              {
@@ -376,10 +341,7 @@ static sat_status_t sat_discovery_scheduler_setup (sat_discovery_t *object)
                                                 .timeout = 1000
                                              });
 
-        if (sat_status_get_result (&status) == false)
-        {
-            break;
-        }
+        sat_status_break_on_error (status);
 
         status = sat_scheduler_add_event (&object->scheduler, &(sat_scheduler_event_t)
                                              {

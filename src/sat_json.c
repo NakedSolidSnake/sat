@@ -189,11 +189,7 @@ sat_status_t sat_json_string_to_buffer (sat_json_t *object, char *buffer, uint32
         }
 
         status = sat_json_to_string (object, &string);
-        if (sat_status_get_result (&status) == false )
-        {
-            sat_status_set (&status, false, "sat json error: [it wasn't possible to be string]");
-            break;
-        }
+        sat_status_break_on_error (status);
 
         if (strlen (string) > size)
         {

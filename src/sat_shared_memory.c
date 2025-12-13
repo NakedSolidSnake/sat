@@ -16,8 +16,7 @@ sat_status_t sat_shared_memory_open (sat_shared_memory_t *object, sat_shared_mem
         do 
         {
             status = sat_shared_memory_is_args_valid (args);
-            if (sat_status_get_result (&status) == false)
-                break;
+            sat_status_break_on_error (status);
 
             object->id = shmget (args->key, args->size, args->flags | IPC_CREAT);
             if (object->id == -1)

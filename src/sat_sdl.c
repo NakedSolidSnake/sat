@@ -77,10 +77,7 @@ sat_status_t sat_sdl_init (sat_sdl_t **object, const char *title, uint16_t width
         {
             
             status = sat_sdl_init_api ();
-            if (sat_status_get_result (&status) == false)
-            {
-                break;
-            }
+            sat_status_break_on_error (status);
 
             __object = calloc (1, sizeof (struct sat_sdl_t));
             if (__object == NULL)
@@ -89,16 +86,10 @@ sat_status_t sat_sdl_init (sat_sdl_t **object, const char *title, uint16_t width
             }
 
             status = sat_sdl_window_create (&__object->window, title, width, height);
-            if (sat_status_get_result (&status) == false)
-            {
-                break;
-            }
+            sat_status_break_on_error (status);
 
             status = sat_sdl_render_create (&__object->render, &__object->window);
-            if (sat_status_get_result (&status) == false)
-            {
-                break;
-            }
+            sat_status_break_on_error (status);
 
             __object->running = true;
             __object->height = height;

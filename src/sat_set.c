@@ -30,12 +30,14 @@ sat_status_t sat_set_create (sat_set_t **const object, const sat_set_args_t *con
     do
     {
         status = sat_set_is_args_valid (args);
-        if (sat_status_get_result (&status) == false)
-            break;
+        sat_status_break_on_error (status);
 
-        sat_status_set (&status, false, "sat set create error");
+        
         if (object == NULL)
+        {
+            sat_status_set (&status, false, "sat set create error: Object is NULL");
             break;
+        }
         
         sat_set_t *__object = calloc (1, sizeof (struct sat_set_t));
         if (__object == NULL)

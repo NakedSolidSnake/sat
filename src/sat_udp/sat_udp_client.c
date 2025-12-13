@@ -32,10 +32,7 @@ sat_status_t sat_udp_client_open (sat_udp_client_t **object, sat_udp_client_args
         }
 
         status = sat_udp_client_set_socket (__object, NULL);
-        if (sat_status_get_result (&status) == false)
-        {
-            continue;
-        }
+        sat_status_break_on_error (status);
 
         __object->service = args->service;
         *object = __object;

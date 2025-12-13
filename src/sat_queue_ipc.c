@@ -27,10 +27,7 @@ sat_status_t sat_queue_ipc_open (sat_queue_ipc_t *object, sat_queue_ipc_args_t *
         {
 
             status = sat_queue_ipc_args_is_valid (args);
-            if (sat_status_get_result (&status) == false)
-            {
-                break;
-            }
+            sat_status_break_on_error (status);
 
             object->id = msgget ((key_t)args->key, args->flags | IPC_CREAT);
             if (object->id == -1)
@@ -58,10 +55,7 @@ sat_status_t sat_queue_ipc_send (sat_queue_ipc_t *object, sat_queue_data_t *data
         do
         {
             status = sat_queue_ipc_data_is_valid (data);
-            if (sat_status_get_result (&status) == false)
-            {
-                break;
-            }
+            sat_status_break_on_error (status);
 
             sat_queue_data_internal_t __data = {.type = data->type};
 
@@ -90,10 +84,7 @@ sat_status_t sat_queue_ipc_receive (sat_queue_ipc_t *object, sat_queue_data_t *d
         do
         {
             status = sat_queue_ipc_data_is_valid (data);
-            if (sat_status_get_result (&status) == false)
-            {
-                break;
-            }
+            sat_status_break_on_error (status);
 
             sat_queue_data_internal_t __data = {.type = data->type};
 

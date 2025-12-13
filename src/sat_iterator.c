@@ -21,16 +21,10 @@ sat_status_t sat_iterator_open (sat_iterator_t *const object, const sat_iterator
         do 
         {
             status = sat_iterator_is_base_object_valid (object, base);
-            if (sat_status_get_result (&status) == false)
-            {
-                break;
-            }
+            sat_status_break_on_error (status);
 
             status = sat_iterator_get_info (object, base);
-            if (sat_status_get_result (&status) == false)
-            {
-                break;
-            }
+            sat_status_break_on_error (status);
 
             object->base = base;
             object->initialized = true;

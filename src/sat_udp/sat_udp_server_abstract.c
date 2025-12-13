@@ -55,10 +55,7 @@ sat_status_t sat_udp_server_abstract_open (sat_udp_server_abstract_t *object, sa
     do 
     {
         status = sat_udp_server_abstract_is_args_valid (args);
-        if (sat_status_get_result (&status) == false)
-        {
-            break;
-        }
+        sat_status_break_on_error (status);
 
         struct addrinfo *info_list = sat_udp_server_abstract_get_info_list (args);
         if (info_list == NULL)
@@ -68,10 +65,7 @@ sat_status_t sat_udp_server_abstract_open (sat_udp_server_abstract_t *object, sa
         }
 
         status = sat_udp_server_abstract_configure (object, info_list);
-        if (sat_status_get_result (&status) == false)
-        {
-            break;
-        }
+        sat_status_break_on_error (status);
 
         sat_udp_server_abstract_copy_to_context (object, args);
 
@@ -97,12 +91,10 @@ static sat_status_t sat_udp_server_abstract_configure (sat_udp_server_abstract_t
     for (info = info_list; info != NULL; info = info->ai_next)
     {
         status = sat_udp_server_abstract_set_socket (object, info);
-        if (sat_status_get_result (&status) == false)
-            continue;
+        sat_status_continue_on_error (status);
 
         status = sat_udp_server_abstract_set_reuse_address (object);
-        if (sat_status_get_result (&status) == false)
-            break;
+        sat_status_break_on_error (status);
 
         status = sat_udp_server_abstract_set_bind (object, info);
         if (sat_status_get_result (&status) == false)

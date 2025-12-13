@@ -43,10 +43,7 @@ sat_status_t sat_tcp_client_open (sat_tcp_client_t **object, sat_tcp_client_args
             }
 
             status = sat_tcp_client_configure (__object, info_list);
-            if (sat_status_get_result (&status) == false)
-            {
-                break;
-            }
+            sat_status_break_on_error (status);
 
             __object->service = args->service;
             *object = __object;
@@ -115,16 +112,10 @@ static sat_status_t sat_tcp_client_configure (sat_tcp_client_t *object, struct a
     for (info = info_list; info != NULL; info = info->ai_next)
     {
         status = sat_tcp_client_set_socket (object, info);
-        if (sat_status_get_result (&status) == false)
-        {
-            continue;
-        }
+        sat_status_continue_on_error (status);
 
         status = sat_tcp_client_connect (object, info);
-        if (sat_status_get_result (&status) == false)
-        {
-            continue;
-        }
+        sat_status_continue_on_error (status);
 
         break;
     }
