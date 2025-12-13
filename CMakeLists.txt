@@ -9,10 +9,12 @@ include (GNUInstallDirs)
 
 enable_testing ()
 
+add_subdirectory (modules)
+
 list (APPEND SAT_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/sat_uuid.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_file.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_time.c
-                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_status.c
+                        #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_status.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_log.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_validation.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_event.c
@@ -61,7 +63,7 @@ list (APPEND SAT_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/sat_uuid.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_directory.c)
 
 
-list (APPEND SAT_LIBRARIES uuid m pthread dl pthread)
+list (APPEND SAT_LIBRARIES uuid m pthread dl pthread sat_status)
 
 list (APPEND SAT_INCLUDES ${CMAKE_CURRENT_LIST_DIR}/include
                           ${CMAKE_CURRENT_LIST_DIR}/include/sat_tcp/
