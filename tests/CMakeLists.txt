@@ -19,11 +19,9 @@ create_test (test_sat_scheduler)
 create_test (test_sat_channel)
 create_test (test_sat_shared_memory)
 create_test (test_sat_queue_ipc)
-create_test (test_sat_iterator)
 create_test (test_sat_network)
 
 
-add_subdirectory (test_sat_array)
 add_subdirectory (test_mysql)
 add_subdirectory (test_postgres)
 add_subdirectory (test_sqlite)

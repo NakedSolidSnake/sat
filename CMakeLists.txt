@@ -9,6 +9,10 @@ include (GNUInstallDirs)
 
 enable_testing ()
 
+include ("${CMAKE_CURRENT_SOURCE_DIR}/cmake/CMakeLoadPKG.txt")
+include ("${CMAKE_CURRENT_SOURCE_DIR}/cmake/CMakeFunctions.txt")
+include ("${CMAKE_CURRENT_SOURCE_DIR}/cmake/LoadModules.txt")
+
 add_subdirectory (modules)
 
 list (APPEND SAT_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/sat_uuid.c
@@ -19,7 +23,7 @@ list (APPEND SAT_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/sat_uuid.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_validation.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_event.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_stack.c
-                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_array.c
+                        #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_array.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_udp.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_udp/sat_udp_server.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_udp/sat_udp_client.c
@@ -42,7 +46,7 @@ list (APPEND SAT_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/sat_uuid.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_channel.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_shared_memory.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_queue_ipc.c
-                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_iterator.c
+                        #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_iterator.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_process/sat_process.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_process/sat_process_monitor.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery.c
@@ -63,7 +67,8 @@ list (APPEND SAT_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/sat_uuid.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_directory.c)
 
 
-list (APPEND SAT_LIBRARIES uuid m pthread dl pthread sat_status)
+# Check if it is necessary to link some libraries
+list (APPEND SAT_LIBRARIES uuid m pthread dl pthread sat_status sat_array sat_iterator)
 
 list (APPEND SAT_INCLUDES ${CMAKE_CURRENT_LIST_DIR}/include
                           ${CMAKE_CURRENT_LIST_DIR}/include/sat_tcp/
@@ -74,10 +79,6 @@ list (APPEND SAT_INCLUDES ${CMAKE_CURRENT_LIST_DIR}/include
 file (WRITE ${CMAKE_CURRENT_LIST_DIR}/include/sat_optionals.h "")
 
 list (APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
-
-include ("${CMAKE_CURRENT_SOURCE_DIR}/cmake/CMakeLoadPKG.txt")
-include ("${CMAKE_CURRENT_SOURCE_DIR}/cmake/CMakeFunctions.txt")
-include ("${CMAKE_CURRENT_SOURCE_DIR}/cmake/LoadModules.txt")
 
 add_library (sat SHARED "")
 target_link_libraries (sat ${SAT_LIBRARIES})
@@ -99,12 +100,12 @@ install (FILES include/sat.h             DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 install (FILES include/sat_uuid.h        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install (FILES include/sat_file.h        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install (FILES include/sat_time.h        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install (FILES include/sat_status.h      DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+# install (FILES include/sat_status.h      DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install (FILES include/sat_log.h         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install (FILES include/sat_validation.h  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install (FILES include/sat_event.h       DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install (FILES include/sat_stack.h       DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install (FILES include/sat_array.h       DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+# install (FILES include/sat_array.h       DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install (FILES include/sat_udp.h         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install (FILES include/sat_udp/sat_udp_types.h         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sat_udp)
 install (FILES include/sat_linked_list.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})

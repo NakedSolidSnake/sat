@@ -244,3 +244,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **SAT** - Making system programming simpler, one module at a time. 🛠️
 
+
+
+
+cmake --install build --component documentation
