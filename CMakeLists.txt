@@ -40,7 +40,7 @@ list (APPEND SAT_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/sat_uuid.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_tcp/sat_tcp_server_interactive.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_worker.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_set.c
-                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_plugin.c
+                        #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_plugin.c
                         #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_cache.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_scheduler.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_channel.c
@@ -77,7 +77,8 @@ list (APPEND SAT_LIBRARIES
              sat_status
              sat_array
              sat_iterator
-             sat_cache)
+             sat_cache
+             sat_plugin)
 
 list (APPEND SAT_INCLUDES ${CMAKE_CURRENT_LIST_DIR}/include
                           ${CMAKE_CURRENT_LIST_DIR}/include/sat_tcp/
@@ -124,7 +125,7 @@ install (FILES include/sat_tcp.h         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 install (FILES include/sat_tcp/sat_tcp_types.h   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sat_tcp)
 install (FILES include/sat_worker.h      DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install (FILES include/sat_set.h         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install (FILES include/sat_plugin.h      DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+# install (FILES include/sat_plugin.h      DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 # install (FILES include/sat_cache.h       DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install (FILES include/sat_scheduler.h   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install (FILES include/sat_channel.h     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
