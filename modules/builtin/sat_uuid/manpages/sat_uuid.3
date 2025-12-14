@@ -1,0 +1,394 @@
+.TH SAT_UUID 3 "December 2025" "SAT Library" "SAT Library Manual"
+.SH NAME
+sat_uuid \- UUID generation, conversion, and comparison utilities
+.SH SYNOPSIS
+.nf
+.B #include <sat_uuid.h>
+.PP
+.BI "bool sat_uuid_generate_string(sat_uuid_string_t " uuid_string ", sat_uuid_format_t " format );
+.BI "bool sat_uuid_generate_bin(sat_uuid_binary_t " uuid_bin );
+.BI "bool sat_uuid_string_to_bin(const sat_uuid_string_t " uuid_string ", sat_uuid_binary_t " uuid );
+.BI "bool sat_uuid_bin_to_string(const sat_uuid_binary_t " uuid_bin ", sat_uuid_string_t " uuid_string ", sat_uuid_format_t " format );
+.BI "bool sat_uuid_compare_bin(const sat_uuid_binary_t " uuid1 ", const sat_uuid_binary_t " uuid2 );
+.BI "bool sat_uuid_compare_string(const sat_uuid_string_t " uuid1 ", const sat_uuid_string_t " uuid2 ", sat_uuid_format_t " format );
+.PP
+Link with \fI\-lsat\fP.
+.fi
+.SH DESCRIPTION
+The
+.B sat_uuid
+module provides functionality for generating, converting, and comparing
+Universally Unique Identifiers (UUIDs). It supports version 4 (random) UUIDs
+in both string and binary formats.
+.PP
+UUIDs are 128-bit identifiers used to uniquely identify information in distributed
+systems without requiring central coordination. This module handles the standard
+UUID format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.
+.SS Constants
+.TP
+.B SAT_UUID_STRING_SIZE
+Size of UUID string buffer (37 bytes including null terminator).
+.TP
+.B SAT_UUID_BINARY_SIZE
+Size of UUID binary buffer (16 bytes).
+.SS Types
+.TP
+.B sat_uuid_string_t
+Array of 37 characters to hold a UUID string in the format
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx (plus null terminator).
+.TP
+.B sat_uuid_binary_t
+Array of 16 unsigned chars to hold a UUID in binary format.
+.TP
+.B sat_uuid_format_t
+Enumeration for UUID string formatting:
+.RS
+.IP \(bu 2
+.B sat_uuid_format_lower_case
+\- Lowercase hexadecimal characters
+.IP \(bu 2
+.B sat_uuid_format_upper_case
+\- Uppercase hexadecimal characters
+.RE
+.SS Generation Functions
+.TP
+.BR sat_uuid_generate_string ()
+Generates a new version 4 (random) UUID and formats it as a string with the
+specified
+.IR format .
+The string follows the standard UUID format with hyphens.
+Returns true on success.
+.TP
+.BR sat_uuid_generate_bin ()
+Generates a new version 4 (random) UUID in binary format. The result is stored
+in the 16-byte
+.I uuid_bin
+buffer. Returns true on success.
+.PP
+.SS Conversion Functions
+.TP
+.BR sat_uuid_string_to_bin ()
+Converts a UUID from string format to binary format. The input
+.I uuid_string
+must be properly formatted with hyphens. Accepts both uppercase and lowercase
+hexadecimal characters. Returns true if conversion succeeds, false if the
+format is invalid.
+.TP
+.BR sat_uuid_bin_to_string ()
+Converts a UUID from binary format to string format using the specified
+.IR format .
+The resulting string is stored in
+.I uuid_string
+with the standard hyphen placement. Returns true on success.
+.PP
+.SS Comparison Functions
+.TP
+.BR sat_uuid_compare_bin ()
+Performs a byte-by-byte comparison of two binary UUIDs. Returns true if the
+UUIDs are equal, false otherwise.
+.TP
+.BR sat_uuid_compare_string ()
+Compares two UUID strings for equality. The comparison normalizes both strings
+to the specified
+.I format
+before comparison, making it effectively case-insensitive. Returns true if the
+UUIDs are equal, false otherwise.
+.SH RETURN VALUE
+All functions return a boolean value:
+.IP \(bu 2
+.B true
+\- Operation succeeded
+.IP \(bu 2
+.B false
+\- Operation failed (invalid format, allocation error, etc.)
+.SH ERRORS
+Functions may return false in the following cases:
+.TP
+.B "Invalid UUID format"
+String to binary conversion fails if the input string is not properly formatted.
+.TP
+.B "NULL pointers"
+Functions may fail if passed NULL pointers (implementation dependent).
+.TP
+.B "Random number generation failure"
+UUID generation may fail if the system's random number source is unavailable.
+.SH EXAMPLES
+.SS Generating a UUID String
+.nf
+#include <sat_uuid.h>
+#include <stdio.h>
+
+int main(void)
+{
+    sat_uuid_string_t uuid;
+    
+    /* Generate lowercase UUID */
+    if (sat_uuid_generate_string(uuid, 
+                                  sat_uuid_format_lower_case)) {
+        printf("Generated UUID: %s\\n", uuid);
+    } else {
+        fprintf(stderr, "Failed to generate UUID\\n");
+        return 1;
+    }
+    
+    return 0;
+}
+.fi
+.SS Generating Binary UUID
+.nf
+#include <sat_uuid.h>
+#include <stdio.h>
+
+int main(void)
+{
+    sat_uuid_binary_t uuid_bin;
+    sat_uuid_string_t uuid_str;
+    
+    /* Generate binary UUID */
+    if (!sat_uuid_generate_bin(uuid_bin)) {
+        fprintf(stderr, "Failed to generate UUID\\n");
+        return 1;
+    }
+    
+    /* Convert to string for display */
+    sat_uuid_bin_to_string(uuid_bin, uuid_str, 
+                           sat_uuid_format_lower_case);
+    printf("Binary UUID as string: %s\\n", uuid_str);
+    
+    return 0;
+}
+.fi
+.SS Converting Between Formats
+.nf
+#include <sat_uuid.h>
+#include <stdio.h>
+
+int main(void)
+{
+    sat_uuid_string_t uuid_str1, uuid_str2;
+    sat_uuid_binary_t uuid_bin;
+    
+    /* Generate UUID string */
+    sat_uuid_generate_string(uuid_str1, 
+                             sat_uuid_format_lower_case);
+    printf("Original: %s\\n", uuid_str1);
+    
+    /* Convert to binary */
+    if (!sat_uuid_string_to_bin(uuid_str1, uuid_bin)) {
+        fprintf(stderr, "Conversion to binary failed\\n");
+        return 1;
+    }
+    
+    /* Convert back to string in uppercase */
+    sat_uuid_bin_to_string(uuid_bin, uuid_str2, 
+                           sat_uuid_format_upper_case);
+    printf("Uppercase: %s\\n", uuid_str2);
+    
+    return 0;
+}
+.fi
+.SS Comparing UUIDs
+.nf
+#include <sat_uuid.h>
+#include <stdio.h>
+
+int main(void)
+{
+    sat_uuid_string_t uuid1, uuid2;
+    
+    /* Generate two UUIDs */
+    sat_uuid_generate_string(uuid1, sat_uuid_format_lower_case);
+    sat_uuid_generate_string(uuid2, sat_uuid_format_lower_case);
+    
+    printf("UUID 1: %s\\n", uuid1);
+    printf("UUID 2: %s\\n", uuid2);
+    
+    /* Compare them */
+    if (sat_uuid_compare_string(uuid1, uuid2, 
+                                 sat_uuid_format_lower_case)) {
+        printf("UUIDs are equal\\n");
+    } else {
+        printf("UUIDs are different\\n");
+    }
+    
+    return 0;
+}
+.fi
+.SS Comparing Binary UUIDs
+.nf
+#include <sat_uuid.h>
+#include <stdio.h>
+
+int main(void)
+{
+    sat_uuid_binary_t uuid1, uuid2, uuid3;
+    
+    /* Generate UUIDs */
+    sat_uuid_generate_bin(uuid1);
+    sat_uuid_generate_bin(uuid2);
+    
+    /* Copy uuid1 to uuid3 */
+    memcpy(uuid3, uuid1, SAT_UUID_BINARY_SIZE);
+    
+    /* Compare */
+    if (sat_uuid_compare_bin(uuid1, uuid2)) {
+        printf("uuid1 and uuid2 are equal (unlikely!)\\n");
+    } else {
+        printf("uuid1 and uuid2 are different\\n");
+    }
+    
+    if (sat_uuid_compare_bin(uuid1, uuid3)) {
+        printf("uuid1 and uuid3 are equal (expected)\\n");
+    }
+    
+    return 0;
+}
+.fi
+.SS UUID Database Key
+.nf
+#include <sat_uuid.h>
+#include <stdio.h>
+#include <string.h>
+
+typedef struct {
+    sat_uuid_string_t id;
+    char name[100];
+    int value;
+} record_t;
+
+record_t create_record(const char *name, int value)
+{
+    record_t rec;
+    
+    /* Generate unique ID */
+    sat_uuid_generate_string(rec.id, 
+                             sat_uuid_format_lower_case);
+    strncpy(rec.name, name, sizeof(rec.name) - 1);
+    rec.value = value;
+    
+    return rec;
+}
+
+int main(void)
+{
+    record_t rec1 = create_record("Item 1", 100);
+    record_t rec2 = create_record("Item 2", 200);
+    
+    printf("Record 1: ID=%s, Name=%s, Value=%d\\n",
+           rec1.id, rec1.name, rec1.value);
+    printf("Record 2: ID=%s, Name=%s, Value=%d\\n",
+           rec2.id, rec2.name, rec2.value);
+    
+    return 0;
+}
+.fi
+.SS Case-Insensitive Comparison
+.nf
+#include <sat_uuid.h>
+#include <stdio.h>
+#include <string.h>
+
+int main(void)
+{
+    sat_uuid_string_t uuid_lower, uuid_upper;
+    sat_uuid_binary_t uuid_bin;
+    
+    /* Generate binary UUID */
+    sat_uuid_generate_bin(uuid_bin);
+    
+    /* Convert to both cases */
+    sat_uuid_bin_to_string(uuid_bin, uuid_lower,
+                           sat_uuid_format_lower_case);
+    sat_uuid_bin_to_string(uuid_bin, uuid_upper,
+                           sat_uuid_format_upper_case);
+    
+    printf("Lowercase: %s\\n", uuid_lower);
+    printf("Uppercase: %s\\n", uuid_upper);
+    
+    /* Compare - should be equal despite different case */
+    if (sat_uuid_compare_string(uuid_lower, uuid_upper,
+                                 sat_uuid_format_lower_case)) {
+        printf("UUIDs are equal (case-insensitive)\\n");
+    }
+    
+    return 0;
+}
+.fi
+.SS Validating UUID Format
+.nf
+#include <sat_uuid.h>
+#include <stdio.h>
+
+bool is_valid_uuid(const char *str)
+{
+    sat_uuid_binary_t bin;
+    sat_uuid_string_t copy;
+    
+    /* Copy to ensure buffer size */
+    strncpy(copy, str, SAT_UUID_STRING_SIZE - 1);
+    copy[SAT_UUID_STRING_SIZE - 1] = '\\0';
+    
+    /* Try to convert - will fail if invalid */
+    return sat_uuid_string_to_bin(copy, bin);
+}
+
+int main(void)
+{
+    const char *valid = 
+        "550e8400-e29b-41d4-a716-446655440000";
+    const char *invalid1 = "not-a-uuid";
+    const char *invalid2 = "550e8400e29b41d4a716446655440000";
+    
+    printf("%s: %s\\n", valid, 
+           is_valid_uuid(valid) ? "valid" : "invalid");
+    printf("%s: %s\\n", invalid1,
+           is_valid_uuid(invalid1) ? "valid" : "invalid");
+    printf("%s: %s\\n", invalid2,
+           is_valid_uuid(invalid2) ? "valid" : "invalid");
+    
+    return 0;
+}
+.fi
+.SH NOTES
+.IP \(bu 2
+This module generates version 4 (random) UUIDs as defined in RFC 4122.
+.IP \(bu 2
+UUID strings are always 36 characters plus null terminator (37 total).
+.IP \(bu 2
+The string format is: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+where x is a hexadecimal digit.
+.IP \(bu 2
+Binary UUIDs are exactly 16 bytes (128 bits).
+.IP \(bu 2
+String comparison is case-insensitive when using
+.BR sat_uuid_compare_string ().
+.IP \(bu 2
+The module uses the system's random number generator, which should be
+properly seeded.
+.IP \(bu 2
+UUIDs are not cryptographically secure and should not be used for
+security-sensitive applications without additional measures.
+.IP \(bu 2
+The probability of generating duplicate UUIDs is extremely low but
+not zero. For critical applications, consider additional uniqueness checks.
+.IP \(bu 2
+Binary format is more efficient for storage and comparison.
+.IP \(bu 2
+String format is human-readable and suitable for display and serialization.
+.SH SEE ALSO
+.BR sat_status (3),
+.BR uuid (3),
+.BR uuid_generate (3),
+.BR random (3)
+.PP
+RFC 4122: A Universally Unique IDentifier (UUID) URN Namespace
+.br
+SAT Library Documentation: <https://github.com/solidcris/sat>
+.SH BUGS
+No known bugs at this time. Report bugs to the SAT Library issue tracker.
+.SH AUTHOR
+Written by the SAT Library contributors.
+.SH COPYRIGHT
+Copyright \(co 2025 SAT Library Project.
+.br
+Licensed under the MIT License.
