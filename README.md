@@ -213,6 +213,14 @@ cd build
 ./tests/test_sat_worker
 ```
 
+## Creating new Modules
+
+### Creating builtin module
+cmake -DMODULE_NAME=sat_<module name> -DMODULE_TYPE=builtin -P cmake/CreateModule.txt
+
+### Creating optionals module
+cmake -DMODULE_NAME=sat_<module name> -DMODULE_TYPE=optionals -P cmake/CreateModule.txt
+
 ## 🤝 Contributing
 
 We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.

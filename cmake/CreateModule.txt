@@ -1,0 +1,228 @@
+# Script to create a new module via command line
+# Usage: cmake -DMODULE_NAME=name -DMODULE_TYPE=builtin -P create_module_cli.cmake
+# Usage: cmake -DMODULE_NAME=name -DMODULE_TYPE=optionals -P create_module_cli.cmake
+
+if(NOT DEFINED MODULE_NAME)
+    message(FATAL_ERROR "Usage: cmake -DMODULE_NAME=name -DMODULE_TYPE=builtin|optionals -P create_module_cli.cmake")
+endif()
+
+if(NOT DEFINED MODULE_TYPE)
+    message(FATAL_ERROR "MODULE_TYPE is required (builtin or optionals)")
+endif()
+
+if(NOT MODULE_TYPE STREQUAL "builtin" AND NOT MODULE_TYPE STREQUAL "optionals")
+    message(FATAL_ERROR "MODULE_TYPE must be 'builtin' or 'optionals'")
+endif()
+
+# Define base directory
+
+set(MODULE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/modules/${MODULE_TYPE}/${MODULE_NAME}")
+
+# Check if module already exists
+if(EXISTS "${MODULE_DIR}")
+    message(FATAL_ERROR "Module '${MODULE_NAME}' already exists at ${MODULE_DIR}")
+endif()
+
+message(STATUS "Creating module: ${MODULE_NAME} in modules/${MODULE_TYPE}/")
+
+# Create directory structure
+file(MAKE_DIRECTORY "${MODULE_DIR}")
+file(MAKE_DIRECTORY "${MODULE_DIR}/lib")
+file(MAKE_DIRECTORY "${MODULE_DIR}/lib/include")
+file(MAKE_DIRECTORY "${MODULE_DIR}/lib/src")
+file(MAKE_DIRECTORY "${MODULE_DIR}/samples")
+file(MAKE_DIRECTORY "${MODULE_DIR}/tests")
+file(MAKE_DIRECTORY "${MODULE_DIR}/manpages")
+
+# Cria o CMakeLists.txt principal do módulo
+file(WRITE "${MODULE_DIR}/CMakeLists.txt"
+"add_subdirectory (lib)
+add_subdirectory (samples)
+add_subdirectory (tests)
+add_subdirectory (manpages)
+")
+
+# Cria o CMakeLists.txt da biblioteca
+file(WRITE "${MODULE_DIR}/lib/CMakeLists.txt"
+"add_library (${MODULE_NAME} \"\")
+
+target_sources (${MODULE_NAME}
+    PRIVATE
+    src/${MODULE_NAME}.c
+)
+
+target_include_directories (${MODULE_NAME}
+    PUBLIC
+    \${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+install (FILES include/${MODULE_NAME}.h      DESTINATION \${CMAKE_INSTALL_INCLUDEDIR})
+")
+
+# Convert module name to uppercase for header guard
+string(TOUPPER "${MODULE_NAME}" MODULE_NAME_UPPER)
+
+# Create header file .h
+file(WRITE "${MODULE_DIR}/lib/include/${MODULE_NAME}.h"
+"#ifndef ${MODULE_NAME_UPPER}_H
+#define ${MODULE_NAME_UPPER}_H
+
+#include <sat_status.h>
+
+typedef struct
+{
+    // Add your template structure members here
+} ${MODULE_NAME}_t;
+
+
+typedef struct
+{
+    // Add your template arguments here
+} ${MODULE_NAME}_args_t;
+
+sat_status_t ${MODULE_NAME}_init (${MODULE_NAME}_t *const object);
+sat_status_t ${MODULE_NAME}_open (${MODULE_NAME}_t *const object, const ${MODULE_NAME}_args_t *const args);
+sat_status_t ${MODULE_NAME}_close (${MODULE_NAME}_t *const object);
+
+#endif /* ${MODULE_NAME_UPPER}_H */
+")
+
+# Create implementation file .c
+file(WRITE "${MODULE_DIR}/lib/src/${MODULE_NAME}.c"
+"#include <${MODULE_NAME}.h>
+#include <string.h>
+
+sat_status_t ${MODULE_NAME}_init (${MODULE_NAME}_t *const object)
+{
+    sat_status_t status;
+
+    do
+    {
+        if (object == NULL)
+        {
+            sat_status_failure (&status, \"object is NULL\");
+            break;
+        }
+
+        memset (object, 0, sizeof (${MODULE_NAME}_t));
+
+        sat_status_success (&status);
+
+    } while (false);
+
+    return status;
+}
+sat_status_t ${MODULE_NAME}_open (${MODULE_NAME}_t *const object, const ${MODULE_NAME}_args_t *const args)
+{
+    sat_status_t status;
+
+    do
+    {
+        if (object == NULL)
+        {
+            sat_status_failure (&status, \"object is NULL\");
+            break;
+        }
+
+        if (args == NULL)
+        {
+            sat_status_failure (&status, \"args is NULL\");
+            break;
+        }
+
+        // Implement opening logic here
+
+        sat_status_success (&status);
+
+    } while (false);
+
+    return status;
+
+}
+
+sat_status_t ${MODULE_NAME}_close (${MODULE_NAME}_t *const object)
+{
+    sat_status_t status;
+
+    do
+    {
+        if (object == NULL)
+        {
+            sat_status_failure (&status, \"object is NULL\");
+            break;
+        }
+
+        // Implement closing logic here
+
+        sat_status_success (&status);
+
+    } while (false);
+
+    return status;
+}
+")
+
+# Create CMakeLists.txt for samples
+file(WRITE "${MODULE_DIR}/samples/CMakeLists.txt"
+"create_sample (${MODULE_NAME}_sample ${MODULE_NAME})
+")
+
+# Create sample file
+file(WRITE "${MODULE_DIR}/samples/${MODULE_NAME}_sample.c"
+"#include <sat.h>
+
+int main (int argc, char **argv)
+{
+    
+    return 0;
+}
+")
+
+# Create CMakeLists.txt for tests
+file(WRITE "${MODULE_DIR}/tests/CMakeLists.txt"
+"create_test (test_${MODULE_NAME})
+")
+
+# Create test file
+file(WRITE "${MODULE_DIR}/tests/test_${MODULE_NAME}.c"
+"#include <sat.h>
+#include <assert.h>
+
+int main (int argc, char **argv)
+{
+    assert (true == true);
+    return 0;
+}
+")
+
+# Create CMakeLists.txt for manpages
+file(WRITE "${MODULE_DIR}/manpages/CMakeLists.txt"
+"# Install manpages for ${MODULE_NAME} module
+install(
+    FILES ${MODULE_NAME}.3
+    DESTINATION \${CMAKE_INSTALL_MANDIR}/man3
+    COMPONENT documentation
+)
+")
+
+# Create manpage file (empty)
+file(WRITE "${MODULE_DIR}/manpages/${MODULE_NAME}.3" "")
+
+message(STATUS "✓ Module '${MODULE_NAME}' created successfully!")
+message(STATUS "")
+message(STATUS "Location: modules/${MODULE_TYPE}/${MODULE_NAME}/")
+message(STATUS "Structure created:")
+message(STATUS "  ├── CMakeLists.txt")
+message(STATUS "  ├── lib/")
+message(STATUS "  │   ├── CMakeLists.txt")
+message(STATUS "  │   ├── include/${MODULE_NAME}.h")
+message(STATUS "  │   └── src/${MODULE_NAME}.c")
+message(STATUS "  ├── samples/")
+message(STATUS "  │   ├── CMakeLists.txt")
+message(STATUS "  │   └── ${MODULE_NAME}_sample.c")
+message(STATUS "  ├── tests/")
+message(STATUS "  │   ├── CMakeLists.txt")
+message(STATUS "  │   └── test_${MODULE_NAME}.c")
+message(STATUS "  └── manpages/")
+message(STATUS "      ├── CMakeLists.txt")
+message(STATUS "      └── ${MODULE_NAME}.3")

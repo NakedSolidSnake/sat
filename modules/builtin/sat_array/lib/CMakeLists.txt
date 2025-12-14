@@ -15,4 +15,4 @@ target_link_libraries (sat_array
     sat_iterator
 )
 
-install (FILES include/sat_array.h      DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install (FILES include/sat_array.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
