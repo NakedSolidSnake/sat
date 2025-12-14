@@ -1,0 +1,437 @@
+.TH SAT_ITERATOR 3 "December 2025" "SAT Library" "SAT Library Manual"
+.SH NAME
+sat_iterator \- generic iterator interface for SAT data structures
+.SH SYNOPSIS
+.nf
+.B #include <sat_iterator.h>
+.PP
+.BI "sat_status_t sat_iterator_open(sat_iterator_t *const " object ", const sat_iterator_base_t *const " base );
+.BI "void *sat_iterator_next(sat_iterator_t *const " object );
+.PP
+Link with \fI\-lsat\fP.
+.fi
+.SH DESCRIPTION
+The
+.B sat_iterator
+module provides a unified iterator interface that allows traversing different
+SAT data structures (arrays, sets, linked lists, etc.) using a common API.
+The iterator automatically determines the appropriate iteration strategy based
+on the collection's capabilities.
+.PP
+This module enables writing generic algorithms that work with any iterator-compatible
+collection, promoting code reuse and abstraction.
+.SS Types
+.TP
+.B sat_iterator_t
+Iterator state structure containing:
+.RS
+.IP \(bu 2
+.I index
+\- Current position for index-based iteration
+.IP \(bu 2
+.I base
+\- Pointer to the collection's interface
+.IP \(bu 2
+.I amount
+\- Total number of elements
+.IP \(bu 2
+.I initialized
+\- Initialization flag
+.IP \(bu 2
+.I type
+\- Iterator type (index or address-based)
+.IP \(bu 2
+.I address
+\- State for address-based iteration
+.RE
+.TP
+.B sat_iterator_base_t
+Base interface structure that collections must implement. Contains:
+.RS
+.IP \(bu 2
+.I object
+\- Pointer to the actual collection
+.IP \(bu 2
+.I next
+\- Function to get element by index
+.IP \(bu 2
+.I get_amount
+\- Function to get collection size
+.IP \(bu 2
+.I get_address
+\- Function to get first element address
+.IP \(bu 2
+.I get_next_address
+\- Function to get next element address
+.IP \(bu 2
+.I get_data
+\- Function to extract data from address
+.RE
+.TP
+.B sat_iterator_type_t
+Enumeration defining iteration type:
+.RS
+.IP \(bu 2
+.B sat_iterator_type_index
+\- Index-based iteration (e.g., arrays)
+.IP \(bu 2
+.B sat_iterator_type_address
+\- Address-based iteration (e.g., linked lists)
+.IP \(bu 2
+.B sat_iterator_type_unknown
+\- Unknown or uninitialized type
+.RE
+.SS Iterator Operations
+.TP
+.BR sat_iterator_open ()
+Initializes an iterator for a collection. The
+.I base
+parameter should be a pointer to the collection cast to
+.BR sat_iterator_base_t* .
+The iterator determines the iteration strategy based on which function pointers
+are provided in the base structure. Returns success status.
+.TP
+.BR sat_iterator_next ()
+Advances the iterator and returns a pointer to the next element. Returns NULL
+when the end of the collection is reached. The returned pointer provides
+zero-copy access to the element in the collection.
+.SH RETURN VALUE
+.BR sat_iterator_open ()
+returns a
+.B sat_status_t
+structure containing:
+.IP \(bu 2
+A boolean result indicating success or failure
+.IP \(bu 2
+An error message string if the operation failed
+.PP
+.BR sat_iterator_next ()
+returns a pointer to the next element, or NULL when iteration is complete.
+.SH ERRORS
+Common error conditions include:
+.TP
+.B "NULL pointer arguments"
+.BR sat_iterator_open ()
+fails if passed NULL pointers.
+.TP
+.B "Invalid base interface"
+The base structure must provide either index-based functions (next, get_amount)
+or address-based functions (get_address, get_next_address, get_data).
+.TP
+.B "Uninitialized iterator"
+.BR sat_iterator_next ()
+may return NULL or behave unpredictably if called before
+.BR sat_iterator_open ().
+.SH EXAMPLES
+.SS Iterating Over an Array
+.nf
+#include <sat_array.h>
+#include <sat_iterator.h>
+#include <stdio.h>
+
+typedef struct {
+    char name[100];
+    int age;
+} person_t;
+
+int main(void)
+{
+    sat_array_t *array;
+    sat_iterator_t iterator;
+    sat_status_t status;
+    
+    /* Create and populate array */
+    sat_array_args_t args = {
+        .size = 3,
+        .object_size = sizeof(person_t),
+        .mode = sat_array_mode_static,
+        .notification = { NULL, NULL }
+    };
+    
+    status = sat_array_create(&array, &args);
+    if (!sat_status_get_result(&status)) {
+        fprintf(stderr, "Failed to create array\\n");
+        return 1;
+    }
+    
+    person_t john = { .name = "John Doe", .age = 35 };
+    person_t jane = { .name = "Jane Doe", .age = 31 };
+    person_t some = { .name = "Some One", .age = 33 };
+    
+    sat_array_add(array, &john);
+    sat_array_add(array, &jane);
+    sat_array_add(array, &some);
+    
+    /* Initialize iterator */
+    status = sat_iterator_open(&iterator, 
+                               (sat_iterator_base_t *)array);
+    if (!sat_status_get_result(&status)) {
+        fprintf(stderr, "Failed to open iterator\\n");
+        sat_array_destroy(array);
+        return 1;
+    }
+    
+    /* Iterate through elements */
+    person_t *person = (person_t *)sat_iterator_next(&iterator);
+    while (person != NULL) {
+        printf("Name: %s, Age: %d\\n", person->name, person->age);
+        person = (person_t *)sat_iterator_next(&iterator);
+    }
+    
+    sat_array_destroy(array);
+    return 0;
+}
+.fi
+.SS Iterating Over a Set
+.nf
+#include <sat_set.h>
+#include <sat_iterator.h>
+#include <stdio.h>
+#include <string.h>
+
+typedef struct {
+    int id;
+    char data[50];
+} record_t;
+
+bool is_equal(const void *a, const void *b)
+{
+    const record_t *r1 = a;
+    const record_t *r2 = b;
+    return r1->id == r2->id;
+}
+
+int main(void)
+{
+    sat_set_t *set;
+    sat_iterator_t iterator;
+    
+    /* Create set */
+    sat_set_args_t args = {
+        .size = 5,
+        .object_size = sizeof(record_t),
+        .is_equal = is_equal,
+        .mode = sat_set_mode_static
+    };
+    
+    sat_set_create(&set, &args);
+    
+    /* Add records */
+    record_t records[] = {
+        { 1, "First record" },
+        { 2, "Second record" },
+        { 3, "Third record" }
+    };
+    
+    for (int i = 0; i < 3; i++) {
+        sat_set_add(set, &records[i]);
+    }
+    
+    /* Iterate */
+    sat_iterator_open(&iterator, (sat_iterator_base_t *)set);
+    
+    record_t *rec = (record_t *)sat_iterator_next(&iterator);
+    while (rec != NULL) {
+        printf("ID: %d, Data: %s\\n", rec->id, rec->data);
+        rec = (record_t *)sat_iterator_next(&iterator);
+    }
+    
+    sat_set_destroy(set);
+    return 0;
+}
+.fi
+.SS Generic Processing Function
+.nf
+#include <sat_iterator.h>
+#include <stdio.h>
+
+/* Generic function that works with any iterable collection */
+void print_integers(sat_iterator_base_t *collection)
+{
+    sat_iterator_t iterator;
+    sat_status_t status;
+    
+    status = sat_iterator_open(&iterator, collection);
+    if (!sat_status_get_result(&status)) {
+        fprintf(stderr, "Cannot iterate collection\\n");
+        return;
+    }
+    
+    int *value = (int *)sat_iterator_next(&iterator);
+    while (value != NULL) {
+        printf("%d ", *value);
+        value = (int *)sat_iterator_next(&iterator);
+    }
+    printf("\\n");
+}
+
+int main(void)
+{
+    sat_array_t *array;
+    
+    /* Create array of integers */
+    sat_array_create(&array, &(sat_array_args_t){
+        .size = 5,
+        .object_size = sizeof(int),
+        .mode = sat_array_mode_static,
+        .notification = { NULL, NULL }
+    });
+    
+    /* Add values */
+    for (int i = 1; i <= 5; i++) {
+        sat_array_add(array, &i);
+    }
+    
+    /* Use generic function */
+    printf("Array contents: ");
+    print_integers((sat_iterator_base_t *)array);
+    
+    sat_array_destroy(array);
+    return 0;
+}
+.fi
+.SS Counting Elements
+.nf
+#include <sat_iterator.h>
+
+/* Count elements in any iterable collection */
+uint32_t count_elements(sat_iterator_base_t *collection)
+{
+    sat_iterator_t iterator;
+    uint32_t count = 0;
+    
+    if (!sat_status_get_result(sat_iterator_open(&iterator, 
+                                                  collection))) {
+        return 0;
+    }
+    
+    void *element = sat_iterator_next(&iterator);
+    while (element != NULL) {
+        count++;
+        element = sat_iterator_next(&iterator);
+    }
+    
+    return count;
+}
+
+int main(void)
+{
+    sat_array_t *array;
+    
+    sat_array_create(&array, &(sat_array_args_t){
+        .size = 10,
+        .object_size = sizeof(double),
+        .mode = sat_array_mode_static,
+        .notification = { NULL, NULL }
+    });
+    
+    /* Add some elements */
+    for (int i = 0; i < 7; i++) {
+        double value = i * 1.5;
+        sat_array_add(array, &value);
+    }
+    
+    uint32_t count = count_elements((sat_iterator_base_t *)array);
+    printf("Element count: %u\\n", count);
+    
+    sat_array_destroy(array);
+    return 0;
+}
+.fi
+.SS Finding Maximum Value
+.nf
+#include <sat_iterator.h>
+#include <stdio.h>
+#include <limits.h>
+
+/* Find maximum integer in any iterable collection */
+int find_max(sat_iterator_base_t *collection)
+{
+    sat_iterator_t iterator;
+    int max = INT_MIN;
+    
+    if (!sat_status_get_result(sat_iterator_open(&iterator, 
+                                                  collection))) {
+        return max;
+    }
+    
+    int *value = (int *)sat_iterator_next(&iterator);
+    while (value != NULL) {
+        if (*value > max) {
+            max = *value;
+        }
+        value = (int *)sat_iterator_next(&iterator);
+    }
+    
+    return max;
+}
+
+int main(void)
+{
+    sat_array_t *array;
+    
+    sat_array_create(&array, &(sat_array_args_t){
+        .size = 10,
+        .object_size = sizeof(int),
+        .mode = sat_array_mode_static,
+        .notification = { NULL, NULL }
+    });
+    
+    int values[] = {42, 17, 95, 23, 8, 61};
+    for (int i = 0; i < 6; i++) {
+        sat_array_add(array, &values[i]);
+    }
+    
+    int max = find_max((sat_iterator_base_t *)array);
+    printf("Maximum value: %d\\n", max);
+    
+    sat_array_destroy(array);
+    return 0;
+}
+.fi
+.SH NOTES
+.IP \(bu 2
+The iterator provides zero-copy access to elements in the collection.
+.IP \(bu 2
+The collection must remain valid for the lifetime of the iterator.
+.IP \(bu 2
+Modifying the collection during iteration may cause undefined behavior.
+.IP \(bu 2
+The iterator automatically determines whether to use index-based or
+address-based iteration based on the collection's capabilities.
+.IP \(bu 2
+Index-based iteration is used for contiguous collections like arrays.
+Address-based iteration is used for linked structures.
+.IP \(bu 2
+The iterator does not allocate or manage memory; it only provides access
+to existing collection elements.
+.IP \(bu 2
+After
+.BR sat_iterator_next ()
+returns NULL, the iterator should not be used further without
+re-initializing with
+.BR sat_iterator_open ().
+.IP \(bu 2
+The iterator is not thread-safe. External synchronization is required for
+concurrent access.
+.IP \(bu 2
+SAT collections that support iteration typically cast to
+.BR sat_iterator_base_t *
+directly, as they embed the required interface at the beginning of their
+structure.
+.SH SEE ALSO
+.BR sat_array (3),
+.BR sat_set (3),
+.BR sat_linked_list (3),
+.BR sat_map (3),
+.BR sat_status (3)
+.PP
+SAT Library Documentation: <https://github.com/solidcris/sat>
+.SH BUGS
+No known bugs at this time. Report bugs to the SAT Library issue tracker.
+.SH AUTHOR
+Written by the SAT Library contributors.
+.SH COPYRIGHT
+Copyright \(co 2025 SAT Library Project.
+.br
+Licensed under the MIT License.
