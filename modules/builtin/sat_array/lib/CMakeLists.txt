@@ -12,7 +12,6 @@ target_include_directories (sat_array
 
 target_link_libraries (sat_array
     PUBLIC
-    sat_status
     sat_iterator
 )
 
