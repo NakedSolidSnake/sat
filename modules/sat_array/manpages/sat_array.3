@@ -12,6 +12,7 @@ sat_array \- dynamic array data structure with configurable growth modes
 .BI "sat_status_t sat_array_remove_by_parameter(sat_array_t *const " object ", const void *const " param ", sat_array_compare_t " compare ", void *const " data );
 .BI "sat_status_t sat_array_get_object_by(const sat_array_t *const " object ", const uint32_t " index ", void *const " data );
 .BI "sat_status_t sat_array_get_object_by_parameter(sat_array_t *const " object ", const void *const " param ", sat_array_compare_t " compare ", void *const " data );
+.BI "sat_status_t sat_array_get_object_ref_by_parameter(sat_array_t *const " object ", const void *const " param ", sat_array_compare_t " compare ", void **const " data );
 .BI "sat_status_t sat_array_get_size(const sat_array_t *const " object ", uint32_t *const " size );
 .BI "sat_status_t sat_array_get_capacity(const sat_array_t *const " object ", uint32_t *const " capacity );
 .BI "sat_status_t sat_array_clear(sat_array_t *const " object );
@@ -143,6 +144,17 @@ using the
 function, then copies it to
 .IR data .
 Returns success if a matching element was found.
+.TP
+.BR sat_array_get_object_ref_by_parameter ()
+Searches for the first element matching
+.I param
+using the
+.I compare
+function, then returns a direct pointer to it via
+.I data
+without copying. This provides zero-copy access but the pointer becomes invalid
+if the array is resized or destroyed. Returns success if a matching element was
+found.
 .TP
 .BR sat_array_get_reference_by ()
 Returns a direct pointer to the element at

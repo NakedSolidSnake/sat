@@ -183,7 +183,26 @@ sat_status_t sat_array_get_object_by (const sat_array_t *const object, const uin
  */
 sat_status_t sat_array_get_object_by_parameter (sat_array_t *const object, const void *const param, sat_array_compare_t compare, void *const data);
 
-
+/**
+ * @brief Gets a direct reference to an object by matching a parameter using a comparison function
+ * 
+ * Searches for the first element that matches the given parameter using the
+ * provided comparison function, then returns a pointer to it without copying.
+ * This allows for efficient read/write access to matching array elements.
+ * 
+ * @param[in] object Pointer to the sat_array_t object
+ * @param[in] param Pointer to the parameter used for comparison
+ * @param[in] compare Function pointer to the comparison function
+ * @param[out] data Pointer to store the reference to the matched object
+ * @return sat_status_t indicating success or failure of the operation
+ * 
+ * @warning The returned pointer becomes invalid if the array is resized or destroyed
+ * @warning Modifying the element size can corrupt the array structure
+ * @note This function provides zero-copy access to array elements
+ * @note Returns a reference to the first matching element
+ * @see sat_array_compare_t
+ * @see sat_array_get_object_by_parameter()
+ */
 sat_status_t sat_array_get_object_ref_by_parameter (sat_array_t *const object, const void *const param, sat_array_compare_t compare, void **const data);
 
 /**
