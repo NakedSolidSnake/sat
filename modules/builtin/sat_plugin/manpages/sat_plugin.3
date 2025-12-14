@@ -1,0 +1,352 @@
+.TH SAT_PLUGIN 3 "December 2025" "SAT Library" "SAT Library Manual"
+.SH NAME
+sat_plugin \- dynamic library loading and symbol resolution interface
+.SH SYNOPSIS
+.nf
+.B #include <sat_plugin.h>
+.PP
+.BI "sat_status_t sat_plugin_open(sat_plugin_t *const " object ", const sat_plugin_args_t *const " args );
+.BI "sat_status_t sat_plugin_load_method(sat_plugin_t *const " object ", const char *const " name ", void **const " method );
+.BI "sat_status_t sat_plugin_close(sat_plugin_t *const " object );
+.PP
+Link with \fI\-lsat\fP and \fI\-ldl\fP.
+.fi
+.SH DESCRIPTION
+The
+.B sat_plugin
+module provides a cross-platform interface for dynamically loading shared
+libraries (plugins) and resolving symbols at runtime. It wraps platform-specific
+dynamic linking mechanisms (dlopen/dlsym on Unix-like systems).
+.PP
+This module is useful for building extensible applications that can load
+functionality from external libraries without requiring recompilation or
+static linking.
+.SS Types
+.TP
+.B sat_plugin_t
+Plugin handle structure containing:
+.RS
+.IP \(bu 2
+.I handle
+\- Platform-specific library handle (opaque)
+.RE
+.TP
+.B sat_plugin_args_t
+Configuration structure with the following field:
+.RS
+.IP \(bu 2
+.I library_name
+\- Path to the shared library file (string)
+.RE
+.SS Plugin Operations
+.TP
+.BR sat_plugin_open ()
+Loads the specified shared library into the process's address space. The
+.I library_name
+can be an absolute path, relative path, or library name. If only a name is
+provided, the system's library search path is used. Returns success if the
+library was loaded successfully.
+.TP
+.BR sat_plugin_load_method ()
+Resolves a symbol (function or variable) from the loaded library by
+.IR name .
+The resolved address is stored in
+.IR method .
+Returns success if the symbol was found.
+.TP
+.BR sat_plugin_close ()
+Unloads the library from the process's address space and releases resources.
+All symbols obtained from the library become invalid after this call.
+Returns success if the library was unloaded successfully.
+.SH RETURN VALUE
+All functions return a
+.B sat_status_t
+structure containing:
+.IP \(bu 2
+A boolean result indicating success or failure
+.IP \(bu 2
+An error message string if the operation failed
+.PP
+Use
+.BR sat_status_get_result ()
+to check if the operation succeeded, and
+.BR sat_status_get_motive ()
+to retrieve error details.
+.SH ERRORS
+Common error conditions include:
+.TP
+.B "NULL pointer arguments"
+Functions fail if passed NULL pointers for required parameters.
+.TP
+.B "Library not found"
+.BR sat_plugin_open ()
+fails if the specified library file does not exist or cannot be accessed.
+.TP
+.B "Symbol not found"
+.BR sat_plugin_load_method ()
+fails if the specified symbol name does not exist in the library.
+.TP
+.B "Incompatible library"
+Loading may fail if the library is not compatible with the current platform
+or architecture.
+.TP
+.B "Already closed"
+Operations on a closed plugin handle will fail.
+.SH EXAMPLES
+.SS Loading Standard Math Library
+.nf
+#include <sat_plugin.h>
+#include <stdio.h>
+
+int main(void)
+{
+    sat_plugin_t plugin;
+    sat_status_t status;
+    double (*cosine)(double);
+    
+    /* Open math library */
+    status = sat_plugin_open(&plugin, &(sat_plugin_args_t){
+        .library_name = "/lib/x86_64-linux-gnu/libm.so.6"
+    });
+    
+    if (!sat_status_get_result(&status)) {
+        fprintf(stderr, "Failed to load library: %s\\n",
+                sat_status_get_motive(&status));
+        return 1;
+    }
+    
+    /* Load cosine function */
+    status = sat_plugin_load_method(&plugin, "cos", 
+                                    (void **)&cosine);
+    
+    if (!sat_status_get_result(&status)) {
+        fprintf(stderr, "Failed to load symbol: %s\\n",
+                sat_status_get_motive(&status));
+        sat_plugin_close(&plugin);
+        return 1;
+    }
+    
+    /* Use the loaded function */
+    printf("cos(0) = %f\\n", cosine(0.0));
+    printf("cos(PI) = %f\\n", cosine(3.14159));
+    
+    /* Cleanup */
+    sat_plugin_close(&plugin);
+    
+    return 0;
+}
+.fi
+.SS Loading Multiple Symbols
+.nf
+#include <sat_plugin.h>
+#include <stdio.h>
+
+int main(void)
+{
+    sat_plugin_t plugin;
+    double (*sine)(double);
+    double (*cosine)(double);
+    double (*tangent)(double);
+    
+    /* Load math library */
+    sat_plugin_open(&plugin, &(sat_plugin_args_t){
+        .library_name = "libm.so.6"
+    });
+    
+    /* Load multiple functions */
+    sat_plugin_load_method(&plugin, "sin", (void **)&sine);
+    sat_plugin_load_method(&plugin, "cos", (void **)&cosine);
+    sat_plugin_load_method(&plugin, "tan", (void **)&tangent);
+    
+    /* Use loaded functions */
+    double angle = 0.5;
+    printf("sin(%f) = %f\\n", angle, sine(angle));
+    printf("cos(%f) = %f\\n", angle, cosine(angle));
+    printf("tan(%f) = %f\\n", angle, tangent(angle));
+    
+    sat_plugin_close(&plugin);
+    return 0;
+}
+.fi
+.SS Creating a Plugin System
+.nf
+#include <sat_plugin.h>
+#include <stdio.h>
+
+/* Plugin interface definition */
+typedef struct {
+    const char *(*get_name)(void);
+    void (*process)(const char *input);
+    int (*get_version)(void);
+} plugin_interface_t;
+
+int main(void)
+{
+    sat_plugin_t plugin;
+    plugin_interface_t interface;
+    sat_status_t status;
+    
+    /* Load custom plugin */
+    status = sat_plugin_open(&plugin, &(sat_plugin_args_t){
+        .library_name = "./plugins/my_plugin.so"
+    });
+    
+    if (!sat_status_get_result(&status)) {
+        fprintf(stderr, "Plugin not found\\n");
+        return 1;
+    }
+    
+    /* Load plugin interface functions */
+    status = sat_plugin_load_method(&plugin, "get_name",
+                                    (void **)&interface.get_name);
+    if (!sat_status_get_result(&status)) {
+        fprintf(stderr, "Invalid plugin: missing get_name\\n");
+        sat_plugin_close(&plugin);
+        return 1;
+    }
+    
+    sat_plugin_load_method(&plugin, "process",
+                          (void **)&interface.process);
+    sat_plugin_load_method(&plugin, "get_version",
+                          (void **)&interface.get_version);
+    
+    /* Use plugin */
+    printf("Loaded plugin: %s (v%d)\\n",
+           interface.get_name(),
+           interface.get_version());
+    
+    interface.process("Hello from main application");
+    
+    sat_plugin_close(&plugin);
+    return 0;
+}
+.fi
+.SS Error Handling
+.nf
+#include <sat_plugin.h>
+#include <stdio.h>
+
+int main(void)
+{
+    sat_plugin_t plugin;
+    sat_status_t status;
+    void (*func)(void);
+    
+    /* Attempt to load non-existent library */
+    status = sat_plugin_open(&plugin, &(sat_plugin_args_t){
+        .library_name = "/path/to/nonexistent.so"
+    });
+    
+    if (!sat_status_get_result(&status)) {
+        fprintf(stderr, "Open failed: %s\\n",
+                sat_status_get_motive(&status));
+        return 1;
+    }
+    
+    /* Attempt to load non-existent symbol */
+    status = sat_plugin_load_method(&plugin, "nonexistent_func",
+                                    (void **)&func);
+    
+    if (!sat_status_get_result(&status)) {
+        fprintf(stderr, "Load method failed: %s\\n",
+                sat_status_get_motive(&status));
+        sat_plugin_close(&plugin);
+        return 1;
+    }
+    
+    sat_plugin_close(&plugin);
+    return 0;
+}
+.fi
+.SS Loading C Library Functions
+.nf
+#include <sat_plugin.h>
+#include <stdio.h>
+
+int main(void)
+{
+    sat_plugin_t plugin;
+    void *(*malloc_func)(size_t);
+    void (*free_func)(void *);
+    
+    /* Load C standard library */
+    sat_plugin_open(&plugin, &(sat_plugin_args_t){
+        .library_name = "/lib/x86_64-linux-gnu/libc.so.6"
+    });
+    
+    /* Load memory functions */
+    sat_plugin_load_method(&plugin, "malloc", 
+                          (void **)&malloc_func);
+    sat_plugin_load_method(&plugin, "free",
+                          (void **)&free_func);
+    
+    /* Use loaded functions */
+    int *array = (int *)malloc_func(10 * sizeof(int));
+    if (array) {
+        for (int i = 0; i < 10; i++) {
+            array[i] = i * i;
+        }
+        
+        printf("Array values: ");
+        for (int i = 0; i < 10; i++) {
+            printf("%d ", array[i]);
+        }
+        printf("\\n");
+        
+        free_func(array);
+    }
+    
+    sat_plugin_close(&plugin);
+    return 0;
+}
+.fi
+.SH NOTES
+.IP \(bu 2
+The module uses
+.BR dlopen (3)
+and
+.BR dlsym (3)
+on Unix-like systems.
+.IP \(bu 2
+Libraries are loaded with RTLD_LAZY flag by default.
+.IP \(bu 2
+Symbol names are case-sensitive and must match exactly.
+.IP \(bu 2
+For C++ libraries, functions should be declared with
+.B extern "C"
+to prevent name mangling, or use the mangled name.
+.IP \(bu 2
+The library search path follows the system's dynamic linker rules
+(LD_LIBRARY_PATH on Linux).
+.IP \(bu 2
+All function pointers obtained via
+.BR sat_plugin_load_method ()
+become invalid after calling
+.BR sat_plugin_close ().
+.IP \(bu 2
+The module is not thread-safe when loading/unloading the same library
+from multiple threads. Use external synchronization if needed.
+.IP \(bu 2
+Recursive library dependencies are handled by the system's dynamic linker.
+.IP \(bu 2
+Memory allocated by functions in the plugin should typically be freed
+before closing the plugin, unless documented otherwise.
+.IP \(bu 2
+On Linux, shared libraries typically have the .so extension; on macOS,
+they use .dylib; on Windows, .dll.
+.SH SEE ALSO
+.BR dlopen (3),
+.BR dlsym (3),
+.BR dlclose (3),
+.BR dlerror (3),
+.BR sat_status (3)
+.PP
+SAT Library Documentation: <https://github.com/solidcris/sat>
+.SH BUGS
+No known bugs at this time. Report bugs to the SAT Library issue tracker.
+.SH AUTHOR
+Written by the SAT Library contributors.
+.SH COPYRIGHT
+Copyright \(co 2025 SAT Library Project.
+.br
+Licensed under the MIT License.
