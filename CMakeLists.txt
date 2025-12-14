@@ -30,7 +30,7 @@ list (APPEND SAT_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/sat_file.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_udp/sat_udp_server_interactive.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_udp/sat_udp_server_async.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_linked_list.c
-                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_queue.c
+                        #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_queue.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_map.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_tcp.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_tcp/sat_tcp_client.c
@@ -78,7 +78,8 @@ list (APPEND SAT_LIBRARIES
              sat_iterator
              sat_cache
              sat_plugin
-             sat_uuid)
+             sat_uuid
+             sat_queue)
 
 list (APPEND SAT_INCLUDES ${CMAKE_CURRENT_LIST_DIR}/include
                           ${CMAKE_CURRENT_LIST_DIR}/include/sat_tcp/
@@ -119,7 +120,7 @@ install (FILES include/sat_stack.h       DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 install (FILES include/sat_udp.h         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install (FILES include/sat_udp/sat_udp_types.h         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sat_udp)
 install (FILES include/sat_linked_list.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install (FILES include/sat_queue.h       DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+# install (FILES include/sat_queue.h       DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install (FILES include/sat_map.h         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install (FILES include/sat_tcp.h         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install (FILES include/sat_tcp/sat_tcp_types.h   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sat_tcp)

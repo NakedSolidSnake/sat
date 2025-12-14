@@ -1,0 +1,476 @@
+.TH SAT_QUEUE 3 "December 2025" "SAT Library" "SAT Library Manual"
+.SH NAME
+sat_queue \- FIFO (First-In-First-Out) queue data structure
+.SH SYNOPSIS
+.nf
+.B #include <sat_queue.h>
+.PP
+.BI "sat_status_t sat_queue_create(sat_queue_t **" object ", uint32_t " object_size );
+.BI "sat_status_t sat_queue_enqueue(sat_queue_t *" object ", void *" data );
+.BI "sat_status_t sat_queue_dequeue(sat_queue_t *" object ", void *" data );
+.BI "sat_status_t sat_queue_get_size(sat_queue_t *" object ", uint32_t *" size );
+.BI "sat_status_t sat_queue_debug(sat_queue_t *" object ", sat_queue_print_t " print );
+.BI "sat_status_t sat_queue_destroy(sat_queue_t *" object );
+.PP
+Link with \fI\-lsat\fP.
+.fi
+.SH DESCRIPTION
+The
+.B sat_queue
+module provides a dynamic FIFO (First-In-First-Out) queue implementation that
+can store arbitrary data types. Elements are added to the back of the queue
+and removed from the front, following standard queue semantics.
+.PP
+The queue automatically manages memory allocation as elements are added and
+removed, making it suitable for applications requiring dynamic buffer management,
+task scheduling, or message passing.
+.SS Types
+.TP
+.B sat_queue_t
+Opaque structure representing the queue. Users should not access its fields directly.
+.TP
+.B sat_queue_print_t
+Function pointer type for printing queue elements:
+.RS
+.nf
+typedef void (*sat_queue_print_t)(void *element);
+.fi
+.RE
+.SS Queue Operations
+.TP
+.BR sat_queue_create ()
+Creates and initializes a new queue. The
+.I object_size
+parameter specifies the size in bytes of each element to be stored.
+Memory is allocated for the queue structure but not for elements (allocated
+on enqueue). Returns success status.
+.TP
+.BR sat_queue_enqueue ()
+Adds an element to the back (rear) of the queue. The data pointed to by
+.I data
+is copied into the queue. Memory for the new element is automatically allocated.
+Returns success if the element was added.
+.TP
+.BR sat_queue_dequeue ()
+Removes the element from the front of the queue and copies it to the buffer
+pointed to by
+.IR data .
+The element is removed from the queue and its memory is freed. Returns success
+if an element was dequeued, or failure if the queue is empty.
+.TP
+.BR sat_queue_get_size ()
+Returns the current number of elements in the queue via the
+.I size
+output parameter. Returns success status.
+.TP
+.BR sat_queue_debug ()
+Prints all elements in the queue from front to back using the provided
+.I print
+callback function. The queue is not modified. Useful for debugging and
+visualization. Returns success status.
+.TP
+.BR sat_queue_destroy ()
+Destroys the queue and frees all associated memory, including all queued
+elements. After this call, the queue pointer becomes invalid.
+Returns success status.
+.SH RETURN VALUE
+All functions return a
+.B sat_status_t
+structure containing:
+.IP \(bu 2
+A boolean result indicating success or failure
+.IP \(bu 2
+An error message string if the operation failed
+.PP
+Use
+.BR sat_status_get_result ()
+to check if the operation succeeded, and
+.BR sat_status_get_motive ()
+to retrieve error details.
+.SH ERRORS
+Common error conditions include:
+.TP
+.B "NULL pointer arguments"
+Functions fail if passed NULL pointers for required parameters.
+.TP
+.B "Queue empty"
+.BR sat_queue_dequeue ()
+fails if called on an empty queue.
+.TP
+.B "Memory allocation failure"
+.BR sat_queue_create ()
+and
+.BR sat_queue_enqueue ()
+may fail if memory allocation fails.
+.TP
+.B "Invalid object size"
+.BR sat_queue_create ()
+may fail if
+.I object_size
+is 0.
+.SH EXAMPLES
+.SS Basic Queue Operations
+.nf
+#include <sat_queue.h>
+#include <stdio.h>
+
+int main(void)
+{
+    sat_queue_t *queue;
+    sat_status_t status;
+    
+    /* Create queue for integers */
+    status = sat_queue_create(&queue, sizeof(int));
+    if (!sat_status_get_result(&status)) {
+        fprintf(stderr, "Create failed: %s\\n",
+                sat_status_get_motive(&status));
+        return 1;
+    }
+    
+    /* Enqueue elements */
+    for (int i = 1; i <= 5; i++) {
+        status = sat_queue_enqueue(queue, &i);
+        if (!sat_status_get_result(&status)) {
+            fprintf(stderr, "Enqueue failed\\n");
+            sat_queue_destroy(queue);
+            return 1;
+        }
+        printf("Enqueued: %d\\n", i);
+    }
+    
+    /* Get queue size */
+    uint32_t size;
+    sat_queue_get_size(queue, &size);
+    printf("Queue size: %u\\n", size);
+    
+    /* Dequeue elements */
+    int value;
+    while (sat_status_get_result(sat_queue_dequeue(queue, &value))) {
+        printf("Dequeued: %d\\n", value);
+    }
+    
+    /* Cleanup */
+    sat_queue_destroy(queue);
+    
+    return 0;
+}
+.fi
+.SS Queue with Structures
+.nf
+#include <sat_queue.h>
+#include <stdio.h>
+#include <string.h>
+
+typedef struct {
+    char name[100];
+    int age;
+} person_t;
+
+void print_person(void *element)
+{
+    person_t *person = (person_t *)element;
+    printf("Name: %s, Age: %d\\n", person->name, person->age);
+}
+
+int main(void)
+{
+    sat_queue_t *queue;
+    sat_status_t status;
+    
+    /* Create queue for person_t */
+    status = sat_queue_create(&queue, sizeof(person_t));
+    if (!sat_status_get_result(&status)) {
+        return 1;
+    }
+    
+    /* Enqueue people */
+    person_t john = { .name = "John Doe", .age = 35 };
+    person_t jane = { .name = "Jane Doe", .age = 31 };
+    
+    sat_queue_enqueue(queue, &john);
+    sat_queue_enqueue(queue, &jane);
+    
+    /* Debug print */
+    printf("Queue contents:\\n");
+    sat_queue_debug(queue, print_person);
+    
+    /* Dequeue first person */
+    person_t recovered;
+    status = sat_queue_dequeue(queue, &recovered);
+    if (sat_status_get_result(&status)) {
+        printf("\\nDequeued: %s (age %d)\\n",
+               recovered.name, recovered.age);
+    }
+    
+    /* Check remaining size */
+    uint32_t size;
+    sat_queue_get_size(queue, &size);
+    printf("Remaining in queue: %u\\n", size);
+    
+    /* Print remaining */
+    printf("\\nRemaining contents:\\n");
+    sat_queue_debug(queue, print_person);
+    
+    sat_queue_destroy(queue);
+    return 0;
+}
+.fi
+.SS Task Queue
+.nf
+#include <sat_queue.h>
+#include <stdio.h>
+#include <string.h>
+
+typedef struct {
+    int task_id;
+    char description[200];
+    int priority;
+} task_t;
+
+void print_task(void *element)
+{
+    task_t *task = (task_t *)element;
+    printf("Task %d [Priority %d]: %s\\n",
+           task->task_id, task->priority, task->description);
+}
+
+void process_task(task_t *task)
+{
+    printf("Processing task %d: %s\\n",
+           task->task_id, task->description);
+}
+
+int main(void)
+{
+    sat_queue_t *task_queue;
+    sat_queue_create(&task_queue, sizeof(task_t));
+    
+    /* Add tasks */
+    task_t tasks[] = {
+        { 1, "Initialize system", 1 },
+        { 2, "Load configuration", 2 },
+        { 3, "Start services", 3 },
+        { 4, "Run diagnostics", 4 }
+    };
+    
+    for (int i = 0; i < 4; i++) {
+        sat_queue_enqueue(task_queue, &tasks[i]);
+    }
+    
+    printf("Pending tasks:\\n");
+    sat_queue_debug(task_queue, print_task);
+    
+    /* Process all tasks */
+    printf("\\nProcessing tasks...\\n");
+    task_t current_task;
+    while (sat_status_get_result(
+            sat_queue_dequeue(task_queue, &current_task))) {
+        process_task(&current_task);
+    }
+    
+    uint32_t remaining;
+    sat_queue_get_size(task_queue, &remaining);
+    printf("\\nTasks remaining: %u\\n", remaining);
+    
+    sat_queue_destroy(task_queue);
+    return 0;
+}
+.fi
+.SS Message Queue
+.nf
+#include <sat_queue.h>
+#include <stdio.h>
+#include <string.h>
+#include <time.h>
+
+typedef struct {
+    char sender[50];
+    char message[256];
+    time_t timestamp;
+} message_t;
+
+void print_message(void *element)
+{
+    message_t *msg = (message_t *)element;
+    char time_str[26];
+    ctime_r(&msg->timestamp, time_str);
+    time_str[24] = '\\0'; /* Remove newline */
+    printf("[%s] %s: %s\\n", time_str, msg->sender, msg->message);
+}
+
+void send_message(sat_queue_t *queue, const char *sender,
+                  const char *text)
+{
+    message_t msg;
+    strncpy(msg.sender, sender, sizeof(msg.sender) - 1);
+    strncpy(msg.message, text, sizeof(msg.message) - 1);
+    msg.timestamp = time(NULL);
+    sat_queue_enqueue(queue, &msg);
+}
+
+int main(void)
+{
+    sat_queue_t *msg_queue;
+    sat_queue_create(&msg_queue, sizeof(message_t));
+    
+    /* Send messages */
+    send_message(msg_queue, "Alice", "Hello!");
+    send_message(msg_queue, "Bob", "Hi Alice!");
+    send_message(msg_queue, "Alice", "How are you?");
+    
+    /* Display all messages */
+    printf("Message queue:\\n");
+    sat_queue_debug(msg_queue, print_message);
+    
+    /* Process messages */
+    printf("\\nProcessing messages:\\n");
+    message_t msg;
+    while (sat_status_get_result(
+            sat_queue_dequeue(msg_queue, &msg))) {
+        printf("Processing: %s\\n", msg.message);
+    }
+    
+    sat_queue_destroy(msg_queue);
+    return 0;
+}
+.fi
+.SS Buffer Management
+.nf
+#include <sat_queue.h>
+#include <stdio.h>
+
+#define BUFFER_SIZE 1024
+
+typedef struct {
+    unsigned char data[BUFFER_SIZE];
+    size_t length;
+} buffer_t;
+
+void print_buffer(void *element)
+{
+    buffer_t *buf = (buffer_t *)element;
+    printf("Buffer: %zu bytes\\n", buf->length);
+}
+
+int main(void)
+{
+    sat_queue_t *buffer_queue;
+    sat_queue_create(&buffer_queue, sizeof(buffer_t));
+    
+    /* Create and enqueue buffers */
+    for (int i = 0; i < 3; i++) {
+        buffer_t buf;
+        buf.length = (i + 1) * 100;
+        /* Fill with sample data */
+        for (size_t j = 0; j < buf.length; j++) {
+            buf.data[j] = (unsigned char)(j % 256);
+        }
+        sat_queue_enqueue(buffer_queue, &buf);
+    }
+    
+    /* Check queue */
+    uint32_t count;
+    sat_queue_get_size(buffer_queue, &count);
+    printf("Buffers in queue: %u\\n", count);
+    
+    sat_queue_debug(buffer_queue, print_buffer);
+    
+    /* Process buffers */
+    buffer_t buf;
+    while (sat_status_get_result(
+            sat_queue_dequeue(buffer_queue, &buf))) {
+        printf("Processing buffer of %zu bytes\\n", buf.length);
+    }
+    
+    sat_queue_destroy(buffer_queue);
+    return 0;
+}
+.fi
+.SS Error Handling
+.nf
+#include <sat_queue.h>
+#include <stdio.h>
+
+int main(void)
+{
+    sat_queue_t *queue;
+    sat_status_t status;
+    int value;
+    
+    /* Create queue */
+    status = sat_queue_create(&queue, sizeof(int));
+    if (!sat_status_get_result(&status)) {
+        fprintf(stderr, "Create failed: %s\\n",
+                sat_status_get_motive(&status));
+        return 1;
+    }
+    
+    /* Try to dequeue from empty queue */
+    status = sat_queue_dequeue(queue, &value);
+    if (!sat_status_get_result(&status)) {
+        printf("Dequeue from empty queue failed (expected): %s\\n",
+               sat_status_get_motive(&status));
+    }
+    
+    /* Enqueue a value */
+    int test_value = 42;
+    status = sat_queue_enqueue(queue, &test_value);
+    if (sat_status_get_result(&status)) {
+        printf("Enqueued successfully\\n");
+    }
+    
+    /* Now dequeue should work */
+    status = sat_queue_dequeue(queue, &value);
+    if (sat_status_get_result(&status)) {
+        printf("Dequeued: %d\\n", value);
+    }
+    
+    sat_queue_destroy(queue);
+    return 0;
+}
+.fi
+.SH NOTES
+.IP \(bu 2
+The queue follows strict FIFO ordering: first element enqueued is first
+element dequeued.
+.IP \(bu 2
+Memory for elements is allocated dynamically on enqueue and freed on dequeue.
+.IP \(bu 2
+The queue has no maximum size limit (bounded only by available memory).
+.IP \(bu 2
+Elements are copied into the queue, so the original data can be safely
+modified or freed after enqueuing.
+.IP \(bu 2
+The queue is not thread-safe. External synchronization is required for
+concurrent access.
+.IP \(bu 2
+.BR sat_queue_debug ()
+traverses the queue from front to back without modifying it.
+.IP \(bu 2
+All enqueued elements must have the same size as specified in
+.BR sat_queue_create ().
+.IP \(bu 2
+Dequeuing from an empty queue returns a failure status.
+.IP \(bu 2
+The implementation typically uses a linked list internally.
+.IP \(bu 2
+For producer-consumer patterns, consider using
+.BR sat_queue_ipc (3)
+for inter-process communication.
+.SH SEE ALSO
+.BR sat_stack (3),
+.BR sat_linked_list (3),
+.BR sat_array (3),
+.BR sat_queue_ipc (3),
+.BR sat_status (3),
+.BR memcpy (3)
+.PP
+SAT Library Documentation: <https://github.com/solidcris/sat>
+.SH BUGS
+No known bugs at this time. Report bugs to the SAT Library issue tracker.
+.SH AUTHOR
+Written by the SAT Library contributors.
+.SH COPYRIGHT
+Copyright \(co 2025 SAT Library Project.
+.br
+Licensed under the MIT License.

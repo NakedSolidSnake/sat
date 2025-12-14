@@ -9,12 +9,11 @@ typedef struct
     int age;
 } person_t;
 
-static void print (void *element)
+static void print (const void *const element)
 {
-    person_t *person = (person_t *)element;
+    const person_t *person = (const person_t *)element;
     printf ("Name: %s, Age: %d\n", person->name, person->age);
 }
-
 
 int main (int argc, char *argv[])
 {
