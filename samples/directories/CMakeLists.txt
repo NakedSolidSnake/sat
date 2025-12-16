@@ -1,1 +1,0 @@
-create_sample (sat_directory_sample directories)

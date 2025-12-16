@@ -1,0 +1,456 @@
+.TH SAT_DIRECTORY 3 "December 2025" "SAT Library" "SAT Library Manual"
+.SH NAME
+sat_directory \- directory operations and file listing utilities
+.SH SYNOPSIS
+.nf
+.B #include <sat_directory.h>
+.PP
+.BI "sat_status_t sat_directory_exists(const char *" path );
+.BI "sat_status_t sat_directory_get_files(const char *" directory ", sat_linked_list_t **" file_list );
+.PP
+Link with \fI\-lsat\fP.
+.fi
+.SH DESCRIPTION
+The
+.B sat_directory
+module provides utilities for working with directories, including checking
+directory existence and retrieving lists of files. File lists are returned
+as linked lists compatible with the
+.BR sat_iterator (3)
+interface.
+.PP
+This module is useful for applications that need to process files in directories,
+scan for specific file types, or verify directory structures.
+.SS Directory Operations
+.TP
+.BR sat_directory_exists ()
+Checks if the specified
+.I path
+exists and is a directory. Returns success if the directory exists, failure
+otherwise. This function does not verify read permissions or accessibility.
+.TP
+.BR sat_directory_get_files ()
+Scans the specified
+.I directory
+and creates a linked list containing the names of all files found. The list
+is stored in
+.I file_list
+and can be iterated using
+.BR sat_iterator (3)
+or
+.BR sat_linked_list (3)
+functions. Each element in the list is a string (char*) containing a filename.
+Only files are typically included; subdirectories are excluded. Returns success
+if the directory was scanned successfully.
+.SH RETURN VALUE
+All functions return a
+.B sat_status_t
+structure containing:
+.IP \(bu 2
+A boolean result indicating success or failure
+.IP \(bu 2
+An error message string if the operation failed
+.PP
+Use
+.BR sat_status_get_result ()
+to check if the operation succeeded, and
+.BR sat_status_get_motive ()
+to retrieve error details.
+.SH ERRORS
+Common error conditions include:
+.TP
+.B "NULL pointer arguments"
+Functions fail if passed NULL pointers for required parameters.
+.TP
+.B "Directory not found"
+.BR sat_directory_exists ()
+returns failure if the path does not exist or is not a directory.
+.TP
+.B "Permission denied"
+.BR sat_directory_get_files ()
+may fail if the process lacks permission to read the directory.
+.TP
+.B "Invalid path"
+Functions may fail if the path string is invalid or too long.
+.TP
+.B "Memory allocation failure"
+.BR sat_directory_get_files ()
+may fail if memory allocation for the file list fails.
+.SH EXAMPLES
+.SS Checking Directory Existence
+.nf
+#include <sat_directory.h>
+#include <stdio.h>
+
+int main(void)
+{
+    const char *path = "/tmp";
+    sat_status_t status;
+    
+    status = sat_directory_exists(path);
+    
+    if (sat_status_get_result(&status)) {
+        printf("Directory '%s' exists\\n", path);
+    } else {
+        printf("Directory '%s' does not exist: %s\\n",
+               path, sat_status_get_motive(&status));
+    }
+    
+    return 0;
+}
+.fi
+.SS Listing Files in a Directory
+.nf
+#include <sat_directory.h>
+#include <sat_linked_list.h>
+#include <sat_iterator.h>
+#include <stdio.h>
+
+int main(void)
+{
+    sat_linked_list_t *file_list;
+    sat_status_t status;
+    
+    /* Get files in current directory */
+    status = sat_directory_get_files(".", &file_list);
+    
+    if (!sat_status_get_result(&status)) {
+        fprintf(stderr, "Failed to get files: %s\\n",
+                sat_status_get_motive(&status));
+        return 1;
+    }
+    
+    /* Get file count */
+    uint32_t size;
+    sat_linked_list_get_size(file_list, &size);
+    printf("Files found: %u\\n", size);
+    
+    /* Iterate and print filenames */
+    sat_iterator_t iterator;
+    sat_iterator_base_t *base = (sat_iterator_base_t *)file_list;
+    
+    sat_iterator_open(&iterator, base);
+    
+    printf("\\n--- File List ---\\n");
+    char *filename;
+    while ((filename = (char *)sat_iterator_next(&iterator)) != NULL) {
+        printf("%s\\n", filename);
+    }
+    printf("-----------------\\n");
+    
+    /* Cleanup */
+    sat_linked_list_destroy(file_list);
+    
+    return 0;
+}
+.fi
+.SS Command-Line Directory Scanner
+.nf
+#include <sat_directory.h>
+#include <sat_linked_list.h>
+#include <sat_iterator.h>
+#include <stdio.h>
+
+int main(int argc, char *argv[])
+{
+    if (argc < 2) {
+        fprintf(stderr, "Usage: %s <directory_path>\\n", argv[0]);
+        return 1;
+    }
+    
+    const char *dir_path = argv[1];
+    
+    /* Check if directory exists */
+    if (!sat_status_get_result(sat_directory_exists(dir_path))) {
+        fprintf(stderr, "Error: '%s' is not a directory\\n", 
+                dir_path);
+        return 1;
+    }
+    
+    /* Get files */
+    sat_linked_list_t *file_list;
+    sat_status_t status = sat_directory_get_files(dir_path, 
+                                                   &file_list);
+    
+    if (!sat_status_get_result(&status)) {
+        fprintf(stderr, "Failed to read directory: %s\\n",
+                sat_status_get_motive(&status));
+        return 1;
+    }
+    
+    /* Print results */
+    uint32_t count;
+    sat_linked_list_get_size(file_list, &count);
+    
+    printf("Directory: %s\\n", dir_path);
+    printf("File count: %u\\n\\n", count);
+    
+    /* List files */
+    sat_iterator_t iterator;
+    sat_iterator_open(&iterator, 
+                      (sat_iterator_base_t *)file_list);
+    
+    char *filename;
+    int index = 1;
+    while ((filename = (char *)sat_iterator_next(&iterator)) 
+           != NULL) {
+        printf("%3d. %s\\n", index++, filename);
+    }
+    
+    sat_linked_list_destroy(file_list);
+    return 0;
+}
+.fi
+.SS Filtering Files by Extension
+.nf
+#include <sat_directory.h>
+#include <sat_linked_list.h>
+#include <sat_iterator.h>
+#include <stdio.h>
+#include <string.h>
+
+bool has_extension(const char *filename, const char *ext)
+{
+    size_t len = strlen(filename);
+    size_t ext_len = strlen(ext);
+    
+    if (len < ext_len) {
+        return false;
+    }
+    
+    return strcmp(filename + len - ext_len, ext) == 0;
+}
+
+int main(void)
+{
+    sat_linked_list_t *file_list;
+    
+    sat_directory_get_files(".", &file_list);
+    
+    /* Create list for filtered files */
+    sat_linked_list_t *c_files;
+    sat_linked_list_create(&c_files, sizeof(char *));
+    
+    /* Iterate and filter .c files */
+    sat_iterator_t iterator;
+    sat_iterator_open(&iterator, 
+                      (sat_iterator_base_t *)file_list);
+    
+    printf("C source files:\\n");
+    char *filename;
+    while ((filename = (char *)sat_iterator_next(&iterator)) 
+           != NULL) {
+        if (has_extension(filename, ".c")) {
+            printf("  %s\\n", filename);
+            sat_linked_list_insert(c_files, &filename);
+        }
+    }
+    
+    uint32_t c_count;
+    sat_linked_list_get_size(c_files, &c_count);
+    printf("\\nTotal .c files: %u\\n", c_count);
+    
+    sat_linked_list_destroy(file_list);
+    sat_linked_list_destroy(c_files);
+    
+    return 0;
+}
+.fi
+.SS Counting Files by Type
+.nf
+#include <sat_directory.h>
+#include <sat_linked_list.h>
+#include <sat_iterator.h>
+#include <stdio.h>
+#include <string.h>
+
+typedef struct {
+    int c_files;
+    int h_files;
+    int txt_files;
+    int other_files;
+} file_stats_t;
+
+void count_files(const char *dir_path, file_stats_t *stats)
+{
+    memset(stats, 0, sizeof(file_stats_t));
+    
+    sat_linked_list_t *file_list;
+    if (!sat_status_get_result(
+            sat_directory_get_files(dir_path, &file_list))) {
+        return;
+    }
+    
+    sat_iterator_t iterator;
+    sat_iterator_open(&iterator, 
+                      (sat_iterator_base_t *)file_list);
+    
+    char *filename;
+    while ((filename = (char *)sat_iterator_next(&iterator)) 
+           != NULL) {
+        size_t len = strlen(filename);
+        
+        if (len > 2 && strcmp(filename + len - 2, ".c") == 0) {
+            stats->c_files++;
+        } else if (len > 2 && 
+                   strcmp(filename + len - 2, ".h") == 0) {
+            stats->h_files++;
+        } else if (len > 4 && 
+                   strcmp(filename + len - 4, ".txt") == 0) {
+            stats->txt_files++;
+        } else {
+            stats->other_files++;
+        }
+    }
+    
+    sat_linked_list_destroy(file_list);
+}
+
+int main(void)
+{
+    file_stats_t stats;
+    
+    count_files(".", &stats);
+    
+    printf("File Statistics:\\n");
+    printf("  C files:     %d\\n", stats.c_files);
+    printf("  Header files: %d\\n", stats.h_files);
+    printf("  Text files:   %d\\n", stats.txt_files);
+    printf("  Other files:  %d\\n", stats.other_files);
+    printf("  Total:        %d\\n", 
+           stats.c_files + stats.h_files + 
+           stats.txt_files + stats.other_files);
+    
+    return 0;
+}
+.fi
+.SS Verifying Multiple Directories
+.nf
+#include <sat_directory.h>
+#include <stdio.h>
+
+int main(void)
+{
+    const char *dirs[] = {
+        "/tmp",
+        "/var",
+        "/usr/local",
+        "/nonexistent",
+        NULL
+    };
+    
+    printf("Checking directories:\\n");
+    
+    for (int i = 0; dirs[i] != NULL; i++) {
+        sat_status_t status = sat_directory_exists(dirs[i]);
+        
+        printf("  %-20s [%s]\\n",
+               dirs[i],
+               sat_status_get_result(&status) ? "EXISTS" : 
+               "NOT FOUND");
+    }
+    
+    return 0;
+}
+.fi
+.SS Processing Files with Callback
+.nf
+#include <sat_directory.h>
+#include <sat_linked_list.h>
+#include <sat_iterator.h>
+#include <stdio.h>
+
+typedef void (*file_processor_t)(const char *filename, void *user);
+
+void process_directory(const char *dir_path,
+                      file_processor_t processor,
+                      void *user_data)
+{
+    sat_linked_list_t *file_list;
+    
+    if (!sat_status_get_result(
+            sat_directory_get_files(dir_path, &file_list))) {
+        fprintf(stderr, "Cannot read directory: %s\\n", dir_path);
+        return;
+    }
+    
+    sat_iterator_t iterator;
+    sat_iterator_open(&iterator, 
+                      (sat_iterator_base_t *)file_list);
+    
+    char *filename;
+    while ((filename = (char *)sat_iterator_next(&iterator)) 
+           != NULL) {
+        processor(filename, user_data);
+    }
+    
+    sat_linked_list_destroy(file_list);
+}
+
+void print_with_number(const char *filename, void *user)
+{
+    int *counter = (int *)user;
+    printf("%3d. %s\\n", (*counter)++, filename);
+}
+
+int main(void)
+{
+    int counter = 1;
+    
+    printf("Files in current directory:\\n");
+    process_directory(".", print_with_number, &counter);
+    
+    printf("\\nTotal files processed: %d\\n", counter - 1);
+    
+    return 0;
+}
+.fi
+.SH NOTES
+.IP \(bu 2
+File lists returned by
+.BR sat_directory_get_files ()
+must be freed using
+.BR sat_linked_list_destroy ()
+to prevent memory leaks.
+.IP \(bu 2
+The file list contains only filenames, not full paths. Combine with the
+directory path if needed.
+.IP \(bu 2
+Subdirectories are typically excluded from the file list.
+.IP \(bu 2
+The order of files in the list is not guaranteed and may vary by platform.
+.IP \(bu 2
+Hidden files (starting with .) may or may not be included depending on
+the implementation.
+.IP \(bu 2
+The file list is compatible with
+.BR sat_iterator (3),
+allowing easy iteration.
+.IP \(bu 2
+Each filename in the list is stored as a dynamically allocated string.
+.IP \(bu 2
+Path arguments can be absolute or relative to the current working directory.
+.IP \(bu 2
+The module does not provide recursive directory traversal; you must
+implement recursion manually if needed.
+.IP \(bu 2
+Symbolic links may be followed or treated as files depending on the
+platform implementation.
+.SH SEE ALSO
+.BR sat_linked_list (3),
+.BR sat_iterator (3),
+.BR sat_file (3),
+.BR sat_status (3),
+.BR opendir (3),
+.BR readdir (3),
+.BR stat (2)
+.PP
+SAT Library Documentation: <https://github.com/solidcris/sat>
+.SH BUGS
+No known bugs at this time. Report bugs to the SAT Library issue tracker.
+.SH AUTHOR
+Written by the SAT Library contributors.
+.SH COPYRIGHT
+Copyright \(co 2025 SAT Library Project.
+.br
+Licensed under the MIT License.

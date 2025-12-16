@@ -60,6 +60,7 @@ sat_status_t sat_directory_get_files (const char *directory, sat_linked_list_t *
             status = sat_status_failure (&status, "Failed to open directory");
             break;
         }
+        
         while ((entry = readdir (dir)) != NULL)
         {
             if (entry->d_type == DT_REG)

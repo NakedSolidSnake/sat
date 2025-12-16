@@ -63,7 +63,8 @@ list (APPEND SAT_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/sat_file.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_handle_frame_vanish.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_service_vanish.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_network.c
-                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_directory.c)
+                        #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_directory.c
+                         )
 
 
 # Check if it is necessary to link some libraries
@@ -80,7 +81,9 @@ list (APPEND SAT_LIBRARIES
              sat_plugin
              sat_uuid
              sat_queue
-             sat_linked_list)
+             sat_linked_list
+             sat_directory
+             )
 
 list (APPEND SAT_INCLUDES ${CMAKE_CURRENT_LIST_DIR}/include
                           ${CMAKE_CURRENT_LIST_DIR}/include/sat_tcp/
