@@ -77,6 +77,7 @@ RUN git clone https://github.com/NakedSolidSnake/sat && \
 	-DSAT_LOKI=ON \
 	.. && \
 	make -j4 install && \
+	cmake --install build --component documentation && \
 	rm -rf /development/sat && \
 	ldconfig
 
@@ -86,7 +87,7 @@ RUN git clone https://github.com/NakedSolidSnake/sat_scaffolding && \
 	mkdir -p sat_scaffolding/build && \
 	cd sat_scaffolding/build && \
 	cmake .. && \
-	make install && \
+	make install && \	 
 	rm -rf /development/sat_scaffolding
 
 RUN useradd -ms /bin/bash developer && chmod 0777 /development

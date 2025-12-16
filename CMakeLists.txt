@@ -29,7 +29,7 @@ list (APPEND SAT_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/sat_file.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_udp/sat_udp_server_abstract.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_udp/sat_udp_server_interactive.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_udp/sat_udp_server_async.c
-                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_linked_list.c
+                        #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_linked_list.c
                         #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_queue.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_map.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_tcp.c
@@ -79,7 +79,8 @@ list (APPEND SAT_LIBRARIES
              sat_cache
              sat_plugin
              sat_uuid
-             sat_queue)
+             sat_queue
+             sat_linked_list)
 
 list (APPEND SAT_INCLUDES ${CMAKE_CURRENT_LIST_DIR}/include
                           ${CMAKE_CURRENT_LIST_DIR}/include/sat_tcp/

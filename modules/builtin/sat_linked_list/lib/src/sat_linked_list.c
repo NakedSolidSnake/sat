@@ -26,67 +26,111 @@ struct sat_linked_list_t
 
 sat_status_t sat_linked_list_create (sat_linked_list_t **const object, const uint32_t object_size)
 {
-    sat_status_t status = sat_status_failure (&status, "sat liked list create error");
+    sat_status_t status;
 
-    if (object != NULL && object_size > 0)
+    do
     {
-        sat_status_failure (&status, "sat liked list buffer error");
-        *object = (sat_linked_list_t *) calloc (1, sizeof (sat_linked_list_t));
-
-        if (*object != NULL)
+        if (object == NULL)
         {
-            (*object)->object_size = object_size;
-            (*object)->list = NULL;
-
-            sat_linked_list_configure_iterator (*object);
-
-            sat_status_success (&status);
+            sat_status_failure (&status, "sat liked list create error: object is NULL");
+            break;
         }
 
-    }
+        if (object_size == 0)
+        {
+            sat_status_failure (&status, "sat liked list create error: object size is zero");
+            break;
+        }
+
+        *object = (sat_linked_list_t *) calloc (1, sizeof (sat_linked_list_t));
+        if (*object == NULL)
+        {
+            sat_status_failure (&status, "sat liked list create error: allocation failed");
+            break;
+        }
+
+        (*object)->object_size = object_size;
+        (*object)->list = NULL;
+
+        sat_linked_list_configure_iterator (*object);
+
+        sat_status_success (&status);
+
+    } while (false);
 
     return status;
 }
 
 sat_status_t sat_linked_list_insert (sat_linked_list_t *const object, const void *const element)
 {
-    sat_status_t status = sat_status_failure (&status, "sat liked list insert error");
+    sat_status_t status;
 
-    if (object != NULL && element != NULL)
+    do
     {
-        sat_status_failure (&status, "sat liked list element allocation error");
-        sat_linked_list_internal_t *_element = calloc (1, sizeof (sat_linked_list_internal_t));
-
-        if (_element != NULL)
+        if (object == NULL)
         {
-            _element->data = calloc (1, object->object_size);
-            if (_element->data == NULL)
-            {
-                free (_element);
-                sat_status_failure (&status, "sat liked list data allocation error");
-                return status;
-            }
-
-            memcpy (_element->data, element, object->object_size);
-
-            _element->next = object->list;
-            object->list = _element;
-            object->amount ++;
-
-            sat_status_success (&status);
+            sat_status_failure (&status, "sat liked list insert error: object is NULL");
+            break;
         }
-    }
+
+        if (element == NULL)
+        {
+            sat_status_failure (&status, "sat liked list insert error: element is NULL");
+            break;
+        }
+
+        sat_linked_list_internal_t *_element = calloc (1, sizeof (sat_linked_list_internal_t));
+        if (_element == NULL)
+        {
+            sat_status_failure (&status, "sat liked list insert error: allocation failed");
+            break;
+        }
+
+        _element->data = calloc (1, object->object_size);
+        if (_element->data == NULL)
+        {
+            free (_element);
+            sat_status_failure (&status, "sat liked list insert error: data allocation failed");
+            break;
+        }
+
+        memcpy (_element->data, element, object->object_size);
+
+        _element->next = object->list;
+        object->list = _element;
+        object->amount ++;
+
+        sat_status_success (&status);
+
+    } while (false);
 
     return status;
 }
 
 sat_status_t sat_linked_list_remove (sat_linked_list_t *const object, sat_linked_list_compare_t compare, const void *const param)
 {
-    sat_status_t status = sat_status_failure (&status, "sat liked list remove error");
+    sat_status_t status;
 
-    if (object != NULL && compare != NULL && param != NULL)
+    do
     {
-        sat_status_failure (&status, "sat liked list remove not found error");
+        if (object == NULL)
+        {
+            sat_status_failure (&status, "sat liked list remove error: object is NULL");
+            break;
+        }
+
+        if (compare == NULL)
+        {
+            sat_status_failure (&status, "sat liked list remove error: compare function is NULL");
+            break;
+        }
+
+        if (param == NULL)
+        {
+            sat_status_failure (&status, "sat liked list remove error: parameter is NULL");
+            break;
+        }
+
         sat_linked_list_internal_t *element = object->list;
         sat_linked_list_internal_t *temp;
 
@@ -113,23 +157,48 @@ sat_status_t sat_linked_list_remove (sat_linked_list_t *const object, sat_linked
             temp = element;
             element = element->next;
         }
-    }
+
+    } while (false);
 
     return status;
 }
 
 sat_status_t sat_linked_list_get (const sat_linked_list_t *const object, sat_linked_list_compare_t compare, const void *const param, void *const element)
 {
-    sat_status_t status = sat_status_failure (&status, "sat liked list get error");
+    sat_status_t status;
 
-    if (object != NULL && compare != NULL && param != NULL && element != NULL)
+    do
     {
-        sat_status_failure (&status, "sat liked list get not found error");
+        if (object == NULL)
+        {
+            sat_status_failure (&status, "sat liked list get error: object is NULL");
+            break;
+        }
+
+        if (compare == NULL)
+        {
+            sat_status_failure (&status, "sat liked list get error: compare function is NULL");
+            break;
+        }
+
+        if (param == NULL)
+        {
+            sat_status_failure (&status, "sat liked list get error: parameter is NULL");
+            break;
+        }
+
+        if (element == NULL)
+        {
+            sat_status_failure (&status, "sat liked list get error: element is NULL");
+            break;
+        }
+
         sat_linked_list_internal_t *_element = object->list;
+
+        sat_status_failure (&status, "sat liked list get not found error");
 
         while (_element != NULL)
         {
-
             if (compare (_element->data, (void *)param) == true)
             {
                 memcpy (element, _element->data, object->object_size);
@@ -140,18 +209,42 @@ sat_status_t sat_linked_list_get (const sat_linked_list_t *const object, sat_lin
 
             _element = _element->next;
         }
-        
-    }
+
+    } while (false);
 
     return status;
 }
 
 sat_status_t sat_linked_list_get_ref (const sat_linked_list_t *const object, sat_linked_list_compare_t compare, const void *const param, void **const element)
 {
-    sat_status_t status = sat_status_failure (&status, "sat liked list get ref error");
+    sat_status_t status;
 
-    if (object != NULL && compare != NULL && param != NULL && element != NULL)
+    do
     {
+        if (object == NULL)
+        {
+            sat_status_failure (&status, "sat liked list get ref error: object is NULL");
+            break;
+        }
+
+        if (compare == NULL)
+        {
+            sat_status_failure (&status, "sat liked list get ref error: compare function is NULL");
+            break;
+        }
+
+        if (param == NULL)
+        {
+            sat_status_failure (&status, "sat liked list get ref error: parameter is NULL");
+            break;
+        }
+
+        if (element == NULL)
+        {
+            sat_status_failure (&status, "sat liked list get ref error: element is NULL");
+            break;
+        }
+
         sat_status_failure (&status, "sat liked list get ref not found error");
         sat_linked_list_internal_t *_element = object->list;
 
@@ -168,8 +261,8 @@ sat_status_t sat_linked_list_get_ref (const sat_linked_list_t *const object, sat
 
             _element = _element->next;
         }
-        
-    }
+
+    } while (false);
 
     return status;
 }
@@ -220,25 +313,47 @@ sat_status_t sat_linked_list_is_present (const sat_linked_list_t *const object, 
 
 sat_status_t sat_linked_list_get_size (const sat_linked_list_t *const object, uint32_t *const size)
 {
-    sat_status_t status = sat_status_failure (&status, "sat liked list get size error");
+    sat_status_t status = sat_status_success (&status);
 
-    if (object != NULL && size != NULL)
+    do
     {
+        if (object == NULL)
+        {
+            sat_status_failure (&status, "sat liked list get size error: object is NULL");
+            break;
+        }
+
+        if (size == NULL)
+        {
+            sat_status_failure (&status, "sat liked list get size error: size is NULL");
+            break;
+        }
+
         *size = object->amount;
 
-        sat_status_success (&status);
-    }
+    } while (false);
 
     return status;
 }
 
 sat_status_t sat_linked_list_debug (const sat_linked_list_t *const object, sat_linked_list_print_t print)
 {
-    sat_status_t status = sat_status_failure (&status, "sat liked list debug error");
+    sat_status_t status = sat_status_success (&status);
 
-    if (object != NULL && print)
-    {   
+    do
+    {
+        if (object == NULL)
+        {
+            sat_status_failure (&status, "sat liked list debug error: object is NULL");
+            break;
+        }
 
+        if (print == NULL)
+        {
+            sat_status_failure (&status, "sat liked list debug error: print function is NULL");
+            break;
+        }
+    
         sat_linked_list_internal_t *element = object->list;
 
         while (element != NULL)
@@ -246,19 +361,24 @@ sat_status_t sat_linked_list_debug (const sat_linked_list_t *const object, sat_l
             print (element->data);
             element = element->next;
         }
-        
-        sat_status_success (&status);
-    }
+
+    } while (false);
 
     return status;
 }
 
 sat_status_t sat_linked_list_destroy (sat_linked_list_t *const object)
 {
-    sat_status_t status = sat_status_failure (&status, "sat liked list destroy error");
+    sat_status_t status;
 
-    if (object != NULL)
+    do
     {
+        if (object == NULL)
+        {
+            sat_status_failure (&status, "sat liked list destroy error: object is NULL");
+            break;
+        }
+
         sat_linked_list_internal_t *element = object->list;
 
         while (element != NULL)
@@ -273,7 +393,8 @@ sat_status_t sat_linked_list_destroy (sat_linked_list_t *const object)
         free (object);
 
         sat_status_success (&status);
-    }
+
+    } while (false);
 
     return status;
 }

@@ -1,0 +1,524 @@
+.TH SAT_LINKED_LIST 3 "December 2025" "SAT Library" "SAT Library Manual"
+.SH NAME
+sat_linked_list \- doubly-linked list data structure
+.SH SYNOPSIS
+.nf
+.B #include <sat_linked_list.h>
+.PP
+.BI "sat_status_t sat_linked_list_create(sat_linked_list_t **" object ", const uint32_t " object_size );
+.BI "sat_status_t sat_linked_list_insert(sat_linked_list_t *" object ", const void *" element );
+.BI "sat_status_t sat_linked_list_remove(sat_linked_list_t *" object ", sat_linked_list_compare_t " compare ", const void *" param );
+.BI "sat_status_t sat_linked_list_get(const sat_linked_list_t *" object ", sat_linked_list_compare_t " compare ", const void *" param ", void *" element );
+.BI "sat_status_t sat_linked_list_get_ref(const sat_linked_list_t *" object ", sat_linked_list_compare_t " compare ", const void *" param ", void **" element );
+.BI "sat_status_t sat_linked_list_is_present(const sat_linked_list_t *" object ", sat_linked_list_compare_t " compare ", const void *" param );
+.BI "sat_status_t sat_linked_list_get_size(const sat_linked_list_t *" object ", uint32_t *" size );
+.BI "sat_status_t sat_linked_list_debug(const sat_linked_list_t *" object ", sat_linked_list_print_t " print );
+.BI "sat_status_t sat_linked_list_destroy(sat_linked_list_t *" object );
+.PP
+Link with \fI\-lsat\fP.
+.fi
+.SH DESCRIPTION
+The
+.B sat_linked_list
+module provides a doubly-linked list implementation that can store arbitrary
+data types. It supports efficient insertion, removal, and searching operations.
+The list is compatible with the
+.BR sat_iterator (3)
+interface, allowing unified iteration across different data structures.
+.PP
+Linked lists are ideal for scenarios requiring frequent insertions and deletions,
+as they don't require contiguous memory and can grow dynamically without
+reallocation overhead.
+.SS Types
+.TP
+.B sat_linked_list_t
+Opaque structure representing the linked list. Users should not access its
+fields directly.
+.TP
+.B sat_linked_list_compare_t
+Function pointer type for element comparison:
+.RS
+.nf
+typedef bool (*sat_linked_list_compare_t)(const void *element,
+                                           const void *data);
+.fi
+Returns true if the element matches the search parameter.
+.RE
+.TP
+.B sat_linked_list_print_t
+Function pointer type for printing elements:
+.RS
+.nf
+typedef void (*sat_linked_list_print_t)(const void *element);
+.fi
+.RE
+.SS List Operations
+.TP
+.BR sat_linked_list_create ()
+Creates and initializes a new linked list. The
+.I object_size
+parameter specifies the size in bytes of each element to be stored.
+Returns success status.
+.TP
+.BR sat_linked_list_insert ()
+Inserts a new element into the list. The data pointed to by
+.I element
+is copied into a new node. Typically adds elements at the end of the list.
+Returns success if the element was inserted.
+.TP
+.BR sat_linked_list_remove ()
+Removes the first element matching
+.I param
+using the
+.I compare
+function. The node and its data are freed. Returns success if an element
+was removed.
+.TP
+.BR sat_linked_list_get ()
+Searches for and retrieves the first element matching
+.I param
+using the
+.I compare
+function. The element is copied to the output buffer. The list is not modified.
+Returns success if found.
+.TP
+.BR sat_linked_list_get_ref ()
+Searches for the first element matching
+.I param
+and returns a direct pointer to it without copying. This provides zero-copy
+access. The pointer becomes invalid if the element is removed or the list is
+destroyed. Returns success if found.
+.TP
+.BR sat_linked_list_is_present ()
+Checks if an element matching
+.I param
+exists in the list using the
+.I compare
+function. Use this when you only need to verify existence. Returns success
+if the element is present.
+.TP
+.BR sat_linked_list_get_size ()
+Returns the number of elements currently in the list via the
+.I size
+output parameter. Returns success status.
+.TP
+.BR sat_linked_list_debug ()
+Prints all elements in the list using the provided
+.I print
+callback function. Useful for debugging and visualization. The list is not
+modified. Returns success status.
+.TP
+.BR sat_linked_list_destroy ()
+Destroys the list and frees all associated memory, including all nodes and
+elements. After this call, the list pointer becomes invalid. Returns success
+status.
+.SH RETURN VALUE
+All functions return a
+.B sat_status_t
+structure containing:
+.IP \(bu 2
+A boolean result indicating success or failure
+.IP \(bu 2
+An error message string if the operation failed
+.PP
+Use
+.BR sat_status_get_result ()
+to check if the operation succeeded, and
+.BR sat_status_get_motive ()
+to retrieve error details.
+.SH ERRORS
+Common error conditions include:
+.TP
+.B "NULL pointer arguments"
+Functions fail if passed NULL pointers for required parameters.
+.TP
+.B "Element not found"
+.BR sat_linked_list_remove (),
+.BR sat_linked_list_get (),
+.BR sat_linked_list_get_ref (),
+and
+.BR sat_linked_list_is_present ()
+fail if no matching element is found.
+.TP
+.B "Memory allocation failure"
+.BR sat_linked_list_create ()
+and
+.BR sat_linked_list_insert ()
+may fail if memory allocation fails.
+.TP
+.B "Invalid object size"
+.BR sat_linked_list_create ()
+may fail if
+.I object_size
+is 0.
+.SH EXAMPLES
+.SS Basic Linked List Operations
+.nf
+#include <sat_linked_list.h>
+#include <stdio.h>
+
+int main(void)
+{
+    sat_linked_list_t *list;
+    sat_status_t status;
+    
+    /* Create list for integers */
+    status = sat_linked_list_create(&list, sizeof(int));
+    if (!sat_status_get_result(&status)) {
+        fprintf(stderr, "Create failed: %s\\n",
+                sat_status_get_motive(&status));
+        return 1;
+    }
+    
+    /* Insert elements */
+    for (int i = 1; i <= 5; i++) {
+        sat_linked_list_insert(list, &i);
+    }
+    
+    /* Get list size */
+    uint32_t size;
+    sat_linked_list_get_size(list, &size);
+    printf("List size: %u\\n", size);
+    
+    /* Cleanup */
+    sat_linked_list_destroy(list);
+    
+    return 0;
+}
+.fi
+.SS Using Structures and Comparison Functions
+.nf
+#include <sat_linked_list.h>
+#include <stdio.h>
+#include <string.h>
+
+typedef struct {
+    char name[100];
+    int age;
+} person_t;
+
+void print_person(const void *element)
+{
+    const person_t *person = (const person_t *)element;
+    printf("Name: %s, Age: %d\\n", person->name, person->age);
+}
+
+bool compare_by_name(const void *element, const void *data)
+{
+    const person_t *person = (const person_t *)element;
+    const char *name = (const char *)data;
+    return strstr(person->name, name) != NULL;
+}
+
+int main(void)
+{
+    sat_linked_list_t *list;
+    
+    /* Create list */
+    sat_linked_list_create(&list, sizeof(person_t));
+    
+    /* Insert people */
+    person_t john = { .name = "John Doe", .age = 35 };
+    person_t jane = { .name = "Jane Doe", .age = 31 };
+    
+    sat_linked_list_insert(list, &john);
+    sat_linked_list_insert(list, &jane);
+    
+    /* Debug print */
+    printf("List contents:\\n");
+    sat_linked_list_debug(list, print_person);
+    
+    /* Check if present */
+    if (sat_status_get_result(
+            sat_linked_list_is_present(list, compare_by_name, 
+                                       "Jane"))) {
+        printf("\\nJane is in the list\\n");
+    }
+    
+    /* Get element */
+    person_t found;
+    if (sat_status_get_result(
+            sat_linked_list_get(list, compare_by_name, "Jane",
+                                &found))) {
+        printf("Found: %s (age %d)\\n", found.name, found.age);
+    }
+    
+    /* Remove element */
+    sat_linked_list_remove(list, compare_by_name, "John");
+    
+    uint32_t size;
+    sat_linked_list_get_size(list, &size);
+    printf("\\nSize after removal: %u\\n", size);
+    
+    sat_linked_list_destroy(list);
+    return 0;
+}
+.fi
+.SS Iterating with sat_iterator
+.nf
+#include <sat_linked_list.h>
+#include <sat_iterator.h>
+#include <stdio.h>
+#include <string.h>
+
+typedef struct {
+    char name[100];
+    int age;
+} person_t;
+
+int main(void)
+{
+    sat_linked_list_t *list;
+    sat_iterator_t iterator;
+    
+    sat_linked_list_create(&list, sizeof(person_t));
+    
+    /* Insert people */
+    person_t people[] = {
+        { "Alice", 28 },
+        { "Bob", 32 },
+        { "Charlie", 25 }
+    };
+    
+    for (int i = 0; i < 3; i++) {
+        sat_linked_list_insert(list, &people[i]);
+    }
+    
+    /* Iterate using sat_iterator */
+    sat_iterator_base_t *base = (sat_iterator_base_t *)list;
+    sat_iterator_open(&iterator, base);
+    
+    printf("Iterating through list:\\n");
+    person_t *person = (person_t *)sat_iterator_next(&iterator);
+    while (person != NULL) {
+        printf("  Name: %s, Age: %d\\n", person->name, person->age);
+        person = (person_t *)sat_iterator_next(&iterator);
+    }
+    
+    sat_linked_list_destroy(list);
+    return 0;
+}
+.fi
+.SS Contact List Management
+.nf
+#include <sat_linked_list.h>
+#include <stdio.h>
+#include <string.h>
+
+typedef struct {
+    char name[50];
+    char email[100];
+    char phone[20];
+} contact_t;
+
+void print_contact(const void *element)
+{
+    const contact_t *c = (const contact_t *)element;
+    printf("  %s\\n  Email: %s\\n  Phone: %s\\n",
+           c->name, c->email, c->phone);
+}
+
+bool find_by_name(const void *element, const void *data)
+{
+    const contact_t *c = (const contact_t *)element;
+    const char *name = (const char *)data;
+    return strcmp(c->name, name) == 0;
+}
+
+int main(void)
+{
+    sat_linked_list_t *contacts;
+    sat_linked_list_create(&contacts, sizeof(contact_t));
+    
+    /* Add contacts */
+    contact_t c1 = { "Alice Smith", "alice@example.com", 
+                     "555-1234" };
+    contact_t c2 = { "Bob Jones", "bob@example.com", 
+                     "555-5678" };
+    
+    sat_linked_list_insert(contacts, &c1);
+    sat_linked_list_insert(contacts, &c2);
+    
+    /* Display all contacts */
+    printf("Contact List:\\n");
+    sat_linked_list_debug(contacts, print_contact);
+    
+    /* Search for contact */
+    contact_t found;
+    if (sat_status_get_result(
+            sat_linked_list_get(contacts, find_by_name,
+                                "Alice Smith", &found))) {
+        printf("\\nFound contact:\\n");
+        print_contact(&found);
+    }
+    
+    /* Remove contact */
+    sat_linked_list_remove(contacts, find_by_name, "Bob Jones");
+    
+    printf("\\nAfter removal:\\n");
+    sat_linked_list_debug(contacts, print_contact);
+    
+    sat_linked_list_destroy(contacts);
+    return 0;
+}
+.fi
+.SS Zero-Copy Access with get_ref
+.nf
+#include <sat_linked_list.h>
+#include <stdio.h>
+
+typedef struct {
+    int id;
+    double value;
+} record_t;
+
+bool find_by_id(const void *element, const void *data)
+{
+    const record_t *r = (const record_t *)element;
+    const int *id = (const int *)data;
+    return r->id == *id;
+}
+
+int main(void)
+{
+    sat_linked_list_t *list;
+    sat_linked_list_create(&list, sizeof(record_t));
+    
+    /* Insert records */
+    for (int i = 1; i <= 5; i++) {
+        record_t rec = { i, i * 10.5 };
+        sat_linked_list_insert(list, &rec);
+    }
+    
+    /* Get reference and modify in place */
+    int search_id = 3;
+    record_t *rec_ptr;
+    
+    if (sat_status_get_result(
+            sat_linked_list_get_ref(list, find_by_id,
+                                    &search_id, 
+                                    (void **)&rec_ptr))) {
+        printf("Found record %d: value = %.2f\\n",
+               rec_ptr->id, rec_ptr->value);
+        
+        /* Modify directly in the list */
+        rec_ptr->value = 999.99;
+        printf("Modified value to: %.2f\\n", rec_ptr->value);
+    }
+    
+    /* Verify modification */
+    record_t rec_copy;
+    sat_linked_list_get(list, find_by_id, &search_id, &rec_copy);
+    printf("Value after modification: %.2f\\n", rec_copy.value);
+    
+    sat_linked_list_destroy(list);
+    return 0;
+}
+.fi
+.SS Task List
+.nf
+#include <sat_linked_list.h>
+#include <stdio.h>
+#include <string.h>
+
+typedef struct {
+    int priority;
+    char description[200];
+    bool completed;
+} task_t;
+
+void print_task(const void *element)
+{
+    const task_t *task = (const task_t *)element;
+    printf("[%s] Priority %d: %s\\n",
+           task->completed ? "X" : " ",
+           task->priority, task->description);
+}
+
+bool find_incomplete(const void *element, const void *data)
+{
+    const task_t *task = (const task_t *)element;
+    (void)data; /* Unused */
+    return !task->completed;
+}
+
+int main(void)
+{
+    sat_linked_list_t *tasks;
+    sat_linked_list_create(&tasks, sizeof(task_t));
+    
+    /* Add tasks */
+    task_t t1 = { 1, "Review code", false };
+    task_t t2 = { 2, "Write tests", false };
+    task_t t3 = { 3, "Update docs", false };
+    
+    sat_linked_list_insert(tasks, &t1);
+    sat_linked_list_insert(tasks, &t2);
+    sat_linked_list_insert(tasks, &t3);
+    
+    printf("Task List:\\n");
+    sat_linked_list_debug(tasks, print_task);
+    
+    /* Mark first incomplete task as done */
+    task_t *task_ptr;
+    if (sat_status_get_result(
+            sat_linked_list_get_ref(tasks, find_incomplete,
+                                    NULL, (void **)&task_ptr))) {
+        task_ptr->completed = true;
+        printf("\\nCompleted: %s\\n", task_ptr->description);
+    }
+    
+    printf("\\nUpdated Task List:\\n");
+    sat_linked_list_debug(tasks, print_task);
+    
+    sat_linked_list_destroy(tasks);
+    return 0;
+}
+.fi
+.SH NOTES
+.IP \(bu 2
+The list is implemented as a doubly-linked list, allowing efficient
+insertion and removal.
+.IP \(bu 2
+Elements are copied into the list, so original data can be modified or
+freed after insertion.
+.IP \(bu 2
+The list has no maximum size limit (bounded only by available memory).
+.IP \(bu 2
+Searching operations have O(n) time complexity as they traverse the list.
+.IP \(bu 2
+The list is not thread-safe. External synchronization is required for
+concurrent access.
+.IP \(bu 2
+The list is compatible with
+.BR sat_iterator (3),
+allowing unified iteration across different data structures.
+.IP \(bu 2
+.BR sat_linked_list_get_ref ()
+provides zero-copy access but the pointer becomes invalid if the element
+is removed or the list is destroyed.
+.IP \(bu 2
+Comparison functions should return true for a match and false otherwise.
+.IP \(bu 2
+Only the first matching element is affected by remove and get operations.
+.IP \(bu 2
+For random access by index, consider using
+.BR sat_array (3)
+instead.
+.SH SEE ALSO
+.BR sat_array (3),
+.BR sat_queue (3),
+.BR sat_stack (3),
+.BR sat_iterator (3),
+.BR sat_status (3),
+.BR memcpy (3)
+.PP
+SAT Library Documentation: <https://github.com/solidcris/sat>
+.SH BUGS
+No known bugs at this time. Report bugs to the SAT Library issue tracker.
+.SH AUTHOR
+Written by the SAT Library contributors.
+.SH COPYRIGHT
+Copyright \(co 2025 SAT Library Project.
+.br
+Licensed under the MIT License.
