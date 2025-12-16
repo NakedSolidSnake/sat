@@ -1,0 +1,602 @@
+.TH SAT_SET 3 "December 2025" "SAT Library" "SAT Library Manual"
+.SH NAME
+sat_set \- set data structure with uniqueness constraint
+.SH SYNOPSIS
+.nf
+.B #include <sat_set.h>
+.PP
+.BI "sat_status_t sat_set_create(sat_set_t **" object ", const sat_set_args_t *" args );
+.BI "sat_status_t sat_set_add(sat_set_t *" object ", const void *" data );
+.BI "sat_status_t sat_set_update_by(sat_set_t *" object ", const void *" data ", uint32_t " index );
+.BI "sat_status_t sat_set_remove_by(sat_set_t *" object ", uint32_t " index );
+.BI "sat_status_t sat_set_remove_by_parameter(sat_set_t *" object ", const void *" param ", sat_set_compare_t " compare ", void *" data );
+.BI "sat_status_t sat_set_get_object_by(const sat_set_t *" object ", uint32_t " index ", void *" data );
+.BI "sat_status_t sat_set_get_object_by_parameter(const sat_set_t *" object ", const void *" param ", sat_set_compare_t " compare ", void *" data );
+.BI "sat_status_t sat_set_get_object_ref_by_parameter(sat_set_t *" object ", const void *" param ", sat_set_compare_t " compare ", void **" data );
+.BI "sat_status_t sat_set_get_size(const sat_set_t *" object ", uint32_t *" size );
+.BI "sat_status_t sat_set_destroy(sat_set_t *" object );
+.PP
+Link with \fI\-lsat\fP.
+.fi
+.SH DESCRIPTION
+The
+.B sat_set
+module provides a set implementation that stores unique elements. Duplicate
+elements are automatically rejected based on a user-defined equality function.
+The set supports both static (fixed-size) and dynamic (auto-growing) modes.
+.PP
+Sets are ideal for maintaining collections of unique items, implementing
+membership tests, and eliminating duplicates from data.
+.SS Types
+.TP
+.B sat_set_t
+Opaque structure representing the set. Users should not access its fields directly.
+.TP
+.B sat_set_mode_t
+Enumeration for set growth mode:
+.RS
+.IP \(bu 2
+.B sat_set_mode_static
+\- Fixed size, no automatic growth
+.IP \(bu 2
+.B sat_set_mode_dynamic
+\- Automatic resizing when capacity is reached
+.RE
+.TP
+.B sat_set_args_t
+Configuration structure with the following fields:
+.RS
+.IP \(bu 2
+.I uint32_t size
+\- Initial capacity
+.IP \(bu 2
+.I uint32_t object_size
+\- Size in bytes of each element
+.IP \(bu 2
+.I sat_set_is_equal_t is_equal
+\- Function to check element equality
+.IP \(bu 2
+.I sat_set_mode_t mode
+\- Growth mode
+.RE
+.TP
+.B sat_set_compare_t
+Function pointer type for element comparison (searching):
+.RS
+.nf
+typedef bool (*sat_set_compare_t)(const void *element,
+                                  const void *param);
+.fi
+.RE
+.TP
+.B sat_set_is_equal_t
+Function pointer type for equality checking (duplicate detection):
+.RS
+.nf
+typedef bool (*sat_set_is_equal_t)(const void *element,
+                                   const void *new_element);
+.fi
+.RE
+.SS Set Operations
+.TP
+.BR sat_set_create ()
+Creates and initializes a new set with the specified configuration. The
+.I is_equal
+function is used to enforce uniqueness when adding elements. Returns success
+status.
+.TP
+.BR sat_set_add ()
+Attempts to add an element to the set. The element is added only if no equal
+element already exists (checked via the
+.I is_equal
+function). Returns failure if a duplicate is detected. In dynamic mode,
+automatically grows the set if capacity is reached.
+.TP
+.BR sat_set_update_by ()
+Replaces the element at
+.I index
+with new data. Does not check for duplicates. Returns success if the index
+is valid.
+.TP
+.BR sat_set_remove_by ()
+Removes the element at
+.I index
+and shifts subsequent elements down. This is an O(n) operation. Returns success
+if the index is valid.
+.TP
+.BR sat_set_remove_by_parameter ()
+Searches for and removes the first element matching
+.I param
+using the
+.I compare
+function. If
+.I data
+is not NULL, the removed element is copied to it before removal. Returns success
+if a matching element was found and removed.
+.TP
+.BR sat_set_get_object_by ()
+Copies the element at
+.I index
+into the
+.I data
+buffer. Returns success if the index is valid.
+.TP
+.BR sat_set_get_object_by_parameter ()
+Searches for the first element matching
+.I param
+using the
+.I compare
+function, then copies it to
+.IR data .
+Returns success if a matching element was found.
+.TP
+.BR sat_set_get_object_ref_by_parameter ()
+Searches for the first element matching
+.I param
+using the
+.I compare
+function, then returns a direct pointer to it via
+.I data
+without copying. This provides zero-copy access but the pointer becomes invalid
+if the set is resized or destroyed. Returns success if a matching element was
+found.
+.TP
+.BR sat_set_get_size ()
+Returns the number of elements currently stored in the set via the
+.I size
+output parameter.
+.TP
+.BR sat_set_destroy ()
+Frees all memory associated with the set. After calling this function, the
+set must not be used.
+.SH RETURN VALUE
+All functions return a
+.B sat_status_t
+structure containing:
+.IP \(bu 2
+A boolean result indicating success or failure
+.IP \(bu 2
+An error message string if the operation failed
+.PP
+Use
+.BR sat_status_get_result ()
+to check if the operation succeeded, and
+.BR sat_status_get_motive ()
+to retrieve error details.
+.SH ERRORS
+Common error conditions include:
+.TP
+.B "NULL pointer arguments"
+Functions fail if passed NULL pointers for required parameters.
+.TP
+.B "Duplicate element"
+.BR sat_set_add ()
+fails if an equal element already exists in the set.
+.TP
+.B "Index out of bounds"
+Operations with
+.I index
+parameter fail if index >= size.
+.TP
+.B "Set full (static mode)"
+.BR sat_set_add ()
+fails in static mode when size equals capacity.
+.TP
+.B "Memory allocation failure"
+.BR sat_set_create ()
+and dynamic growth operations may fail if memory allocation fails.
+.TP
+.B "Element not found"
+Search operations return failure if no matching element is found.
+.SH EXAMPLES
+.SS Basic Set with Uniqueness
+.nf
+#include <sat_set.h>
+#include <stdio.h>
+#include <string.h>
+
+typedef struct {
+    int id;
+    char name[100];
+    int age;
+} person_t;
+
+bool is_equal(const void *element, const void *new_element)
+{
+    const person_t *p1 = (const person_t *)element;
+    const person_t *p2 = (const person_t *)new_element;
+    return p1->id == p2->id;
+}
+
+int main(void)
+{
+    sat_set_t *set;
+    sat_status_t status;
+    
+    /* Create set */
+    sat_set_args_t args = {
+        .size = 10,
+        .object_size = sizeof(person_t),
+        .is_equal = is_equal,
+        .mode = sat_set_mode_static
+    };
+    
+    status = sat_set_create(&set, &args);
+    if (!sat_status_get_result(&status)) {
+        fprintf(stderr, "Create failed\\n");
+        return 1;
+    }
+    
+    /* Add elements */
+    person_t john = { .id = 1, .name = "John Doe", .age = 35 };
+    person_t jane = { .id = 2, .name = "Jane Doe", .age = 31 };
+    
+    status = sat_set_add(set, &john);
+    if (sat_status_get_result(&status)) {
+        printf("Added John\\n");
+    }
+    
+    status = sat_set_add(set, &jane);
+    if (sat_status_get_result(&status)) {
+        printf("Added Jane\\n");
+    }
+    
+    /* Try to add duplicate */
+    status = sat_set_add(set, &jane);
+    if (!sat_status_get_result(&status)) {
+        printf("Duplicate rejected: %s\\n",
+               sat_status_get_motive(&status));
+    }
+    
+    /* Get set size */
+    uint32_t size;
+    sat_set_get_size(set, &size);
+    printf("Set size: %u\\n", size);
+    
+    sat_set_destroy(set);
+    return 0;
+}
+.fi
+.SS Searching with Comparison Function
+.nf
+#include <sat_set.h>
+#include <stdio.h>
+#include <string.h>
+
+typedef struct {
+    int id;
+    char name[100];
+} person_t;
+
+bool is_equal(const void *e1, const void *e2)
+{
+    const person_t *p1 = (const person_t *)e1;
+    const person_t *p2 = (const person_t *)e2;
+    return p1->id == p2->id;
+}
+
+bool compare_by_name(const void *element, const void *param)
+{
+    const person_t *p = (const person_t *)element;
+    const char *name = (const char *)param;
+    return strstr(p->name, name) != NULL;
+}
+
+int main(void)
+{
+    sat_set_t *set;
+    
+    sat_set_create(&set, &(sat_set_args_t){
+        .size = 5,
+        .object_size = sizeof(person_t),
+        .is_equal = is_equal,
+        .mode = sat_set_mode_static
+    });
+    
+    /* Add people */
+    person_t people[] = {
+        { 1, "Alice Smith" },
+        { 2, "Bob Jones" },
+        { 3, "Charlie Brown" }
+    };
+    
+    for (int i = 0; i < 3; i++) {
+        sat_set_add(set, &people[i]);
+    }
+    
+    /* Search by name */
+    person_t found;
+    sat_status_t status = sat_set_get_object_by_parameter(
+        set, "Bob", compare_by_name, &found);
+    
+    if (sat_status_get_result(&status)) {
+        printf("Found: %s (ID: %d)\\n", found.name, found.id);
+    }
+    
+    sat_set_destroy(set);
+    return 0;
+}
+.fi
+.SS Dynamic Set Growth
+.nf
+#include <sat_set.h>
+#include <stdio.h>
+
+bool int_equal(const void *e1, const void *e2)
+{
+    const int *i1 = (const int *)e1;
+    const int *i2 = (const int *)e2;
+    return *i1 == *i2;
+}
+
+int main(void)
+{
+    sat_set_t *set;
+    
+    /* Create small dynamic set */
+    sat_set_create(&set, &(sat_set_args_t){
+        .size = 2,
+        .object_size = sizeof(int),
+        .is_equal = int_equal,
+        .mode = sat_set_mode_dynamic
+    });
+    
+    /* Add more elements than initial capacity */
+    for (int i = 1; i <= 10; i++) {
+        sat_status_t status = sat_set_add(set, &i);
+        if (sat_status_get_result(&status)) {
+            printf("Added: %d\\n", i);
+        }
+    }
+    
+    uint32_t size;
+    sat_set_get_size(set, &size);
+    printf("\\nFinal size: %u\\n", size);
+    
+    /* Retrieve elements */
+    printf("\\nElements:\\n");
+    for (uint32_t i = 0; i < size; i++) {
+        int value;
+        sat_set_get_object_by(set, i, &value);
+        printf("  [%u] = %d\\n", i, value);
+    }
+    
+    sat_set_destroy(set);
+    return 0;
+}
+.fi
+.SS Removing Elements
+.nf
+#include <sat_set.h>
+#include <stdio.h>
+#include <string.h>
+
+typedef struct {
+    int id;
+    char status[20];
+} task_t;
+
+bool task_equal(const void *e1, const void *e2)
+{
+    const task_t *t1 = (const task_t *)e1;
+    const task_t *t2 = (const task_t *)e2;
+    return t1->id == t2->id;
+}
+
+bool find_completed(const void *element, const void *param)
+{
+    const task_t *task = (const task_t *)element;
+    (void)param; /* Unused */
+    return strcmp(task->status, "completed") == 0;
+}
+
+int main(void)
+{
+    sat_set_t *set;
+    
+    sat_set_create(&set, &(sat_set_args_t){
+        .size = 5,
+        .object_size = sizeof(task_t),
+        .is_equal = task_equal,
+        .mode = sat_set_mode_static
+    });
+    
+    /* Add tasks */
+    task_t tasks[] = {
+        { 1, "pending" },
+        { 2, "completed" },
+        { 3, "pending" },
+        { 4, "completed" }
+    };
+    
+    for (int i = 0; i < 4; i++) {
+        sat_set_add(set, &tasks[i]);
+    }
+    
+    printf("Initial tasks: ");
+    uint32_t size;
+    sat_set_get_size(set, &size);
+    printf("%u\\n", size);
+    
+    /* Remove completed task */
+    task_t removed;
+    sat_status_t status = sat_set_remove_by_parameter(
+        set, NULL, find_completed, &removed);
+    
+    if (sat_status_get_result(&status)) {
+        printf("Removed task %d (%s)\\n",
+               removed.id, removed.status);
+    }
+    
+    sat_set_get_size(set, &size);
+    printf("Remaining tasks: %u\\n", size);
+    
+    sat_set_destroy(set);
+    return 0;
+}
+.fi
+.SS Zero-Copy Access
+.nf
+#include <sat_set.h>
+#include <stdio.h>
+
+typedef struct {
+    int id;
+    double value;
+} record_t;
+
+bool record_equal(const void *e1, const void *e2)
+{
+    const record_t *r1 = (const record_t *)e1;
+    const record_t *r2 = (const record_t *)e2;
+    return r1->id == r2->id;
+}
+
+bool find_by_id(const void *element, const void *param)
+{
+    const record_t *rec = (const record_t *)element;
+    const int *id = (const int *)param;
+    return rec->id == *id;
+}
+
+int main(void)
+{
+    sat_set_t *set;
+    
+    sat_set_create(&set, &(sat_set_args_t){
+        .size = 10,
+        .object_size = sizeof(record_t),
+        .is_equal = record_equal,
+        .mode = sat_set_mode_static
+    });
+    
+    /* Add records */
+    for (int i = 1; i <= 5; i++) {
+        record_t rec = { i, i * 10.5 };
+        sat_set_add(set, &rec);
+    }
+    
+    /* Get reference and modify in place */
+    int search_id = 3;
+    record_t *rec_ptr;
+    
+    sat_status_t status = sat_set_get_object_ref_by_parameter(
+        set, &search_id, find_by_id, (void **)&rec_ptr);
+    
+    if (sat_status_get_result(&status)) {
+        printf("Found record %d: value = %.2f\\n",
+               rec_ptr->id, rec_ptr->value);
+        
+        /* Modify directly */
+        rec_ptr->value = 999.99;
+        printf("Modified value to: %.2f\\n", rec_ptr->value);
+    }
+    
+    sat_set_destroy(set);
+    return 0;
+}
+.fi
+.SS Unique String Set
+.nf
+#include <sat_set.h>
+#include <stdio.h>
+#include <string.h>
+
+#define MAX_STR_LEN 50
+
+bool string_equal(const void *e1, const void *e2)
+{
+    return strcmp((const char *)e1, (const char *)e2) == 0;
+}
+
+int main(void)
+{
+    sat_set_t *set;
+    
+    sat_set_create(&set, &(sat_set_args_t){
+        .size = 10,
+        .object_size = MAX_STR_LEN,
+        .is_equal = string_equal,
+        .mode = sat_set_mode_static
+    });
+    
+    const char *words[] = {
+        "apple", "banana", "apple", "cherry",
+        "banana", "date", "elderberry"
+    };
+    
+    printf("Adding words:\\n");
+    for (int i = 0; i < 7; i++) {
+        sat_status_t status = sat_set_add(set, words[i]);
+        if (sat_status_get_result(&status)) {
+            printf("  Added: %s\\n", words[i]);
+        } else {
+            printf("  Rejected (duplicate): %s\\n", words[i]);
+        }
+    }
+    
+    uint32_t size;
+    sat_set_get_size(set, &size);
+    
+    printf("\\nUnique words (%u):\\n", size);
+    for (uint32_t i = 0; i < size; i++) {
+        char word[MAX_STR_LEN];
+        sat_set_get_object_by(set, i, word);
+        printf("  %s\\n", word);
+    }
+    
+    sat_set_destroy(set);
+    return 0;
+}
+.fi
+.SH NOTES
+.IP \(bu 2
+The set enforces uniqueness using the user-provided
+.I is_equal
+function.
+.IP \(bu 2
+Adding a duplicate element (one for which
+.I is_equal
+returns true) will fail.
+.IP \(bu 2
+Elements are stored contiguously in memory, enabling efficient cache usage.
+.IP \(bu 2
+In dynamic mode, the set typically doubles in capacity when full.
+.IP \(bu 2
+The
+.BR sat_set_remove_by ()
+operation has O(n) time complexity due to element shifting.
+.IP \(bu 2
+The set is not thread-safe. External synchronization is required for
+concurrent access.
+.IP \(bu 2
+The
+.I is_equal
+function is used only when adding elements to check for duplicates.
+.IP \(bu 2
+The
+.I compare
+function is used for searching operations.
+.IP \(bu 2
+Static mode is useful for performance-critical code where allocations must
+be predictable and bounded.
+.IP \(bu 2
+Unlike mathematical sets, this implementation maintains insertion order
+and allows index-based access.
+.SH SEE ALSO
+.BR sat_array (3),
+.BR sat_linked_list (3),
+.BR sat_map (3),
+.BR sat_iterator (3),
+.BR sat_status (3),
+.BR memcpy (3)
+.PP
+SAT Library Documentation: <https://github.com/solidcris/sat>
+.SH BUGS
+No known bugs at this time. Report bugs to the SAT Library issue tracker.
+.SH AUTHOR
+Written by the SAT Library contributors.
+.SH COPYRIGHT
+Copyright \(co 2025 SAT Library Project.
+.br
+Licensed under the MIT License.

@@ -38,7 +38,7 @@ list (APPEND SAT_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/sat_file.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_tcp/sat_tcp_server_abstract.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_tcp/sat_tcp_server_interactive.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_worker.c
-                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_set.c
+                        #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_set.c
                         #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_plugin.c
                         #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_cache.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_scheduler.c
@@ -83,6 +83,7 @@ list (APPEND SAT_LIBRARIES
              sat_queue
              sat_linked_list
              sat_directory
+             sat_set
              )
 
 list (APPEND SAT_INCLUDES ${CMAKE_CURRENT_LIST_DIR}/include
