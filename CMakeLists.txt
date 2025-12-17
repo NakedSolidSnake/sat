@@ -20,7 +20,7 @@ list (APPEND SAT_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/sat_file.c
                         #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_status.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_log.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_validation.c
-                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_event.c
+                        #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_event.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_stack.c
                         #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_array.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_udp.c
@@ -84,6 +84,7 @@ list (APPEND SAT_LIBRARIES
              sat_linked_list
              sat_directory
              sat_set
+             sat_event
              )
 
 list (APPEND SAT_INCLUDES ${CMAKE_CURRENT_LIST_DIR}/include

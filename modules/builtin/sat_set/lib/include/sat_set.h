@@ -82,7 +82,7 @@ typedef struct
  * @note The caller is responsible for calling sat_set_destroy() to free resources
  * @see sat_set_destroy()
  */
-sat_status_t sat_set_create (sat_set_t **const object, const sat_set_args_t *args);
+sat_status_t sat_set_create (sat_set_t **const object, const sat_set_args_t *const args);
 
 /**
  * @brief Adds an element to the set

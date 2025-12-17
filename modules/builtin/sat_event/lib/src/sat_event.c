@@ -1,7 +1,7 @@
 #include <sat_event.h>
 #include <string.h>
 
-sat_status_t sat_event_init (sat_event_dispatcher_t *object)
+sat_status_t sat_event_init (sat_event_dispatcher_t *const object)
 {
     sat_status_t status = sat_status_set (&status, false, "sat event init error");
 
@@ -14,7 +14,7 @@ sat_status_t sat_event_init (sat_event_dispatcher_t *object)
     return status;
 }
 
-sat_status_t sat_event_observer_add (sat_event_dispatcher_t *object, sat_event_t event, sat_event_observer_t *observer)
+sat_status_t sat_event_observer_add (sat_event_dispatcher_t *const object, sat_event_t event, const sat_event_observer_t *const observer)
 {
     sat_status_t status = sat_status_set (&status, false, "sat event observer add error");
 
@@ -32,7 +32,7 @@ sat_status_t sat_event_observer_add (sat_event_dispatcher_t *object, sat_event_t
     return status;
 }
 
-sat_status_t sat_event_fire (sat_event_dispatcher_t *object, sat_event_t event, const void *data)
+sat_status_t sat_event_fire (const sat_event_dispatcher_t *const object, sat_event_t event, const void *const data)
 {
     sat_status_t status = sat_status_set (&status, false, "sat event fire error");
 
@@ -41,8 +41,7 @@ sat_status_t sat_event_fire (sat_event_dispatcher_t *object, sat_event_t event, 
 
         for (uint8_t i = 0; i < object->amount; i++)
         {
-
-            sat_event_observer_map_t *map = &object->map [i];
+            const sat_event_observer_map_t *const map = &object->map [i];
 
             if (event == map->event)
             {

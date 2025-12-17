@@ -1,0 +1,557 @@
+.TH SAT_EVENT 3 "December 2025" "SAT Library" "SAT Library Manual"
+.SH NAME
+sat_event \- event-driven programming utilities with observer pattern
+.SH SYNOPSIS
+.nf
+.B #include <sat_event.h>
+.PP
+.BI "sat_status_t sat_event_init(sat_event_dispatcher_t *" object );
+.BI "sat_status_t sat_event_observer_add(sat_event_dispatcher_t *" object ", sat_event_t " event ", const sat_event_observer_t *" observer );
+.BI "sat_status_t sat_event_fire(const sat_event_dispatcher_t *" object ", sat_event_t " event ", const void *" data );
+.PP
+Link with \fI\-lsat\fP.
+.fi
+.SH DESCRIPTION
+The
+.B sat_event
+module provides an event dispatching system implementing the observer pattern.
+It allows components to subscribe to events and receive notifications when those
+events are fired, enabling loose coupling between system components.
+.PP
+This module is useful for building event-driven architectures, implementing
+publish-subscribe patterns, and decoupling application components.
+.SS Constants
+.TP
+.B SAT_EVENT_OBSERVER_AMOUNT
+Maximum number of event-observer mappings (default: 10).
+.SS Types
+.TP
+.B sat_event_t
+Event identifier type (uint16_t). Applications define their own event IDs.
+.TP
+.B sat_event_handler_t
+Function pointer type for event handlers:
+.RS
+.nf
+typedef void (*sat_event_handler_t)(void *object,
+                                    const void *data);
+.fi
+.IP \(bu 2
+.I object
+\- Pointer to the observer's object/context
+.IP \(bu 2
+.I data
+\- Event-specific data passed when the event was fired
+.RE
+.TP
+.B sat_event_base_t
+Base structure for event observers:
+.RS
+.IP \(bu 2
+.I object
+\- Pointer to the observer's object/context
+.IP \(bu 2
+.I handler
+\- Callback function to handle the event
+.RE
+.TP
+.B sat_event_observer_t
+Observer structure containing:
+.RS
+.IP \(bu 2
+.I base
+\- Base observer data
+.RE
+.TP
+.B sat_event_observer_map_t
+Event-to-observer mapping structure:
+.RS
+.IP \(bu 2
+.I event
+\- Event identifier
+.IP \(bu 2
+.I observer
+\- Pointer to the observer
+.IP \(bu 2
+.I context
+\- Optional context data
+.RE
+.TP
+.B sat_event_dispatcher_t
+Event dispatcher structure:
+.RS
+.IP \(bu 2
+.I map
+\- Array of event-observer mappings
+.IP \(bu 2
+.I amount
+\- Number of registered mappings
+.RE
+.SS Event Operations
+.TP
+.BR sat_event_init ()
+Initializes an event dispatcher by clearing all mappings and resetting state.
+Must be called before using the dispatcher. Returns success status.
+.TP
+.BR sat_event_observer_add ()
+Registers an observer for an event. Multiple observers can be registered for
+the same event. Fails if the maximum number of mappings
+(SAT_EVENT_OBSERVER_AMOUNT) is reached. The observer must remain valid for
+the lifetime of the dispatcher. Returns success status.
+.TP
+.BR sat_event_fire ()
+Fires an event, notifying all registered observers by calling their handlers
+in registration order. The
+.I data
+parameter is passed to each handler and can be NULL. If no observers are
+registered for the event, this is not an error. Returns success status.
+.SH RETURN VALUE
+All functions return a
+.B sat_status_t
+structure containing:
+.IP \(bu 2
+A boolean result indicating success or failure
+.IP \(bu 2
+An error message string if the operation failed
+.PP
+Use
+.BR sat_status_get_result ()
+to check if the operation succeeded, and
+.BR sat_status_get_motive ()
+to retrieve error details.
+.SH ERRORS
+Common error conditions include:
+.TP
+.B "NULL pointer arguments"
+Functions fail if passed NULL pointers for required parameters.
+.TP
+.B "Maximum mappings reached"
+.BR sat_event_observer_add ()
+fails if SAT_EVENT_OBSERVER_AMOUNT mappings are already registered.
+.TP
+.B "Uninitialized dispatcher"
+Operations on an uninitialized dispatcher may fail or behave unpredictably.
+.SH EXAMPLES
+.SS Basic Event System
+.nf
+#include <sat_event.h>
+#include <stdio.h>
+#include <string.h>
+
+/* Define event types */
+typedef enum {
+    EVENT_PRINT,
+    EVENT_ALERT
+} my_events_t;
+
+/* Print observer */
+typedef struct {
+    sat_event_observer_t observer;
+} print_observer_t;
+
+void print_handler(void *object, const void *data)
+{
+    (void)object;
+    printf("Print event: %s\\n", (const char *)data);
+}
+
+int main(void)
+{
+    sat_event_dispatcher_t dispatcher;
+    print_observer_t print_obs;
+    
+    /* Initialize dispatcher */
+    sat_event_init(&dispatcher);
+    
+    /* Initialize observer */
+    memset(&print_obs, 0, sizeof(print_observer_t));
+    print_obs.observer.base.handler = print_handler;
+    
+    /* Register observer for event */
+    sat_event_observer_add(&dispatcher, EVENT_PRINT,
+                           &print_obs.observer);
+    
+    /* Fire event */
+    sat_event_fire(&dispatcher, EVENT_PRINT, "Hello World");
+    
+    return 0;
+}
+.fi
+.SS Multiple Observers
+.nf
+#include <sat_event.h>
+#include <stdio.h>
+#include <string.h>
+
+typedef enum {
+    EVENT_DATA_CHANGED
+} events_t;
+
+typedef struct {
+    sat_event_observer_t observer;
+    int id;
+} logger_t;
+
+typedef struct {
+    sat_event_observer_t observer;
+    int count;
+} counter_t;
+
+void log_handler(void *object, const void *data)
+{
+    logger_t *logger = (logger_t *)object;
+    printf("[Logger %d] Data: %s\\n", logger->id,
+           (const char *)data);
+}
+
+void count_handler(void *object, const void *data)
+{
+    counter_t *counter = (counter_t *)object;
+    counter->count++;
+    printf("[Counter] Events received: %d\\n", counter->count);
+}
+
+int main(void)
+{
+    sat_event_dispatcher_t dispatcher;
+    logger_t logger1, logger2;
+    counter_t counter;
+    
+    sat_event_init(&dispatcher);
+    
+    /* Initialize logger 1 */
+    memset(&logger1, 0, sizeof(logger_t));
+    logger1.observer.base.object = &logger1;
+    logger1.observer.base.handler = log_handler;
+    logger1.id = 1;
+    
+    /* Initialize logger 2 */
+    memset(&logger2, 0, sizeof(logger_t));
+    logger2.observer.base.object = &logger2;
+    logger2.observer.base.handler = log_handler;
+    logger2.id = 2;
+    
+    /* Initialize counter */
+    memset(&counter, 0, sizeof(counter_t));
+    counter.observer.base.object = &counter;
+    counter.observer.base.handler = count_handler;
+    counter.count = 0;
+    
+    /* Register all observers for the same event */
+    sat_event_observer_add(&dispatcher, EVENT_DATA_CHANGED,
+                           &logger1.observer);
+    sat_event_observer_add(&dispatcher, EVENT_DATA_CHANGED,
+                           &logger2.observer);
+    sat_event_observer_add(&dispatcher, EVENT_DATA_CHANGED,
+                           &counter.observer);
+    
+    /* Fire event - all observers notified */
+    sat_event_fire(&dispatcher, EVENT_DATA_CHANGED,
+                   "Value updated");
+    sat_event_fire(&dispatcher, EVENT_DATA_CHANGED,
+                   "Another change");
+    
+    return 0;
+}
+.fi
+.SS Structured Event Data
+.nf
+#include <sat_event.h>
+#include <stdio.h>
+#include <string.h>
+
+typedef enum {
+    EVENT_TEMPERATURE_CHANGED,
+    EVENT_PRESSURE_CHANGED
+} sensor_events_t;
+
+typedef struct {
+    float temperature;
+    float pressure;
+} sensor_data_t;
+
+typedef struct {
+    sat_event_observer_t observer;
+} display_observer_t;
+
+void temp_handler(void *object, const void *data)
+{
+    const sensor_data_t *sensor = (const sensor_data_t *)data;
+    printf("Temperature: %.2f°C\\n", sensor->temperature);
+}
+
+void pressure_handler(void *object, const void *data)
+{
+    const sensor_data_t *sensor = (const sensor_data_t *)data;
+    printf("Pressure: %.2f hPa\\n", sensor->pressure);
+}
+
+int main(void)
+{
+    sat_event_dispatcher_t dispatcher;
+    display_observer_t temp_display, pressure_display;
+    
+    sat_event_init(&dispatcher);
+    
+    /* Initialize temperature observer */
+    memset(&temp_display, 0, sizeof(display_observer_t));
+    temp_display.observer.base.handler = temp_handler;
+    
+    /* Initialize pressure observer */
+    memset(&pressure_display, 0, sizeof(display_observer_t));
+    pressure_display.observer.base.handler = pressure_handler;
+    
+    /* Register observers */
+    sat_event_observer_add(&dispatcher, EVENT_TEMPERATURE_CHANGED,
+                           &temp_display.observer);
+    sat_event_observer_add(&dispatcher, EVENT_PRESSURE_CHANGED,
+                           &pressure_display.observer);
+    
+    /* Simulate sensor readings */
+    sensor_data_t data = { .temperature = 23.5, .pressure = 1013.25 };
+    
+    sat_event_fire(&dispatcher, EVENT_TEMPERATURE_CHANGED, &data);
+    sat_event_fire(&dispatcher, EVENT_PRESSURE_CHANGED, &data);
+    
+    return 0;
+}
+.fi
+.SS State Change Notification
+.nf
+#include <sat_event.h>
+#include <stdio.h>
+#include <string.h>
+
+typedef enum {
+    EVENT_STATE_CHANGED
+} app_events_t;
+
+typedef enum {
+    STATE_IDLE,
+    STATE_RUNNING,
+    STATE_STOPPED
+} app_state_t;
+
+typedef struct {
+    sat_event_observer_t observer;
+    const char *name;
+} state_logger_t;
+
+void state_change_handler(void *object, const void *data)
+{
+    state_logger_t *logger = (state_logger_t *)object;
+    app_state_t state = *(const app_state_t *)data;
+    const char *state_str[] = {"IDLE", "RUNNING", "STOPPED"};
+    
+    printf("[%s] State changed to: %s\\n",
+           logger->name, state_str[state]);
+}
+
+int main(void)
+{
+    sat_event_dispatcher_t dispatcher;
+    state_logger_t console_logger, file_logger;
+    
+    sat_event_init(&dispatcher);
+    
+    /* Initialize loggers */
+    memset(&console_logger, 0, sizeof(state_logger_t));
+    console_logger.observer.base.object = &console_logger;
+    console_logger.observer.base.handler = state_change_handler;
+    console_logger.name = "Console";
+    
+    memset(&file_logger, 0, sizeof(state_logger_t));
+    file_logger.observer.base.object = &file_logger;
+    file_logger.observer.base.handler = state_change_handler;
+    file_logger.name = "File";
+    
+    /* Register observers */
+    sat_event_observer_add(&dispatcher, EVENT_STATE_CHANGED,
+                           &console_logger.observer);
+    sat_event_observer_add(&dispatcher, EVENT_STATE_CHANGED,
+                           &file_logger.observer);
+    
+    /* Simulate state transitions */
+    app_state_t state;
+    
+    state = STATE_RUNNING;
+    sat_event_fire(&dispatcher, EVENT_STATE_CHANGED, &state);
+    
+    state = STATE_STOPPED;
+    sat_event_fire(&dispatcher, EVENT_STATE_CHANGED, &state);
+    
+    state = STATE_IDLE;
+    sat_event_fire(&dispatcher, EVENT_STATE_CHANGED, &state);
+    
+    return 0;
+}
+.fi
+.SS Button Press Events
+.nf
+#include <sat_event.h>
+#include <stdio.h>
+#include <string.h>
+
+typedef enum {
+    EVENT_BUTTON_PRESSED,
+    EVENT_BUTTON_RELEASED
+} button_events_t;
+
+typedef struct {
+    int button_id;
+    unsigned long timestamp;
+} button_event_data_t;
+
+typedef struct {
+    sat_event_observer_t observer;
+} button_handler_t;
+
+void button_press_handler(void *object, const void *data)
+{
+    const button_event_data_t *btn = 
+        (const button_event_data_t *)data;
+    printf("Button %d pressed at %lu\\n",
+           btn->button_id, btn->timestamp);
+}
+
+void button_release_handler(void *object, const void *data)
+{
+    const button_event_data_t *btn =
+        (const button_event_data_t *)data;
+    printf("Button %d released at %lu\\n",
+           btn->button_id, btn->timestamp);
+}
+
+int main(void)
+{
+    sat_event_dispatcher_t dispatcher;
+    button_handler_t press_handler, release_handler;
+    
+    sat_event_init(&dispatcher);
+    
+    /* Initialize handlers */
+    memset(&press_handler, 0, sizeof(button_handler_t));
+    press_handler.observer.base.handler = button_press_handler;
+    
+    memset(&release_handler, 0, sizeof(button_handler_t));
+    release_handler.observer.base.handler = button_release_handler;
+    
+    /* Register handlers */
+    sat_event_observer_add(&dispatcher, EVENT_BUTTON_PRESSED,
+                           &press_handler.observer);
+    sat_event_observer_add(&dispatcher, EVENT_BUTTON_RELEASED,
+                           &release_handler.observer);
+    
+    /* Simulate button events */
+    button_event_data_t event;
+    
+    event.button_id = 1;
+    event.timestamp = 1000;
+    sat_event_fire(&dispatcher, EVENT_BUTTON_PRESSED, &event);
+    
+    event.timestamp = 1500;
+    sat_event_fire(&dispatcher, EVENT_BUTTON_RELEASED, &event);
+    
+    return 0;
+}
+.fi
+.SS Error Handling
+.nf
+#include <sat_event.h>
+#include <stdio.h>
+
+typedef enum {
+    EVENT_TEST
+} events_t;
+
+typedef struct {
+    sat_event_observer_t observer;
+} test_observer_t;
+
+void test_handler(void *object, const void *data)
+{
+    printf("Event received\\n");
+}
+
+int main(void)
+{
+    sat_event_dispatcher_t dispatcher;
+    test_observer_t observer;
+    sat_status_t status;
+    
+    /* Initialize dispatcher */
+    status = sat_event_init(&dispatcher);
+    if (!sat_status_get_result(&status)) {
+        fprintf(stderr, "Init failed: %s\\n",
+                sat_status_get_motive(&status));
+        return 1;
+    }
+    
+    /* Initialize observer */
+    memset(&observer, 0, sizeof(test_observer_t));
+    observer.observer.base.handler = test_handler;
+    
+    /* Add observer */
+    status = sat_event_observer_add(&dispatcher, EVENT_TEST,
+                                     &observer.observer);
+    if (!sat_status_get_result(&status)) {
+        fprintf(stderr, "Add observer failed: %s\\n",
+                sat_status_get_motive(&status));
+        return 1;
+    }
+    
+    /* Fire event */
+    status = sat_event_fire(&dispatcher, EVENT_TEST, NULL);
+    if (!sat_status_get_result(&status)) {
+        fprintf(stderr, "Fire event failed: %s\\n",
+                sat_status_get_motive(&status));
+        return 1;
+    }
+    
+    return 0;
+}
+.fi
+.SH NOTES
+.IP \(bu 2
+The dispatcher supports up to SAT_EVENT_OBSERVER_AMOUNT (10 by default)
+event-observer mappings.
+.IP \(bu 2
+Multiple observers can be registered for the same event.
+.IP \(bu 2
+Observers are notified in the order they were registered.
+.IP \(bu 2
+The
+.I data
+parameter passed to
+.BR sat_event_fire ()
+is passed directly to each handler without copying.
+.IP \(bu 2
+Observers must remain valid for the lifetime of the dispatcher or until
+they are unregistered (not currently supported).
+.IP \(bu 2
+The module does not provide observer removal functionality. To remove
+observers, re-initialize the dispatcher.
+.IP \(bu 2
+Event handlers should be lightweight and non-blocking to avoid delaying
+subsequent observers.
+.IP \(bu 2
+The module is not thread-safe. External synchronization is required if
+events are fired from multiple threads.
+.IP \(bu 2
+Applications define their own event identifiers (typically using enums).
+.IP \(bu 2
+The observer pattern decouples event sources from event handlers, improving
+modularity.
+.SH SEE ALSO
+.BR sat_status (3),
+.BR memset (3)
+.PP
+SAT Library Documentation: <https://github.com/solidcris/sat>
+.SH BUGS
+No known bugs at this time. Report bugs to the SAT Library issue tracker.
+.SH AUTHOR
+Written by the SAT Library contributors.
+.SH COPYRIGHT
+Copyright \(co 2025 SAT Library Project.
+.br
+Licensed under the MIT License.
