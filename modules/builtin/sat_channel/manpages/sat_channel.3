@@ -1,0 +1,601 @@
+.TH SAT_CHANNEL 3 "December 2025" "SAT Library" "SAT Library Manual"
+.SH NAME
+sat_channel \- inter-thread communication channel using pipes
+.SH SYNOPSIS
+.nf
+.B #include <sat_channel.h>
+.PP
+.BI "sat_status_t sat_channel_init(sat_channel_t *" object );
+.BI "sat_status_t sat_channel_open(sat_channel_t *" object ", const sat_channel_args_t *" args );
+.BI "sat_status_t sat_channel_write(sat_channel_t *" object ", const uint8_t *" buffer ", uint32_t " size );
+.BI "sat_status_t sat_channel_read(sat_channel_t *" object ", uint8_t *" buffer ", uint32_t " size );
+.BI "sat_status_t sat_channel_close(sat_channel_t *" object );
+.PP
+Link with \fI\-lsat \-lpthread\fP.
+.fi
+.SH DESCRIPTION
+The
+.B sat_channel
+module provides a bidirectional communication channel for inter-thread data
+exchange using Unix pipes. It enables threads within the same process to safely
+exchange data through blocking read and write operations.
+.PP
+This module is particularly useful for implementing producer-consumer patterns,
+thread synchronization, and message passing architectures where threads need to
+communicate without shared memory concerns.
+.SS Types
+.TP
+.B sat_channel_t
+Channel structure containing:
+.RS
+.IP \(bu 2
+.I pair
+\- Pipe file descriptor pair [read_fd, write_fd]
+.IP \(bu 2
+.I buffer
+\- Internal buffer (reserved for future use)
+.IP \(bu 2
+.I size
+\- Buffer size (reserved for future use)
+.RE
+.TP
+.B sat_channel_args_t
+Channel initialization arguments:
+.RS
+.IP \(bu 2
+.I buffer
+\- Custom buffer (reserved for future use)
+.IP \(bu 2
+.I size
+\- Custom buffer size (reserved for future use)
+.PP
+Currently both fields are reserved. Pass an empty struct or NULL when calling
+.BR sat_channel_open ().
+.RE
+.SS Channel Operations
+.TP
+.BR sat_channel_init ()
+Initializes a channel structure by clearing all fields. Must be called before
+any other channel operations. Returns success status.
+.TP
+.BR sat_channel_open ()
+Creates and opens a pipe pair for the channel, making it ready for
+communication. The
+.I args
+parameter is currently unused; pass NULL or an empty struct. Returns success
+status or error if pipe creation fails.
+.TP
+.BR sat_channel_write ()
+Writes data to the channel's write end. Blocks if the pipe buffer is full.
+Write operations are atomic for sizes up to PIPE_BUF (typically 4096 bytes).
+Returns success status.
+.TP
+.BR sat_channel_read ()
+Reads data from the channel's read end. Blocks until data is available or the
+write end is closed. May read fewer bytes than requested if less data is
+available in the pipe. Returns success status.
+.TP
+.BR sat_channel_close ()
+Closes both ends of the pipe and releases system resources. Any threads blocked
+on read/write operations will be unblocked. After closing, the channel can be
+re-opened with
+.BR sat_channel_open ().
+Returns success status.
+.SH RETURN VALUE
+All functions return a
+.B sat_status_t
+structure containing:
+.IP \(bu 2
+A boolean result indicating success or failure
+.IP \(bu 2
+An error message string if the operation failed
+.PP
+Use
+.BR sat_status_get_result ()
+to check if the operation succeeded, and
+.BR sat_status_get_motive ()
+to retrieve error details.
+.SH ERRORS
+Common error conditions include:
+.TP
+.B "NULL pointer arguments"
+Functions fail if passed NULL pointers for required parameters.
+.TP
+.B "Pipe creation failure"
+.BR sat_channel_open ()
+fails if the system cannot create a pipe (e.g., resource limits exceeded).
+.TP
+.B "Uninitialized channel"
+Operations on an uninitialized or unopened channel may fail or cause undefined
+behavior.
+.TP
+.B "Write to closed channel"
+Writing to a closed channel may result in SIGPIPE or EPIPE error.
+.TP
+.B "Read from closed channel"
+Reading from a channel where the write end is closed returns EOF.
+.SH EXAMPLES
+.SS Basic Producer-Consumer
+.nf
+#include <sat_channel.h>
+#include <pthread.h>
+#include <stdio.h>
+#include <string.h>
+
+typedef struct {
+    sat_channel_t channel;
+} shared_data_t;
+
+void *producer(void *arg)
+{
+    shared_data_t *data = (shared_data_t *)arg;
+    uint8_t msg[] = "Hello from producer";
+    
+    sat_channel_write(&data->channel, msg, strlen((char *)msg));
+    
+    return NULL;
+}
+
+void *consumer(void *arg)
+{
+    shared_data_t *data = (shared_data_t *)arg;
+    uint8_t buffer[128] = {0};
+    
+    sat_channel_read(&data->channel, buffer, sizeof(buffer));
+    printf("Received: %s\\n", buffer);
+    
+    return NULL;
+}
+
+int main(void)
+{
+    shared_data_t data;
+    pthread_t prod_thread, cons_thread;
+    
+    /* Initialize and open channel */
+    sat_channel_init(&data.channel);
+    sat_channel_open(&data.channel, NULL);
+    
+    /* Create producer and consumer threads */
+    pthread_create(&prod_thread, NULL, producer, &data);
+    pthread_create(&cons_thread, NULL, consumer, &data);
+    
+    /* Wait for threads to complete */
+    pthread_join(prod_thread, NULL);
+    pthread_join(cons_thread, NULL);
+    
+    /* Clean up */
+    sat_channel_close(&data.channel);
+    
+    return 0;
+}
+.fi
+.SS Multiple Messages
+.nf
+#include <sat_channel.h>
+#include <pthread.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+
+typedef struct {
+    sat_channel_t channel;
+    int running;
+} thread_data_t;
+
+void *producer_loop(void *arg)
+{
+    thread_data_t *data = (thread_data_t *)arg;
+    int count = 0;
+    char msg[64];
+    
+    while (data->running && count < 5) {
+        snprintf(msg, sizeof(msg), "Message %d", count++);
+        sat_channel_write(&data->channel,
+                         (uint8_t *)msg,
+                         strlen(msg));
+        usleep(100000); /* 100ms */
+    }
+    
+    return NULL;
+}
+
+void *consumer_loop(void *arg)
+{
+    thread_data_t *data = (thread_data_t *)arg;
+    uint8_t buffer[128];
+    
+    while (data->running) {
+        memset(buffer, 0, sizeof(buffer));
+        sat_channel_read(&data->channel, buffer, sizeof(buffer));
+        
+        if (strlen((char *)buffer) > 0) {
+            printf("Received: %s\\n", buffer);
+            
+            if (strstr((char *)buffer, "Message 4")) {
+                data->running = 0;
+            }
+        }
+    }
+    
+    return NULL;
+}
+
+int main(void)
+{
+    thread_data_t data = { .running = 1 };
+    pthread_t prod, cons;
+    
+    sat_channel_init(&data.channel);
+    sat_channel_open(&data.channel, NULL);
+    
+    pthread_create(&prod, NULL, producer_loop, &data);
+    pthread_create(&cons, NULL, consumer_loop, &data);
+    
+    pthread_join(prod, NULL);
+    pthread_join(cons, NULL);
+    
+    sat_channel_close(&data.channel);
+    
+    return 0;
+}
+.fi
+.SS Binary Data Transfer
+.nf
+#include <sat_channel.h>
+#include <pthread.h>
+#include <stdio.h>
+#include <stdint.h>
+
+typedef struct {
+    uint32_t id;
+    float temperature;
+    float pressure;
+} sensor_data_t;
+
+typedef struct {
+    sat_channel_t channel;
+} app_data_t;
+
+void *sensor_thread(void *arg)
+{
+    app_data_t *data = (app_data_t *)arg;
+    sensor_data_t reading = {
+        .id = 1,
+        .temperature = 23.5,
+        .pressure = 1013.25
+    };
+    
+    sat_channel_write(&data->channel,
+                     (uint8_t *)&reading,
+                     sizeof(sensor_data_t));
+    
+    return NULL;
+}
+
+void *display_thread(void *arg)
+{
+    app_data_t *data = (app_data_t *)arg;
+    sensor_data_t reading;
+    
+    sat_channel_read(&data->channel,
+                    (uint8_t *)&reading,
+                    sizeof(sensor_data_t));
+    
+    printf("Sensor %u:\\n", reading.id);
+    printf("  Temperature: %.2f°C\\n", reading.temperature);
+    printf("  Pressure: %.2f hPa\\n", reading.pressure);
+    
+    return NULL;
+}
+
+int main(void)
+{
+    app_data_t data;
+    pthread_t sensor, display;
+    
+    sat_channel_init(&data.channel);
+    sat_channel_open(&data.channel, NULL);
+    
+    pthread_create(&sensor, NULL, sensor_thread, &data);
+    pthread_create(&display, NULL, display_thread, &data);
+    
+    pthread_join(sensor, NULL);
+    pthread_join(display, NULL);
+    
+    sat_channel_close(&data.channel);
+    
+    return 0;
+}
+.fi
+.SS Command Processing
+.nf
+#include <sat_channel.h>
+#include <pthread.h>
+#include <stdio.h>
+#include <string.h>
+
+typedef enum {
+    CMD_START,
+    CMD_STOP,
+    CMD_STATUS,
+    CMD_EXIT
+} command_t;
+
+typedef struct {
+    command_t cmd;
+    int param;
+} command_msg_t;
+
+typedef struct {
+    sat_channel_t channel;
+} worker_data_t;
+
+void *command_sender(void *arg)
+{
+    worker_data_t *data = (worker_data_t *)arg;
+    command_msg_t commands[] = {
+        {CMD_START, 1},
+        {CMD_STATUS, 0},
+        {CMD_STOP, 1},
+        {CMD_EXIT, 0}
+    };
+    
+    for (int i = 0; i < 4; i++) {
+        sat_channel_write(&data->channel,
+                         (uint8_t *)&commands[i],
+                         sizeof(command_msg_t));
+    }
+    
+    return NULL;
+}
+
+void *command_processor(void *arg)
+{
+    worker_data_t *data = (worker_data_t *)arg;
+    command_msg_t cmd;
+    int running = 1;
+    
+    while (running) {
+        sat_channel_read(&data->channel,
+                        (uint8_t *)&cmd,
+                        sizeof(command_msg_t));
+        
+        switch (cmd.cmd) {
+            case CMD_START:
+                printf("Starting with param %d\\n", cmd.param);
+                break;
+            case CMD_STOP:
+                printf("Stopping with param %d\\n", cmd.param);
+                break;
+            case CMD_STATUS:
+                printf("Status requested\\n");
+                break;
+            case CMD_EXIT:
+                printf("Exiting\\n");
+                running = 0;
+                break;
+        }
+    }
+    
+    return NULL;
+}
+
+int main(void)
+{
+    worker_data_t data;
+    pthread_t sender, processor;
+    
+    sat_channel_init(&data.channel);
+    sat_channel_open(&data.channel, NULL);
+    
+    pthread_create(&sender, NULL, command_sender, &data);
+    pthread_create(&processor, NULL, command_processor, &data);
+    
+    pthread_join(sender, NULL);
+    pthread_join(processor, NULL);
+    
+    sat_channel_close(&data.channel);
+    
+    return 0;
+}
+.fi
+.SS Error Handling
+.nf
+#include <sat_channel.h>
+#include <pthread.h>
+#include <stdio.h>
+#include <string.h>
+
+typedef struct {
+    sat_channel_t channel;
+} thread_data_t;
+
+void *producer_with_checks(void *arg)
+{
+    thread_data_t *data = (thread_data_t *)arg;
+    uint8_t msg[] = "Test message";
+    sat_status_t status;
+    
+    status = sat_channel_write(&data->channel, msg, strlen((char *)msg));
+    if (!sat_status_get_result(&status)) {
+        fprintf(stderr, "Write failed: %s\\n",
+                sat_status_get_motive(&status));
+        return NULL;
+    }
+    
+    printf("Message sent successfully\\n");
+    return NULL;
+}
+
+void *consumer_with_checks(void *arg)
+{
+    thread_data_t *data = (thread_data_t *)arg;
+    uint8_t buffer[128];
+    sat_status_t status;
+    
+    status = sat_channel_read(&data->channel, buffer, sizeof(buffer));
+    if (!sat_status_get_result(&status)) {
+        fprintf(stderr, "Read failed: %s\\n",
+                sat_status_get_motive(&status));
+        return NULL;
+    }
+    
+    printf("Received: %s\\n", buffer);
+    return NULL;
+}
+
+int main(void)
+{
+    thread_data_t data;
+    pthread_t prod, cons;
+    sat_status_t status;
+    
+    /* Initialize with error checking */
+    status = sat_channel_init(&data.channel);
+    if (!sat_status_get_result(&status)) {
+        fprintf(stderr, "Init failed: %s\\n",
+                sat_status_get_motive(&status));
+        return 1;
+    }
+    
+    /* Open with error checking */
+    status = sat_channel_open(&data.channel, NULL);
+    if (!sat_status_get_result(&status)) {
+        fprintf(stderr, "Open failed: %s\\n",
+                sat_status_get_motive(&status));
+        return 1;
+    }
+    
+    pthread_create(&prod, NULL, producer_with_checks, &data);
+    pthread_create(&cons, NULL, consumer_with_checks, &data);
+    
+    pthread_join(prod, NULL);
+    pthread_join(cons, NULL);
+    
+    /* Close with error checking */
+    status = sat_channel_close(&data.channel);
+    if (!sat_status_get_result(&status)) {
+        fprintf(stderr, "Close failed: %s\\n",
+                sat_status_get_motive(&status));
+        return 1;
+    }
+    
+    return 0;
+}
+.fi
+.SS Channel Reuse
+.nf
+#include <sat_channel.h>
+#include <pthread.h>
+#include <stdio.h>
+#include <string.h>
+
+typedef struct {
+    sat_channel_t channel;
+} data_t;
+
+void communicate(data_t *data, const char *msg)
+{
+    pthread_t prod, cons;
+    uint8_t buffer[128];
+    
+    /* Producer lambda */
+    void *prod_fn(void *arg) {
+        sat_channel_write(&data->channel,
+                         (uint8_t *)msg,
+                         strlen(msg));
+        return NULL;
+    }
+    
+    /* Consumer lambda */
+    void *cons_fn(void *arg) {
+        memset(buffer, 0, sizeof(buffer));
+        sat_channel_read(&data->channel, buffer, sizeof(buffer));
+        printf("Round: %s\\n", buffer);
+        return NULL;
+    }
+    
+    pthread_create(&prod, NULL, prod_fn, NULL);
+    pthread_create(&cons, NULL, cons_fn, NULL);
+    pthread_join(prod, NULL);
+    pthread_join(cons, NULL);
+}
+
+int main(void)
+{
+    data_t data;
+    
+    sat_channel_init(&data.channel);
+    
+    /* First use */
+    sat_channel_open(&data.channel, NULL);
+    communicate(&data, "First message");
+    sat_channel_close(&data.channel);
+    
+    /* Reuse the same channel */
+    sat_channel_open(&data.channel, NULL);
+    communicate(&data, "Second message");
+    sat_channel_close(&data.channel);
+    
+    /* Third use */
+    sat_channel_open(&data.channel, NULL);
+    communicate(&data, "Third message");
+    sat_channel_close(&data.channel);
+    
+    return 0;
+}
+.fi
+.SH NOTES
+.IP \(bu 2
+Channels use Unix pipes internally, providing reliable FIFO communication.
+.IP \(bu 2
+Read and write operations are blocking. For non-blocking I/O, use
+.BR fcntl (2)
+to set O_NONBLOCK on the pipe file descriptors (not currently exposed by API).
+.IP \(bu 2
+Write operations up to PIPE_BUF bytes (typically 4096) are atomic.
+.IP \(bu 2
+Larger writes may be interleaved if multiple threads write simultaneously.
+.IP \(bu 2
+The pipe buffer has a limited size (typically 64KB). Writers block when full.
+.IP \(bu 2
+Channels are unidirectional at the pipe level but can be used bidirectionally
+by having both threads read and write to the same channel.
+.IP \(bu 2
+For true bidirectional communication, use two separate channels.
+.IP \(bu 2
+The
+.I buffer
+and
+.I size
+fields in
+.B sat_channel_args_t
+are reserved for future use.
+.IP \(bu 2
+Always close channels to avoid file descriptor leaks.
+.IP \(bu 2
+The module is not thread-safe for concurrent operations on the same channel
+without external synchronization.
+.IP \(bu 2
+Closing the write end of the pipe causes readers to receive EOF.
+.IP \(bu 2
+Writing to a closed read end generates SIGPIPE (default action: terminate).
+Consider using signal handlers or MSG_NOSIGNAL.
+.SH SEE ALSO
+.BR sat_status (3),
+.BR pipe (2),
+.BR read (2),
+.BR write (2),
+.BR pthread_create (3),
+.BR fcntl (2)
+.PP
+SAT Library Documentation: <https://github.com/solidcris/sat>
+.SH BUGS
+No known bugs at this time. Report bugs to the SAT Library issue tracker.
+.SH AUTHOR
+Written by the SAT Library contributors.
+.SH COPYRIGHT
+Copyright \(co 2025 SAT Library Project.
+.br
+Licensed under the MIT License.
