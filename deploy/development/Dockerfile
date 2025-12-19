@@ -62,19 +62,21 @@ RUN git clone https://github.com/eclipse/paho.mqtt.c.git && \
 FROM external-libs AS sat-build
 RUN git clone https://github.com/NakedSolidSnake/sat && \
 	mkdir -p sat/build && \
-	cd sat/build && \
+	cd sat && git checkout modules && \
+	# cd sat/build && \
+	cd build && \
 	cmake \
-	-DSAT_WEBSERVER=ON \
-	-DSAT_CURL=ON \
-	-DSAT_PROPERTIES=ON \
-	-DSAT_JSON=ON \
-	-DSAT_KAFKA=ON \
-	-DSAT_MQTT=ON \
-	-DSAT_MYSQL=ON \
-	-DSAT_POSTGRES=ON \
-	-DSAT_REDIS=ON \
-	-DSAT_SQLITE=ON \
-	-DSAT_LOKI=ON \
+	# -DSAT_WEBSERVER=ON \
+	# -DSAT_CURL=ON \
+	# -DSAT_PROPERTIES=ON \
+	# -DSAT_JSON=ON \
+	# -DSAT_KAFKA=ON \
+	# -DSAT_MQTT=ON \
+	# -DSAT_MYSQL=ON \
+	# -DSAT_POSTGRES=ON \
+	# -DSAT_REDIS=ON \
+	# -DSAT_SQLITE=ON \
+	# -DSAT_LOKI=ON \
 	.. && \
 	make -j4 install && \
 	cmake --install build --component documentation && \

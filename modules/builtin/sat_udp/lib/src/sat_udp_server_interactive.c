@@ -6,9 +6,9 @@
 #include <netinet/in.h>
 #include <math.h>
 
-static sat_status_t sat_udp_server_interactive_open (void *object, sat_udp_server_args_t *args);
+static sat_status_t sat_udp_server_interactive_open (void *const object, const sat_udp_server_args_t *const args);
 static sat_status_t sat_udp_server_interactive_run (void *object);
-static int sat_udp_server_interactive_get_socket (void *object);
+static int sat_udp_server_interactive_get_socket (const void *const cobject);
 
 sat_udp_server_base_t *sat_udp_server_interactive_create (void)
 {
@@ -69,16 +69,16 @@ static sat_status_t sat_udp_server_interactive_run (void *object)
     return status;
 }
 
-static sat_status_t sat_udp_server_interactive_open (void *object, sat_udp_server_args_t *args)
+static sat_status_t sat_udp_server_interactive_open (void *const object, const sat_udp_server_args_t *const args)
 {
-    sat_udp_server_interactive_t *interactive = (sat_udp_server_interactive_t *) object;
+    sat_udp_server_interactive_t *interactive = (sat_udp_server_interactive_t *const) object;
 
     return sat_udp_server_abstract_open (&interactive->abstract, args);
 }
 
-static int sat_udp_server_interactive_get_socket (void *object)
+static int sat_udp_server_interactive_get_socket (const void *const cobject)
 {
-    sat_udp_server_interactive_t *interactive = (sat_udp_server_interactive_t *) object;
+    const sat_udp_server_interactive_t *interactive = (const sat_udp_server_interactive_t *const) cobject;
 
     return sat_udp_server_abstract_get_socket (&interactive->abstract);
 }

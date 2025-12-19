@@ -1,0 +1,458 @@
+.TH SAT_UDP 3 "December 2025" "SAT Library" "SAT Library Manual"
+.SH NAME
+sat_udp \- UDP communication module for client and server operations
+.SH SYNOPSIS
+.nf
+.B #include <sat_udp.h>
+.PP
+.BI "sat_status_t sat_udp_init(sat_udp_t *const " object );
+.BI "sat_status_t sat_udp_open(sat_udp_t *const " object ", const sat_udp_args_t *const " args );
+.BI "sat_status_t sat_udp_run(sat_udp_t *const " object );
+.BI "sat_status_t sat_udp_send(const sat_udp_t *const " object ", const char *const " data ", uint32_t " size ", const sat_udp_destination_t *const " destination );
+.BI "sat_status_t sat_udp_receive(const sat_udp_t *const " object ", char *const " data ", uint32_t *const " size ", int " timeout_ms );
+.BI "sat_status_t sat_udp_close(sat_udp_t *const " object );
+.BI "sat_status_t sat_udp_get_port(const sat_udp_t *const " object ", uint16_t *const " port );
+.PP
+Link with \fI\-lsat_udp\fP.
+.fi
+.SH DESCRIPTION
+The
+.B sat_udp
+module provides a unified interface for UDP communication supporting both
+client and server modes. It includes unicast and multicast capabilities,
+synchronous (interactive) and asynchronous server types, and event-driven
+programming.
+.PP
+UDP (User Datagram Protocol) is a connectionless protocol that provides
+unreliable but fast data transmission. This module abstracts the complexity
+of socket programming and provides a clean API for UDP operations.
+.SS Types
+.TP
+.B sat_udp_t
+Main UDP object structure containing:
+.RS
+.IP \(bu 2
+.I type
+\- Endpoint type (client or server)
+.IP \(bu 2
+.I server
+\- Pointer to server instance
+.IP \(bu 2
+.I client
+\- Pointer to client instance
+.RE
+.TP
+.B sat_udp_args_t
+Configuration structure with:
+.RS
+.IP \(bu 2
+.I type
+\- Type of endpoint to create
+.IP \(bu 2
+.I server
+\- Server configuration parameters
+.IP \(bu 2
+.I client
+\- Client configuration parameters
+.RE
+.TP
+.B sat_udp_destination_t
+Destination address structure with:
+.RS
+.IP \(bu 2
+.I hostname
+\- Target hostname or IP address
+.IP \(bu 2
+.I service
+\- Service name or port number
+.RE
+.TP
+.B sat_udp_type_t
+Endpoint type enumeration:
+.RS
+.IP \(bu 2
+.B sat_udp_type_server
+\- Server mode
+.IP \(bu 2
+.B sat_udp_type_client
+\- Client mode
+.RE
+.TP
+.B sat_udp_server_type_t
+Server operation type:
+.RS
+.IP \(bu 2
+.B sat_udp_server_type_interactive
+\- Synchronous server with manual receive calls
+.IP \(bu 2
+.B sat_udp_server_type_async
+\- Asynchronous event-driven server
+.RE
+.TP
+.B sat_udp_server_mode_t
+Communication mode:
+.RS
+.IP \(bu 2
+.B sat_udp_server_mode_unicast
+\- Point-to-point communication
+.IP \(bu 2
+.B sat_udp_server_mode_multicast
+\- Multicast group communication
+.RE
+.TP
+.B sat_udp_event_t
+Callback function type for data events:
+.RS
+.nf
+typedef void (*sat_udp_event_t)(char *buffer,
+                                uint32_t *size,
+                                void *data);
+.fi
+.RE
+.TP
+.B sat_udp_multicast_event_t
+Callback function type for multicast events:
+.RS
+.nf
+typedef void (*sat_udp_multicast_event_t)(void *data);
+.fi
+.RE
+.SS Initialization and Configuration
+.TP
+.BR sat_udp_init ()
+Initializes a UDP object by zeroing all fields. Must be called before any
+other operations. Returns success status.
+.TP
+.BR sat_udp_open ()
+Creates and configures either a UDP client or server based on the type
+specified in args. Allocates necessary resources and prepares the endpoint
+for communication. For servers, this binds to the specified port. For clients,
+this prepares the socket for sending. Returns success status.
+.PP
+.SS Server Operations
+.TP
+.BR sat_udp_run ()
+Starts an asynchronous UDP server in a separate thread. Only applicable for
+server type with
+.BR sat_udp_server_type_async .
+The server runs in the background until
+.BR sat_udp_close ()
+is called. For interactive servers, use
+.BR sat_udp_receive ()
+instead. Returns success status.
+.PP
+.SS Data Transfer
+.TP
+.BR sat_udp_send ()
+Transmits data to the specified destination. For clients, destination must be
+provided. For servers, this sends a response to a client. Data size should not
+exceed the maximum UDP packet size (typically 65507 bytes). Returns success status.
+.TP
+.BR sat_udp_receive ()
+Receives incoming UDP packets. This is a blocking operation that waits for data
+with an optional timeout. Only applicable for interactive servers or clients.
+The
+.I size
+parameter is updated with the actual number of bytes received. A timeout of -1
+waits indefinitely, 0 returns immediately (non-blocking), and positive values
+specify milliseconds to wait. Returns success status.
+.PP
+.SS Query Operations
+.TP
+.BR sat_udp_get_port ()
+Retrieves the port number that the UDP endpoint is bound to or using. Useful
+for servers to discover which port was assigned. For clients, returns the local
+port used for communication. Returns success status.
+.PP
+.SS Cleanup
+.TP
+.BR sat_udp_close ()
+Stops any running threads (for async servers), closes sockets, and deallocates
+all resources. After closing, the object can be reused by calling
+.BR sat_udp_init ()
+and
+.BR sat_udp_open ()
+again. Any pending data may be lost.
+.SH RETURN VALUE
+All functions return a
+.B sat_status_t
+structure containing:
+.IP \(bu 2
+A boolean result indicating success or failure
+.IP \(bu 2
+An error message string if the operation failed
+.PP
+Use
+.BR sat_status_get_result ()
+to check if the operation succeeded, and
+.BR sat_status_get_message ()
+to retrieve error details.
+.SH EXAMPLES
+.SS Simple UDP Server (Interactive)
+.nf
+#include <sat_udp.h>
+#include <stdio.h>
+#include <string.h>
+
+#define PORT "5000"
+#define BUFFER_SIZE 1024
+
+int main(void)
+{
+    sat_udp_t udp;
+    char buffer[BUFFER_SIZE];
+    uint32_t size;
+    
+    /* Initialize */
+    sat_udp_init(&udp);
+    
+    /* Configure server */
+    sat_udp_args_t args = {
+        .type = sat_udp_type_server,
+        .server = {
+            .service = PORT,
+            .buffer = buffer,
+            .size = BUFFER_SIZE,
+            .type = sat_udp_server_type_interactive,
+            .mode = sat_udp_server_mode_unicast,
+            .data = NULL
+        }
+    };
+    
+    sat_udp_open(&udp, &args);
+    
+    printf("UDP server listening on port %s\\n", PORT);
+    
+    /* Receive loop */
+    while (1) {
+        size = BUFFER_SIZE;
+        sat_status_t status = sat_udp_receive(&udp, buffer, 
+                                              &size, -1);
+        
+        if (sat_status_get_result(&status)) {
+            buffer[size] = '\\0';
+            printf("Received: %s\\n", buffer);
+            
+            /* Echo back */
+            sat_udp_send(&udp, buffer, size, NULL);
+        }
+    }
+    
+    sat_udp_close(&udp);
+    return 0;
+}
+.fi
+.SS UDP Client
+.nf
+#include <sat_udp.h>
+#include <stdio.h>
+#include <string.h>
+
+#define SERVER_HOST "localhost"
+#define SERVER_PORT "5000"
+
+int main(void)
+{
+    sat_udp_t udp;
+    char hostname[256] = SERVER_HOST;
+    char send_buf[] = "Hello, Server!";
+    char recv_buf[1024];
+    uint32_t size;
+    
+    /* Initialize */
+    sat_udp_init(&udp);
+    
+    /* Configure client */
+    sat_udp_args_t args = {
+        .type = sat_udp_type_client,
+        .client = {
+            .hostname = hostname,
+            .service = SERVER_PORT
+        }
+    };
+    
+    sat_udp_open(&udp, &args);
+    
+    /* Send message */
+    sat_udp_destination_t dest = {
+        .hostname = SERVER_HOST,
+        .service = SERVER_PORT
+    };
+    
+    sat_udp_send(&udp, send_buf, strlen(send_buf), &dest);
+    printf("Sent: %s\\n", send_buf);
+    
+    /* Receive response */
+    size = sizeof(recv_buf);
+    sat_status_t status = sat_udp_receive(&udp, recv_buf, 
+                                          &size, 5000);
+    
+    if (sat_status_get_result(&status)) {
+        recv_buf[size] = '\\0';
+        printf("Received: %s\\n", recv_buf);
+    }
+    
+    sat_udp_close(&udp);
+    return 0;
+}
+.fi
+.SS Async Server with Callbacks
+.nf
+#include <sat_udp.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+
+#define PORT "5000"
+#define BUFFER_SIZE 1024
+
+void on_receive(char *buffer, uint32_t *size, void *data)
+{
+    buffer[*size] = '\\0';
+    printf("Async received: %s\\n", buffer);
+}
+
+void on_send(char *buffer, uint32_t *size, void *data)
+{
+    printf("Async sending: %u bytes\\n", *size);
+}
+
+int main(void)
+{
+    sat_udp_t udp;
+    char buffer[BUFFER_SIZE];
+    
+    sat_udp_init(&udp);
+    
+    /* Configure async server */
+    sat_udp_args_t args = {
+        .type = sat_udp_type_server,
+        .server = {
+            .service = PORT,
+            .buffer = buffer,
+            .size = BUFFER_SIZE,
+            .type = sat_udp_server_type_async,
+            .mode = sat_udp_server_mode_unicast,
+            .events = {
+                .on_receive = on_receive,
+                .on_send = on_send
+            },
+            .data = NULL
+        }
+    };
+    
+    sat_udp_open(&udp, &args);
+    sat_udp_run(&udp);
+    
+    printf("Async UDP server running on port %s\\n", PORT);
+    printf("Press Ctrl+C to stop\\n");
+    
+    /* Keep running */
+    while (1) {
+        sleep(1);
+    }
+    
+    sat_udp_close(&udp);
+    return 0;
+}
+.fi
+.SS Multicast Server
+.nf
+#include <sat_udp.h>
+#include <stdio.h>
+#include <unistd.h>
+
+#define MCAST_GROUP "239.0.0.1"
+#define MCAST_PORT "5000"
+#define BUFFER_SIZE 1024
+
+void on_multicast_join(void *data)
+{
+    printf("Joined multicast group %s\\n", MCAST_GROUP);
+}
+
+void on_receive(char *buffer, uint32_t *size, void *data)
+{
+    buffer[*size] = '\\0';
+    printf("Multicast received: %s\\n", buffer);
+}
+
+int main(void)
+{
+    sat_udp_t udp;
+    char buffer[BUFFER_SIZE];
+    
+    sat_udp_init(&udp);
+    
+    sat_udp_args_t args = {
+        .type = sat_udp_type_server,
+        .server = {
+            .multicast_group = MCAST_GROUP,
+            .service = MCAST_PORT,
+            .buffer = buffer,
+            .size = BUFFER_SIZE,
+            .type = sat_udp_server_type_async,
+            .mode = sat_udp_server_mode_multicast,
+            .events = {
+                .on_receive = on_receive,
+                .on_multicast_join = on_multicast_join
+            },
+            .data = NULL
+        }
+    };
+    
+    sat_udp_open(&udp, &args);
+    sat_udp_run(&udp);
+    
+    printf("Multicast server running\\n");
+    
+    while (1) {
+        sleep(1);
+    }
+    
+    sat_udp_close(&udp);
+    return 0;
+}
+.fi
+.SH NOTES
+.IP \(bu 2
+UDP is an unreliable protocol - packets may be lost, duplicated, or arrive
+out of order.
+.IP \(bu 2
+Maximum UDP packet size is typically 65507 bytes (65535 - 8 byte UDP header
+- 20 byte IP header).
+.IP \(bu 2
+Multicast groups use IP addresses in the range 224.0.0.0 to 239.255.255.255.
+.IP \(bu 2
+Interactive servers require manual
+.BR sat_udp_receive ()
+calls in a loop.
+.IP \(bu 2
+Async servers handle reception automatically in a background thread.
+.IP \(bu 2
+For async servers, callbacks are invoked from the server thread - ensure
+thread safety.
+.IP \(bu 2
+Port 0 can be used to let the system assign an available port automatically.
+.IP \(bu 2
+Use
+.BR sat_udp_get_port ()
+to discover the assigned port.
+.SH SEE ALSO
+.BR sat_tcp (3),
+.BR sat_channel (3),
+.BR sat_network (3),
+.BR socket (2),
+.BR sendto (2),
+.BR recvfrom (2),
+.BR bind (2)
+.PP
+SAT Library Documentation: <https://github.com/solidcris/sat>
+.SH BUGS
+No known bugs at this time. Report bugs to the SAT Library issue tracker.
+.SH AUTHOR
+Written by the SAT Library contributors.
+.SH COPYRIGHT
+Copyright \(co 2025 SAT Library Project.
+.br
+Licensed under the MIT License.

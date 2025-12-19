@@ -7,9 +7,9 @@
 #include <math.h>
 #include <poll.h>
 
-static sat_status_t sat_udp_server_async_open (void *object, sat_udp_server_args_t *args);
-static sat_status_t sat_udp_server_async_run (void *object);
-static int sat_udp_server_async_get_socket (void *object);
+static sat_status_t sat_udp_server_async_open (void *const object, const sat_udp_server_args_t *const args);
+static sat_status_t sat_udp_server_async_run (void *const object);
+static int sat_udp_server_async_get_socket (const void *const object);
 
 sat_udp_server_base_t *sat_udp_server_async_create (void)
 {
@@ -27,11 +27,11 @@ sat_udp_server_base_t *sat_udp_server_async_create (void)
     return (sat_udp_server_base_t *)&async;
 }
 
-static sat_status_t sat_udp_server_async_run (void *object)
+static sat_status_t sat_udp_server_async_run (void *const object)
 {
     sat_status_t status = sat_status_set (&status, false, "sat udp server async error");
 
-    sat_udp_server_async_t *async = (sat_udp_server_async_t *) object;
+    sat_udp_server_async_t *const async = (sat_udp_server_async_t *const) object;
 
     async->read = async->master;
 
@@ -122,9 +122,9 @@ static sat_status_t sat_udp_server_async_run (void *object)
     return status;
 }
 
-static sat_status_t sat_udp_server_async_open (void *object, sat_udp_server_args_t *args)
+static sat_status_t sat_udp_server_async_open (void *const object, const sat_udp_server_args_t *const args)
 {
-    sat_udp_server_async_t *async = (sat_udp_server_async_t *) object;
+    sat_udp_server_async_t *const async = (sat_udp_server_async_t *const) object;
 
     sat_status_t status = sat_udp_server_abstract_open (&async->abstract, args);
 
@@ -139,9 +139,9 @@ static sat_status_t sat_udp_server_async_open (void *object, sat_udp_server_args
     return status;
 }
 
-static int sat_udp_server_async_get_socket (void *object)
+static int sat_udp_server_async_get_socket (const void *const object)
 {
-    sat_udp_server_async_t *async = (sat_udp_server_async_t *) object;
+    const sat_udp_server_async_t *const async = (const sat_udp_server_async_t *const) object;
 
     return sat_udp_server_abstract_get_socket (&async->abstract);
 }

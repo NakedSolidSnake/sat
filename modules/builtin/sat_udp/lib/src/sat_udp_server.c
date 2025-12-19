@@ -18,9 +18,9 @@ struct sat_udp_server_t
     sat_udp_server_base_t *base;
 };
 
-static sat_status_t sat_udp_server_select_type (sat_udp_server_t *object, sat_udp_server_type_t type);
+static sat_status_t sat_udp_server_select_type (sat_udp_server_t *const object, sat_udp_server_type_t type);
 
-sat_status_t sat_udp_server_open (sat_udp_server_t **object, sat_udp_server_args_t *args)
+sat_status_t sat_udp_server_open (sat_udp_server_t **const object, const sat_udp_server_args_t *const args)
 {
     sat_status_t status;
 
@@ -29,6 +29,7 @@ sat_status_t sat_udp_server_open (sat_udp_server_t **object, sat_udp_server_args
         sat_udp_server_t *__object = calloc (1, sizeof (sat_udp_server_t));
         if (__object == NULL)
         {
+            status = sat_status_failure (&status, "sat udp server open error: memory allocation failed");
             break;
         }
 
@@ -53,7 +54,7 @@ sat_status_t sat_udp_server_open (sat_udp_server_t **object, sat_udp_server_args
     return status;
 }
 
-sat_status_t sat_udp_server_run (sat_udp_server_t *object)
+sat_status_t sat_udp_server_run (sat_udp_server_t *const object)
 {
     sat_status_t status = sat_status_set (&status, false, "sat udp server run error");
 

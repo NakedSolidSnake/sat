@@ -7,9 +7,9 @@
 typedef struct 
 {
     void *object;
-    sat_status_t (*open) (void *object, sat_udp_server_args_t *args);
-    sat_status_t (*run) (void *object);
-    int (*get_socket) (void *object);
+    sat_status_t (*open) (void *const object, const sat_udp_server_args_t *const args);
+    sat_status_t (*run) (void *const object);
+    int (*get_socket) (const void *const object);
 
 } sat_udp_server_base_t;
 

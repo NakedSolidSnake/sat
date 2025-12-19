@@ -30,7 +30,7 @@ typedef struct
 
 } sat_udp_server_abstract_t;
 
-sat_status_t sat_udp_server_abstract_open (sat_udp_server_abstract_t *object, sat_udp_server_args_t *args);
-int sat_udp_server_abstract_get_socket (sat_udp_server_abstract_t *object);
+sat_status_t sat_udp_server_abstract_open (sat_udp_server_abstract_t *const object, const sat_udp_server_args_t *const args);
+int sat_udp_server_abstract_get_socket (const sat_udp_server_abstract_t *const object);
 
 #endif/* SAT_UDP_SERVER_ABSTRACT_H_ */

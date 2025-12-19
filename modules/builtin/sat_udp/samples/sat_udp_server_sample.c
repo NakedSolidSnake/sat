@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <sat_udp/sat_udp_server.h>
 
 #define SERVICE_NAME    "8888"
 
@@ -75,12 +74,6 @@ int main (int argc, char *argv[])
 
     status = sat_udp_open (&server, &_args);
     assert (sat_status_get_result (&status) == true);
-
-    sat_network_socket_info_t socket_info;
-    status = sat_network_get_socket_info (sat_udp_server_get_socket (server.server), &socket_info);
-    assert (sat_status_get_result (&status) == true);
-
-    sat_network_socket_info_debug (&socket_info);
 
     do
     {

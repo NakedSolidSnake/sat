@@ -16,18 +16,19 @@ struct sat_udp_client_t
     const char *service;
 };
 
-static sat_status_t sat_udp_client_set_socket (sat_udp_client_t *object, struct addrinfo *info);
+static sat_status_t sat_udp_client_set_socket (sat_udp_client_t *const object, struct addrinfo *info);
 
 
-sat_status_t sat_udp_client_open (sat_udp_client_t **object, sat_udp_client_args_t *args)
+sat_status_t sat_udp_client_open (sat_udp_client_t **const object, const sat_udp_client_args_t *const args)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat udp client open error");
+    sat_status_t status;
 
     do 
     {
         sat_udp_client_t *__object = calloc (1, sizeof (sat_udp_client_t));
         if (__object == NULL)
         {
+            status = sat_status_failure (&status, "sat udp client open error: memory allocation failed");
             break;
         }
 
@@ -42,12 +43,12 @@ sat_status_t sat_udp_client_open (sat_udp_client_t **object, sat_udp_client_args
     return status;
 }
 
-int sat_udp_client_get_socket (sat_udp_client_t *object)
+int sat_udp_client_get_socket (const sat_udp_client_t *const object)
 {
     return object->socket;
 }
 
-sat_status_t sat_udp_client_get_port (sat_udp_client_t *object, uint16_t *port)
+sat_status_t sat_udp_client_get_port (const sat_udp_client_t *const object, uint16_t *const port)
 {
     sat_status_t status = sat_status_set (&status, false, "sat udp client get port error");
 
@@ -80,33 +81,40 @@ sat_status_t sat_udp_client_get_port (sat_udp_client_t *object, uint16_t *port)
         }
         else
         {
-            sat_status_set (&status, false, "Unknown address family");
+            sat_status_failure (&status, "Unknown address family");
             break;
         }
 
-        sat_status_set (&status, true, "");
+        sat_status_success (&status);
 
     } while (false);
 
     return status;
 }
 
-static sat_status_t sat_udp_client_set_socket (sat_udp_client_t *object, struct addrinfo *info)
+static sat_status_t sat_udp_client_set_socket (sat_udp_client_t *const object, struct addrinfo *info)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat udp client set socket error");
+    sat_status_t status = sat_status_success (&status);
+    (void) info;
 
-
-    object->socket = socket( AF_INET6, SOCK_DGRAM, 0);
-    if (object->socket >= 0)
+    do
     {
-        sat_status_set (&status, true, "");
-    }
+        object->socket = socket( AF_INET6, SOCK_DGRAM, 0);
+        if (object->socket < 0)
+        {
+            sat_status_failure (&status, "sat udp client set socket error: socket creation failed");
+            break;
+        }
 
-    int disable_v6_only = 0;
-    if (setsockopt (object->socket, IPPROTO_IPV6, IPV6_V6ONLY, &disable_v6_only, sizeof(disable_v6_only)) < 0)
-    {
-        exit(EXIT_FAILURE);
-    }
+        int disable_v6_only = 0;
+        if (setsockopt (object->socket, IPPROTO_IPV6, IPV6_V6ONLY, &disable_v6_only, sizeof(disable_v6_only)) < 0)
+        {
+            // Critical error, close socket and exit
+            close (object->socket);
+            exit (EXIT_FAILURE);
+        }
+
+    } while (false);
 
     return status;
 }

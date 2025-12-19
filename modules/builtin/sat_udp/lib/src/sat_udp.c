@@ -13,57 +13,122 @@
 #include <sat_udp_client.h>
 #include <sat_udp_server.h>
 
-static int sat_udp_get_socket (sat_udp_t *object);
-static void sat_udp_type_destroy (sat_udp_t *object);
+static int sat_udp_get_socket (const sat_udp_t *const object);
+static void sat_udp_type_destroy (sat_udp_t *const object);
 
-static sat_status_t sat_udp_type_open (sat_udp_t *object, sat_udp_args_t *args);
+static sat_status_t sat_udp_type_open (sat_udp_t *const object, const sat_udp_args_t *const args);
 
-sat_status_t sat_udp_init (sat_udp_t *object)
+sat_status_t sat_udp_init (sat_udp_t *const object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat udp init error");
+    sat_status_t status = sat_status_success (&status);
 
-    if (object != NULL)
+    do 
     {
+        if (object == NULL)
+        {
+            sat_status_set (&status, false, "sat udp init error: null object");
+            break;
+        }
+
         memset (object, 0, sizeof (sat_udp_t));
 
-        sat_status_set (&status, true, "");
-    }
+    } while (false);
 
-    return status;
+        return status;
 }
 
-sat_status_t sat_udp_open (sat_udp_t *object, sat_udp_args_t *args)
+sat_status_t sat_udp_open (sat_udp_t *const object, const sat_udp_args_t *const args)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat udp open error");
+    sat_status_t status;
 
-    if (object != NULL && args != NULL)
+    do
     {
+        if (object == NULL)
+        {
+            status = sat_status_set (&status, false, "sat udp open error: null object");
+            break;
+        }
+
+        if (args == NULL)
+        {
+            status = sat_status_set (&status, false, "sat udp open error: null args");
+            break;
+        }
+
         status = sat_udp_type_open (object, args);
-    }
+
+    } while (false);
 
     return status;
 }
 
-sat_status_t sat_udp_run (sat_udp_t *object)
+sat_status_t sat_udp_run (sat_udp_t *const object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat udp run error");
+    sat_status_t status;
 
-    if (object != NULL && object->type == sat_udp_type_server)
+    do
     {
+        if (object == NULL)
+        {
+            status = sat_status_set (&status, false, "sat udp run error: null object");
+            break;
+        }
+
+        if (object->type != sat_udp_type_server)
+        {
+            status = sat_status_set (&status, false, "sat udp run error: invalid type");
+            break;
+        }
+
         status = sat_udp_server_run (object->server);
-    }
 
-    return status;
+    } while (false);
+
+        return status;
 }
 
-sat_status_t sat_udp_send (sat_udp_t *object, const char *data, uint32_t size, sat_udp_destination_t *destination)
+sat_status_t sat_udp_send (const sat_udp_t *const object, const char *const data, uint32_t size, const sat_udp_destination_t *const destination)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat udp send error");
+    sat_status_t status;
 
-    size_t _size;
-
-    if (object != NULL && data != NULL && size > 0)
+    do
     {
+        if (object == NULL)
+        {
+            status = sat_status_set (&status, false, "sat udp send error: null object");
+            break;
+        }
+
+        if (data == NULL)
+        {
+            status = sat_status_set (&status, false, "sat udp send error: null data or zero size");
+            break;
+        }
+
+        if (size == 0)
+        {
+            status = sat_status_set (&status, false, "sat udp send error: null data or zero size");
+            break;
+        }
+
+        if (destination == NULL)
+        {
+            status = sat_status_set (&status, false, "sat udp send error: null destination");
+            break;
+        }
+
+        if (destination->hostname == NULL)
+        {
+            status = sat_status_set (&status, false, "sat udp send error: null destination hostname");
+            break;
+        }
+
+        if ( destination->service == NULL)
+        {
+            status = sat_status_set (&status, false, "sat udp send error: null destination service");
+            break;
+        }
+
         struct addrinfo hints;
         memset (&hints, 0, sizeof (hints));
         hints.ai_family = AF_UNSPEC;
@@ -72,24 +137,32 @@ sat_status_t sat_udp_send (sat_udp_t *object, const char *data, uint32_t size, s
         hints.ai_protocol = IPPROTO_UDP;
 
         struct addrinfo *address;
+        size_t _size;
 
         int r = getaddrinfo (destination->hostname, destination->service, &hints, &address);
 
-        if (r == 0)
+        if (r != 0)
         {
-            int socket = sat_udp_get_socket (object);
-
-            _size = sendto (socket, data, size, 0, address->ai_addr, address->ai_addrlen);
-            _size == size ?  sat_status_set (&status, true, "") :  sat_status_set (&status, false, "sat udp send size error");
-
-            freeaddrinfo (address);
+            status = sat_status_set (&status, false, "sat udp send error: getaddrinfo failed");
+            break;
         }
-    }
+
+        int socket = sat_udp_get_socket (object);
+
+        _size = sendto (socket, data, size, 0, address->ai_addr, address->ai_addrlen);
+        if (_size != size)
+        {
+            status = sat_status_set (&status, false, "sat udp send error: sendto failed");
+        }
+
+        freeaddrinfo (address);
+
+    } while (false);
 
     return status;
 }
 
-sat_status_t sat_udp_receive (sat_udp_t *object, char *data, uint32_t *size, int timeout_ms)
+sat_status_t sat_udp_receive (const sat_udp_t *const object, char *const data, uint32_t *size, int timeout_ms)
 {
     sat_status_t status = sat_status_set (&status, false, "sat udp receive error");
 
@@ -163,7 +236,7 @@ sat_status_t sat_udp_close (sat_udp_t *object)
     return status;
 }
 
-sat_status_t sat_udp_get_port (sat_udp_t *object, uint16_t *port)
+sat_status_t sat_udp_get_port (const sat_udp_t *const object, uint16_t *const port)
 {
     sat_status_t status = sat_status_set (&status, false, "sat udp get port error");
 
@@ -183,7 +256,7 @@ sat_status_t sat_udp_get_port (sat_udp_t *object, uint16_t *port)
     return status;
 }
 
-static int sat_udp_get_socket (sat_udp_t *object)
+static int sat_udp_get_socket (const sat_udp_t *const object)
 {
     int socket = -1;
 
@@ -203,17 +276,21 @@ static void sat_udp_type_destroy (sat_udp_t *object)
         free (object->client);
 }
 
-static sat_status_t sat_udp_type_open (sat_udp_t *object, sat_udp_args_t *args)
+static sat_status_t sat_udp_type_open (sat_udp_t *const object, const sat_udp_args_t *const args)
 {
     sat_status_t status = sat_status_set (&status, false, "sat udp type open error");
 
     object->type = args->type;
 
     if (object->type == sat_udp_type_server)
+    {
         status = sat_udp_server_open (&object->server, &args->server);
+    }
     
     else if (object->type == sat_udp_type_client)
+    {
         status = sat_udp_client_open (&object->client, &args->client);
+    }
 
     return status;
 }

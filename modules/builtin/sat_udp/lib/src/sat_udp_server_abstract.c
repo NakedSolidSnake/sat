@@ -9,21 +9,21 @@
 #include <netdb.h>
 #include <unistd.h>
 
-static void sat_udp_server_abstract_copy_to_context (sat_udp_server_abstract_t *object, sat_udp_server_args_t *args);
+static void sat_udp_server_abstract_copy_to_context (sat_udp_server_abstract_t *const object, const sat_udp_server_args_t *const args);
 
-static sat_status_t sat_udp_server_abstract_set_socket (sat_udp_server_abstract_t *object, struct addrinfo *info);
-static sat_status_t sat_udp_server_abstract_set_reuse_address (sat_udp_server_abstract_t *object);
-static sat_status_t sat_udp_server_abstract_set_bind (sat_udp_server_abstract_t *object, struct addrinfo *info);
-static sat_status_t sat_udp_server_abstract_is_args_valid (sat_udp_server_args_t *args);
-static sat_status_t sat_udp_server_abstract_configure (sat_udp_server_abstract_t *object, struct addrinfo *info_list);
-static sat_status_t sat_udp_server_abstract_multicast_enable (sat_udp_server_abstract_t *object, sat_udp_server_args_t *args);
+static sat_status_t sat_udp_server_abstract_set_socket (sat_udp_server_abstract_t *const object, const struct addrinfo *const info);
+static sat_status_t sat_udp_server_abstract_set_reuse_address (sat_udp_server_abstract_t *const object);
+static sat_status_t sat_udp_server_abstract_set_bind (sat_udp_server_abstract_t *const object, const struct addrinfo *const info);
+static sat_status_t sat_udp_server_abstract_is_args_valid (const sat_udp_server_args_t *const args);
+static sat_status_t sat_udp_server_abstract_configure (sat_udp_server_abstract_t *object, const struct addrinfo *const info_list);
+static sat_status_t sat_udp_server_abstract_multicast_enable (sat_udp_server_abstract_t *const object, const sat_udp_server_args_t *const args);
 
-static sat_status_t sat_udp_server_abstract_try_enable_multicast_ipv4 (sat_udp_server_abstract_t *object, const char *address);
-static sat_status_t sat_udp_server_abstract_try_enable_multicast_ipv6 (sat_udp_server_abstract_t *object, const char *address);
+static sat_status_t sat_udp_server_abstract_try_enable_multicast_ipv4 (sat_udp_server_abstract_t *const object, const char *address);
+static sat_status_t sat_udp_server_abstract_try_enable_multicast_ipv6 (sat_udp_server_abstract_t *const object, const char *address);
 
-static struct addrinfo *sat_udp_server_abstract_get_info_list (sat_udp_server_args_t *args);
+static struct addrinfo *sat_udp_server_abstract_get_info_list (const sat_udp_server_args_t *const args);
 
-static void sat_udp_server_abstract_copy_to_context (sat_udp_server_abstract_t *object, sat_udp_server_args_t *args)
+static void sat_udp_server_abstract_copy_to_context (sat_udp_server_abstract_t *const object, const sat_udp_server_args_t *const args)
 {
     object->buffer = args->buffer;
     object->size = args->size;
@@ -34,21 +34,40 @@ static void sat_udp_server_abstract_copy_to_context (sat_udp_server_abstract_t *
     object->data = args->data;
 }
 
-static sat_status_t sat_udp_server_abstract_is_args_valid (sat_udp_server_args_t *args)
+static sat_status_t sat_udp_server_abstract_is_args_valid (const sat_udp_server_args_t *const args)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat udp server args error");
+    sat_status_t status = sat_status_success (&status);
 
-    if (args->buffer != NULL &&
-        args->size > 0 && 
-        args->service != NULL)
+    do
     {
-        sat_status_set (&status, true, "");
-    }
+        if (args == NULL)
+        {
+            sat_status_set (&status, false, "sat udp server abstract args is null");
+            break;
+        }
 
-    return status;
+        if (args->service == NULL)
+        {
+            sat_status_set (&status, false, "sat udp server abstract args service is null");
+            break;
+        }
+        if (args->buffer == NULL)
+        {
+            sat_status_set (&status, false, "sat udp server abstract args buffer is null");
+            break;
+        }
+
+        if (args->size == 0)
+        {
+            sat_status_set (&status, false, "sat udp server abstract args size is zero");
+            break;
+        }
+    } while (false);
+
+        return status;
 }
 
-sat_status_t sat_udp_server_abstract_open (sat_udp_server_abstract_t *object, sat_udp_server_args_t *args)
+sat_status_t sat_udp_server_abstract_open (sat_udp_server_abstract_t *const object, const sat_udp_server_args_t *const args)
 {
     sat_status_t status;
 
@@ -77,16 +96,16 @@ sat_status_t sat_udp_server_abstract_open (sat_udp_server_abstract_t *object, sa
     return status;
 }
 
-int sat_udp_server_abstract_get_socket (sat_udp_server_abstract_t *object)
+int sat_udp_server_abstract_get_socket (const sat_udp_server_abstract_t *const object)
 {
     return object->socket;
 }
 
-static sat_status_t sat_udp_server_abstract_configure (sat_udp_server_abstract_t *object, struct addrinfo *info_list)
+static sat_status_t sat_udp_server_abstract_configure (sat_udp_server_abstract_t *const object, const struct addrinfo *const info_list)
 {
     sat_status_t status;
 
-    struct addrinfo *info = NULL;
+    const struct addrinfo *info = NULL;
 
     for (info = info_list; info != NULL; info = info->ai_next)
     {
@@ -109,45 +128,50 @@ static sat_status_t sat_udp_server_abstract_configure (sat_udp_server_abstract_t
     return status;
 }
 
-static sat_status_t sat_udp_server_abstract_set_socket (sat_udp_server_abstract_t *object, struct addrinfo *info)
+static sat_status_t sat_udp_server_abstract_set_socket (sat_udp_server_abstract_t *const object, const struct addrinfo *const info)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat udp server abstract set socket error");
+    sat_status_t status = sat_status_success (&status);
 
     object->socket = socket (info->ai_family, info->ai_socktype, info->ai_protocol);
-
-    if (object->socket >= 0)
-        sat_status_set (&status, true, "");
+    if (object->socket < 0)
+    {
+        sat_status_set (&status, false, "sat udp server abstract set socket error: socket creation failed");
+    }
 
     return status;
 }
 
 static sat_status_t sat_udp_server_abstract_set_reuse_address (sat_udp_server_abstract_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat udp server abstract set reuse address error");
+    sat_status_t status = sat_status_success (&status);
     int yes = 1;
 
-    if (setsockopt (object->socket, SOL_SOCKET, SO_REUSEADDR, (void *)&yes, sizeof (yes)) == 0)
-        sat_status_set (&status, true, "");
+    if (setsockopt (object->socket, SOL_SOCKET, SO_REUSEADDR, (void *)&yes, sizeof (yes)) != 0)
+    {
+        sat_status_set (&status, false, "sat udp server abstract set reuse address error");
+    }
 
     return status;
 }
 
-static sat_status_t sat_udp_server_abstract_set_bind (sat_udp_server_abstract_t *object, struct addrinfo *info)
+static sat_status_t sat_udp_server_abstract_set_bind (sat_udp_server_abstract_t *object, const struct addrinfo *const info)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat udp server abstract set bind error");
+    sat_status_t status = sat_status_success (&status);
 
-    if (bind (object->socket, info->ai_addr, info->ai_addrlen) == 0)
-        sat_status_set (&status, true, "");
+    if (bind (object->socket, info->ai_addr, info->ai_addrlen) != 0)
+    {
+        sat_status_set (&status, false, "sat udp server abstract set bind error");
+    }
 
     return status;
 }
 
-static struct addrinfo *sat_udp_server_abstract_get_info_list (sat_udp_server_args_t *args)
+static struct addrinfo *sat_udp_server_abstract_get_info_list (const sat_udp_server_args_t *const args)
 {
     struct addrinfo hints;
     struct addrinfo *info_list = NULL;
 
-    memset(&hints, 0, sizeof (hints));
+    memset (&hints, 0, sizeof (hints));
 
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_DGRAM;
@@ -160,20 +184,22 @@ static struct addrinfo *sat_udp_server_abstract_get_info_list (sat_udp_server_ar
 }
 
 
-static sat_status_t sat_udp_server_abstract_multicast_enable (sat_udp_server_abstract_t *object, sat_udp_server_args_t *args)
+static sat_status_t sat_udp_server_abstract_multicast_enable (sat_udp_server_abstract_t *const object, const sat_udp_server_args_t *const args)
 {
-    sat_status_t status = sat_status_set (&status, true, "");
+    sat_status_t status = sat_status_success (&status);
 
-    if (args->mode == sat_udp_server_mode_multicast && args->multicast_group != NULL)
+    if (args->mode == sat_udp_server_mode_multicast )
     {
-
         do
         {
-            status = sat_udp_server_abstract_try_enable_multicast_ipv4 (object, args->multicast_group);
-            if (sat_status_get_result (&status) == true)
+            if (args->multicast_group == NULL)
             {
+                sat_status_set (&status, false, "sat udp server abstract multicast enable error: null multicast group");
                 break;
             }
+
+            status = sat_udp_server_abstract_try_enable_multicast_ipv4 (object, args->multicast_group);
+            sat_status_break_on_error (status);
 
             status = sat_udp_server_abstract_try_enable_multicast_ipv6 (object, args->multicast_group);
 
