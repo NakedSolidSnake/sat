@@ -1,0 +1,315 @@
+.TH SAT_NETWORK 3 "December 2025" "SAT Library" "SAT Library Manual"
+.SH NAME
+sat_network \- Network utility functions for interface information and IP classification
+.SH SYNOPSIS
+.nf
+.B #include <sat_network.h>
+.PP
+.BI "sat_status_t sat_network_get_ip_class(const char *" ip_address ", sat_network_class_t *" ip_class );
+.BI "const char * sat_network_get_ip_class_string(sat_network_class_t " ip_class );
+.BI "sat_status_t sat_network_get_public_ip(const char *" dns_address ", uint16_t " dns_port ", char " ip_address []);
+.BI "sat_status_t sat_network_get_socket_info(int " socket ", sat_network_socket_info_t *" socket_info );
+.BI "sat_status_t sat_network_get_info_by_interface(sat_network_info_t *" info ", const char *" interface_name );
+.BI "sat_status_t sat_network_get_info_list(sat_array_t **" info );
+.BI "void sat_network_socket_info_debug(const sat_network_socket_info_t *" socket_info );
+.BI "void sat_network_info_debug(const sat_network_info_t *" network_info );
+.BI "void sat_network_info_list_debug(const sat_array_t *" info );
+.PP
+Link with \fI\-lsat_network\fP.
+.fi
+.SH DESCRIPTION
+The
+.B sat_network
+module provides comprehensive utilities for working with network interfaces and IP addresses.
+It supports both IPv4 and IPv6 addresses and can retrieve detailed information about network
+interfaces on Linux systems.
+.PP
+This module is useful for applications that need to:
+.IP \(bu 2
+Discover available network interfaces
+.IP \(bu 2
+Classify IP addresses (public, private, multicast, etc.)
+.IP \(bu 2
+Determine the public IP address of the system
+.IP \(bu 2
+Extract socket information from file descriptors
+.SS Constants
+.TP
+.B SAT_NETWORK_ADDRESS_SIZE
+Maximum size for network address string (50 bytes).
+.TP
+.B SAT_NETWORK_INTERFACE_NAME_SIZE
+Maximum size for network interface name (32 bytes).
+.TP
+.B SAT_NETWORK_IP_MAX_LEN
+Maximum length for IP address string (46 bytes, supports IPv6).
+.SS Types
+.TP
+.B sat_network_family_t
+Enumeration for network address families:
+.RS
+.IP \(bu 2
+.B sat_network_family_ipv4
+\- IPv4 address family
+.IP \(bu 2
+.B sat_network_family_ipv6
+\- IPv6 address family
+.IP \(bu 2
+.B sat_network_family_unknown
+\- Unknown address family
+.RE
+.TP
+.B sat_network_class_t
+Enumeration for IP address classification:
+.RS
+.IP \(bu 2
+.B sat_network_class_multicast
+\- Multicast address (224.0.0.0 - 239.255.255.255)
+.IP \(bu 2
+.B sat_network_class_broadcast
+\- Broadcast address (255.255.255.255)
+.IP \(bu 2
+.B sat_network_class_public
+\- Public routable address
+.IP \(bu 2
+.B sat_network_class_private
+\- Private address (10.x.x.x, 172.16-31.x.x, 192.168.x.x)
+.IP \(bu 2
+.B sat_network_class_loopback
+\- Loopback address (127.x.x.x)
+.RE
+.TP
+.B sat_network_socket_info_t
+Structure containing socket information:
+.RS
+.IP \(bu 2
+.B address[]
+\- IP address string
+.IP \(bu 2
+.B port
+\- Port number
+.RE
+.TP
+.B sat_network_info_t
+Structure containing network interface information:
+.RS
+.IP \(bu 2
+.B interface_name[]
+\- Interface name (e.g., "eth0", "wlan0")
+.IP \(bu 2
+.B ip_address[]
+\- IP address of the interface
+.IP \(bu 2
+.B netmask[]
+\- Network mask
+.IP \(bu 2
+.B family
+\- Address family (IPv4/IPv6)
+.RE
+.SS IP Classification Functions
+.TP
+.BR sat_network_get_ip_class ()
+Classifies an IP address into one of the defined categories. The function analyzes
+the IP address and determines whether it is multicast, broadcast, public, private,
+or loopback. Supports both IPv4 and IPv6 addresses.
+.RS
+.PP
+Returns a status indicating success or failure. On success, the
+.I ip_class
+parameter is set to the appropriate classification.
+.RE
+.TP
+.BR sat_network_get_ip_class_string ()
+Converts an IP class enumeration value to its string representation. This is
+useful for logging and debugging purposes.
+.RS
+.PP
+Returns a constant string describing the IP class.
+.RE
+.SS Public IP Discovery
+.TP
+.BR sat_network_get_public_ip ()
+Determines the public IP address of the system by querying a DNS server. This
+is particularly useful for systems behind NAT to discover their external-facing
+IP address.
+.RS
+.PP
+If
+.I dns_address
+is NULL, defaults to Google's DNS server (8.8.8.8 for IPv4 or 2001:4860:4860::8888
+for IPv6). If
+.I dns_port
+is 0, defaults to port 53.
+.PP
+The function creates a UDP connection to the DNS server and retrieves the local
+address used for that connection, which represents the public IP.
+.PP
+Returns a status indicating success or failure. On success, the public IP address
+is stored in the
+.I ip_address
+buffer.
+.RE
+.SS Socket Information Functions
+.TP
+.BR sat_network_get_socket_info ()
+Retrieves address and port information from an existing socket file descriptor.
+This is useful for determining the local or remote endpoint of a connection.
+.RS
+.PP
+The function queries the socket using
+.BR getsockname (2)
+or
+.BR getpeername (2)
+and populates the
+.I socket_info
+structure with the address and port.
+.PP
+Returns a status indicating success or failure.
+.RE
+.SS Interface Information Functions
+.TP
+.BR sat_network_get_info_by_interface ()
+Retrieves detailed information about a specific network interface by name. The
+function uses
+.BR getifaddrs (3)
+to query interface information.
+.RS
+.PP
+The
+.I interface_name
+parameter should specify the interface name such as "eth0", "wlan0", or "lo".
+.PP
+On success, the
+.I info
+structure is populated with the interface's IP address, netmask, and address family.
+.PP
+Returns a status indicating success or failure. Fails if the interface does not exist.
+.RE
+.TP
+.BR sat_network_get_info_list ()
+Retrieves information about all network interfaces on the system. The function
+returns an array of
+.B sat_network_info_t
+structures, one for each interface.
+.RS
+.PP
+The returned array is dynamically allocated and should be freed using the
+appropriate SAT array cleanup function when no longer needed.
+.PP
+Returns a status indicating success or failure. On success,
+.I info
+points to a newly allocated array containing all interface information.
+.RE
+.SS Debug Functions
+.TP
+.BR sat_network_socket_info_debug ()
+Prints socket information to stdout in a human-readable format. Useful for
+debugging network connections.
+.RS
+.PP
+Output includes the IP address and port number.
+.RE
+.TP
+.BR sat_network_info_debug ()
+Prints network interface information to stdout in a human-readable format.
+.RS
+.PP
+Output includes interface name, IP address, netmask, and address family.
+.RE
+.TP
+.BR sat_network_info_list_debug ()
+Prints information for all network interfaces in the provided array to stdout.
+Each interface's details are displayed sequentially.
+.SH RETURN VALUE
+Functions returning
+.B sat_status_t
+indicate success or failure. Check the status using SAT status utility functions.
+.PP
+The
+.BR sat_network_get_ip_class_string ()
+function returns a constant string pointer and never fails.
+.SH EXAMPLES
+.SS Classifying an IP Address
+.nf
+#include <sat_network.h>
+#include <stdio.h>
+
+sat_network_class_t class;
+if (sat_status_is_ok(sat_network_get_ip_class("192.168.1.100", &class))) {
+    printf("IP class: %s\\n", sat_network_get_ip_class_string(class));
+    // Output: IP class: private
+}
+.fi
+.SS Getting Public IP Address
+.nf
+#include <sat_network.h>
+#include <stdio.h>
+
+char public_ip[SAT_NETWORK_IP_MAX_LEN + 1];
+if (sat_status_is_ok(sat_network_get_public_ip(NULL, 0, public_ip))) {
+    printf("Public IP: %s\\n", public_ip);
+}
+.fi
+.SS Listing All Network Interfaces
+.nf
+#include <sat_network.h>
+#include <sat_array.h>
+
+sat_array_t *interfaces = NULL;
+if (sat_status_is_ok(sat_network_get_info_list(&interfaces))) {
+    sat_network_info_list_debug(interfaces);
+    // Clean up array when done
+    sat_array_destroy(&interfaces);
+}
+.fi
+.SS Getting Interface Information
+.nf
+#include <sat_network.h>
+#include <stdio.h>
+
+sat_network_info_t info;
+if (sat_status_is_ok(sat_network_get_info_by_interface(&info, "eth0"))) {
+    printf("Interface: %s\\n", info.interface_name);
+    printf("IP Address: %s\\n", info.ip_address);
+    printf("Netmask: %s\\n", info.netmask);
+}
+.fi
+.SS Getting Socket Information
+.nf
+#include <sat_network.h>
+#include <sys/socket.h>
+#include <stdio.h>
+
+int sock = socket(AF_INET, SOCK_STREAM, 0);
+// ... bind and connect the socket ...
+
+sat_network_socket_info_t sock_info;
+if (sat_status_is_ok(sat_network_get_socket_info(sock, &sock_info))) {
+    printf("Connected to: %s:%u\\n", sock_info.address, sock_info.port);
+}
+.fi
+.SH NOTES
+.IP \(bu 2
+The module supports both IPv4 and IPv6 addresses throughout.
+.IP \(bu 2
+Interface enumeration uses the
+.BR getifaddrs (3)
+system call, which is Linux-specific.
+.IP \(bu 2
+Public IP discovery requires network connectivity to the DNS server.
+.IP \(bu 2
+The default DNS server (8.8.8.8) is Google's public DNS service.
+.IP \(bu 2
+All string buffers are sized to accommodate both IPv4 and IPv6 addresses.
+.SH SEE ALSO
+.BR sat_status (3),
+.BR sat_array (3),
+.BR getifaddrs (3),
+.BR getsockname (2),
+.BR getpeername (2),
+.BR inet_pton (3),
+.BR socket (2)
+.SH AUTHOR
+SAT Library Team
+.SH COPYRIGHT
+Copyright \(co 2025 SAT Library Project. Licensed under MIT License.

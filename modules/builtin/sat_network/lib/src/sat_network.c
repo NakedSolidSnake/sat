@@ -434,7 +434,7 @@ void sat_network_info_debug (const sat_network_info_t *const network_info)
     }
 }
 
-void sat_network_info_list_debug (sat_array_t *info)
+void sat_network_info_list_debug (const sat_array_t *const info)
 {
     if (info != NULL)
     {

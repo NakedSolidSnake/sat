@@ -62,7 +62,7 @@ list (APPEND SAT_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/sat_file.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_handle_frame_interest.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_handle_frame_vanish.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_service_vanish.c
-                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_network.c
+                        #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_network.c
                         #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_directory.c
                          )
 
@@ -87,6 +87,7 @@ list (APPEND SAT_LIBRARIES
              sat_event
              sat_channel
              sat_udp
+             sat_network
              )
 
 list (APPEND SAT_INCLUDES ${CMAKE_CURRENT_LIST_DIR}/include
@@ -143,7 +144,7 @@ install (FILES include/sat_queue_ipc.h   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 # install (FILES include/sat_iterator.h    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install (FILES include/sat_process/sat_process.h    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sat_process)
 install (FILES include/sat_process/sat_process_monitor.h    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sat_process)
-install (FILES include/sat_network.h    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+# install (FILES include/sat_network.h    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install (FILES include/sat_discovery/sat_discovery.h    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 # install (FILES include/sat_directory.h    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
