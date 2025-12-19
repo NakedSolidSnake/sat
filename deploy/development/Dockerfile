@@ -13,6 +13,7 @@ RUN apt-get update && \
 	uuid-dev \
 	iproute2 \
 	lsof \
+	man-db \
 	-y && \
     apt-get clean
 
@@ -60,6 +61,7 @@ RUN git clone https://github.com/eclipse/paho.mqtt.c.git && \
 
 # Estágio 4: Compilação do SAT
 FROM external-libs AS sat-build
+RUN yes | unminimize
 RUN git clone https://github.com/NakedSolidSnake/sat && \
 	mkdir -p sat/build && \
 	cd sat && git checkout modules && \
@@ -79,7 +81,8 @@ RUN git clone https://github.com/NakedSolidSnake/sat && \
 	# -DSAT_LOKI=ON \
 	.. && \
 	make -j4 install && \
-	cmake --install build --component documentation && \
+	cmake --install . --component documentation && \
+	mandb && \
 	rm -rf /development/sat && \
 	ldconfig
 
