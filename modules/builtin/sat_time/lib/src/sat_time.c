@@ -4,13 +4,12 @@
 
 #define SAT_TIME_NANO_TO_SECONDS_FACTOR     1000000000L
 
-static double sat_time_get_seconds (sat_time_t *object);
-static double sat_time_get_seconds_from_nanoseconds (sat_time_t *object);
+static double sat_time_get_seconds (const sat_time_t *const object);
+static double sat_time_get_seconds_from_nanoseconds (const sat_time_t *const object);
 
 time_t sat_time_get_epoch_now (void)
 {
-    time_t now = time (NULL);
-    return now;
+    return time (NULL);
 }
 
 unsigned long long sat_time_get_epoch_now_ms (void)
@@ -44,7 +43,9 @@ time_t sat_time_get_utc_epoch_now (void)
     time_t now = 0;
 
     time_t _now = time (NULL);
+
     struct tm *ptm = gmtime (&_now);
+    
     if (ptm != NULL)
     {
         now = mktime (ptm);
@@ -122,12 +123,12 @@ bool sat_time_mark_time_elapsed (sat_time_t *object, double *time_elapsed)
     return status;
 }
 
-static double sat_time_get_seconds (sat_time_t *object)
+static double sat_time_get_seconds (const sat_time_t *const object)
 {
     return object->stop.tv_sec - object->start.tv_sec;
 }
 
-static double sat_time_get_seconds_from_nanoseconds (sat_time_t *object)
+static double sat_time_get_seconds_from_nanoseconds (const sat_time_t *const object)
 {
     return  (object->stop.tv_nsec - object->start.tv_nsec) / (double) SAT_TIME_NANO_TO_SECONDS_FACTOR;
 }

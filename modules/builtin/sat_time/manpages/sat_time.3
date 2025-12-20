@@ -1,0 +1,430 @@
+.TH SAT_TIME 3 "December 2025" "SAT Library" "SAT Library Manual"
+.SH NAME
+sat_time \- time handling and measurement utilities
+.SH SYNOPSIS
+.nf
+.B #include <sat_time.h>
+.PP
+.BI "time_t sat_time_get_epoch_now(void);"
+.BI "time_t sat_time_get_utc_epoch_now(void);"
+.BI "unsigned long long sat_time_get_epoch_now_ms(void);"
+.BI "unsigned long long sat_time_get_epoch_now_ns(void);"
+.BI "time_t sat_time_get_epoch_by_string(const char *" time_string ", const char *" format );
+.BI "bool sat_time_get_date_by_epoch(char *" buffer ", uint8_t " size ", const char *" format ", time_t " epoch );
+.BI "bool sat_time_mark_start(sat_time_t *" object );
+.BI "bool sat_time_mark_stop(sat_time_t *" object );
+.BI "bool sat_time_mark_time_elapsed(const sat_time_t *" object ", double *" time_elapsed );
+.PP
+Link with \fI\-lsat_time\fP.
+.fi
+.SH DESCRIPTION
+The
+.B sat_time
+module provides comprehensive utilities for time handling, including epoch time
+retrieval in various resolutions, conversions between time strings and epoch
+timestamps, and high-precision time measurement for performance profiling.
+.PP
+This module is useful for applications that need to:
+.IP \(bu 2
+Obtain current time in various formats and resolutions
+.IP \(bu 2
+Convert between human-readable time strings and Unix timestamps
+.IP \(bu 2
+Measure elapsed time with high precision for benchmarking
+.IP \(bu 2
+Work with both local and UTC time zones
+.IP \(bu 2
+Perform time-based operations with millisecond or nanosecond precision
+.SS Types
+.TP
+.B sat_time_t
+Structure for time measurement operations:
+.RS
+.IP \(bu 2
+.B start
+\- Start timestamp (struct timespec)
+.IP \(bu 2
+.B stop
+\- Stop timestamp (struct timespec)
+.PP
+Used in conjunction with
+.BR sat_time_mark_start (),
+.BR sat_time_mark_stop (),
+and
+.BR sat_time_mark_time_elapsed ()
+for high-precision time measurements.
+.RE
+.SS Epoch Time Functions
+.TP
+.BR sat_time_get_epoch_now ()
+Returns the current local time as Unix epoch timestamp in seconds. This is the
+number of seconds elapsed since January 1, 1970, 00:00:00 UTC. The returned
+time reflects the system's local timezone settings.
+.RS
+.PP
+This function is equivalent to calling
+.BR time (2)
+directly. Use this for general-purpose timestamping where second precision
+is sufficient.
+.RE
+.TP
+.BR sat_time_get_utc_epoch_now ()
+Returns the current UTC time as Unix epoch timestamp in seconds. Unlike
+.BR sat_time_get_epoch_now (),
+this function always returns UTC time regardless of the system's local timezone.
+.RS
+.PP
+This is useful for applications that need consistent timestamps across different
+time zones or for storing timestamps in a timezone-independent format.
+.RE
+.TP
+.BR sat_time_get_epoch_now_ms ()
+Returns the current time as Unix epoch timestamp with millisecond precision.
+The value represents the total number of milliseconds since January 1, 1970,
+00:00:00 UTC.
+.RS
+.PP
+Use this for applications requiring higher time resolution than seconds, such
+as logging systems, metrics collection, or event timing where millisecond
+accuracy is needed.
+.RE
+.TP
+.BR sat_time_get_epoch_now_ns ()
+Returns the current time as Unix epoch timestamp with nanosecond precision.
+The value represents the total number of nanoseconds since January 1, 1970,
+00:00:00 UTC.
+.RS
+.PP
+This provides the highest resolution timestamp available and is suitable for
+high-precision timing, performance measurements, and applications requiring
+sub-millisecond accuracy.
+.RE
+.SS Time Conversion Functions
+.TP
+.BR sat_time_get_epoch_by_string ()
+Converts a time string to Unix epoch timestamp according to the specified format.
+The format string follows
+.BR strptime (3)
+conventions.
+.RS
+.PP
+.I time_string
+is the input time in string format (e.g., "2025-12-20 15:30:00").
+.PP
+.I format
+specifies how to parse the string using format specifiers like:
+.IP \(bu 2
+.B %Y
+\- 4-digit year (e.g., 2025)
+.IP \(bu 2
+.B %m
+\- Month (01-12)
+.IP \(bu 2
+.B %d
+\- Day of month (01-31)
+.IP \(bu 2
+.B %H
+\- Hour (00-23)
+.IP \(bu 2
+.B %M
+\- Minute (00-59)
+.IP \(bu 2
+.B %S
+\- Second (00-59)
+.PP
+Returns the epoch timestamp in seconds, or 0 if parsing fails.
+.RE
+.TP
+.BR sat_time_get_date_by_epoch ()
+Converts a Unix epoch timestamp to a formatted date/time string. The format
+string follows
+.BR strftime (3)
+conventions.
+.RS
+.PP
+.I buffer
+receives the formatted string output.
+.PP
+.I size
+specifies the buffer size in bytes.
+.PP
+.I format
+specifies the output format using specifiers like:
+.IP \(bu 2
+.B %Y
+\- 4-digit year
+.IP \(bu 2
+.B %m
+\- Month (01-12)
+.IP \(bu 2
+.B %d
+\- Day (01-31)
+.IP \(bu 2
+.B %H
+\- Hour (00-23)
+.IP \(bu 2
+.B %M
+\- Minute (00-59)
+.IP \(bu 2
+.B %S
+\- Second (00-59)
+.IP \(bu 2
+.B %A
+\- Full weekday name
+.IP \(bu 2
+.B %B
+\- Full month name
+.PP
+.I epoch
+is the Unix timestamp to convert.
+.PP
+Returns true on success, false if parameters are invalid.
+.RE
+.SS Time Measurement Functions
+.TP
+.BR sat_time_mark_start ()
+Records the current timestamp as the start point for time measurement. Uses
+.BR clock_gettime (2)
+with CLOCK_REALTIME for high-precision timing.
+.RS
+.PP
+This function initializes the
+.I start
+field in the
+.B sat_time_t
+structure. Must be called before
+.BR sat_time_mark_stop ()
+and
+.BR sat_time_mark_time_elapsed ().
+.PP
+Returns true on success, false if the object is NULL or
+.BR clock_gettime (2)
+fails.
+.RE
+.TP
+.BR sat_time_mark_stop ()
+Records the current timestamp as the stop point for time measurement. Must be
+called after
+.BR sat_time_mark_start ()
+to establish the measurement interval.
+.RS
+.PP
+This function initializes the
+.I stop
+field in the
+.B sat_time_t
+structure. After calling this, use
+.BR sat_time_mark_time_elapsed ()
+to calculate the elapsed time.
+.PP
+Returns true on success, false if the object is NULL or
+.BR clock_gettime (2)
+fails.
+.RE
+.TP
+.BR sat_time_mark_time_elapsed ()
+Calculates the elapsed time between the start and stop marks with nanosecond
+precision. Both
+.BR sat_time_mark_start ()
+and
+.BR sat_time_mark_stop ()
+must be called before using this function.
+.RS
+.PP
+.I time_elapsed
+receives the elapsed time in seconds as a double-precision floating point
+number. The fractional part represents sub-second precision down to nanoseconds.
+.PP
+Returns true on success, false if parameters are NULL.
+.RE
+.SH RETURN VALUE
+.TP
+.BR sat_time_get_epoch_now (),
+.BR sat_time_get_utc_epoch_now (),
+.BR sat_time_get_epoch_by_string ()
+Return epoch time in seconds as
+.BR time_t .
+.BR sat_time_get_epoch_by_string ()
+returns 0 on parsing failure.
+.TP
+.BR sat_time_get_epoch_now_ms (),
+.BR sat_time_get_epoch_now_ns ()
+Return epoch time as
+.BR "unsigned long long"
+in milliseconds or nanoseconds respectively.
+.TP
+.BR sat_time_get_date_by_epoch (),
+.BR sat_time_mark_start (),
+.BR sat_time_mark_stop (),
+.BR sat_time_mark_time_elapsed ()
+Return
+.B true
+on success,
+.B false
+on failure.
+.SH EXAMPLES
+.SS Getting Current Time
+.nf
+#include <sat_time.h>
+#include <stdio.h>
+
+// Get current epoch time in seconds
+time_t now = sat_time_get_epoch_now();
+printf("Current epoch: %ld\\n", now);
+
+// Get with millisecond precision
+unsigned long long now_ms = sat_time_get_epoch_now_ms();
+printf("Current epoch (ms): %llu\\n", now_ms);
+
+// Get with nanosecond precision
+unsigned long long now_ns = sat_time_get_epoch_now_ns();
+printf("Current epoch (ns): %llu\\n", now_ns);
+
+// Get UTC time
+time_t utc_now = sat_time_get_utc_epoch_now();
+printf("UTC epoch: %ld\\n", utc_now);
+.fi
+.SS Converting Between Strings and Epochs
+.nf
+#include <sat_time.h>
+#include <stdio.h>
+
+// Convert string to epoch
+const char *time_str = "2025-12-20 15:30:00";
+const char *format = "%Y-%m-%d %H:%M:%S";
+time_t epoch = sat_time_get_epoch_by_string(time_str, format);
+printf("Epoch from string: %ld\\n", epoch);
+
+// Convert epoch to string
+char buffer[64];
+time_t now = sat_time_get_epoch_now();
+if (sat_time_get_date_by_epoch(buffer, sizeof(buffer), 
+                                "%Y-%m-%d %H:%M:%S", now)) {
+    printf("Formatted time: %s\\n", buffer);
+}
+
+// More complex format
+if (sat_time_get_date_by_epoch(buffer, sizeof(buffer),
+                                "%A, %B %d, %Y at %H:%M:%S", now)) {
+    printf("Long format: %s\\n", buffer);
+    // Output: "Friday, December 20, 2025 at 15:30:00"
+}
+.fi
+.SS High-Precision Time Measurement
+.nf
+#include <sat_time.h>
+#include <stdio.h>
+#include <unistd.h>
+
+void benchmark_function(void) {
+    sat_time_t timer;
+    double elapsed;
+    
+    // Start timing
+    sat_time_mark_start(&timer);
+    
+    // Code to measure
+    for (int i = 0; i < 1000000; i++) {
+        // Some computation
+    }
+    
+    // Stop timing
+    sat_time_mark_stop(&timer);
+    
+    // Get elapsed time
+    if (sat_time_mark_time_elapsed(&timer, &elapsed)) {
+        printf("Elapsed time: %.9f seconds\\n", elapsed);
+        printf("Elapsed time: %.3f milliseconds\\n", elapsed * 1000);
+        printf("Elapsed time: %.0f nanoseconds\\n", elapsed * 1e9);
+    }
+}
+.fi
+.SS Profiling Code Sections
+.nf
+#include <sat_time.h>
+#include <stdio.h>
+
+void profile_operations(void) {
+    sat_time_t timer;
+    double elapsed;
+    
+    // Profile database query
+    sat_time_mark_start(&timer);
+    // execute_database_query();
+    sat_time_mark_stop(&timer);
+    sat_time_mark_time_elapsed(&timer, &elapsed);
+    printf("DB Query: %.3f ms\\n", elapsed * 1000);
+    
+    // Profile file I/O
+    sat_time_mark_start(&timer);
+    // read_file_operations();
+    sat_time_mark_stop(&timer);
+    sat_time_mark_time_elapsed(&timer, &elapsed);
+    printf("File I/O: %.3f ms\\n", elapsed * 1000);
+    
+    // Profile network operation
+    sat_time_mark_start(&timer);
+    // send_network_request();
+    sat_time_mark_stop(&timer);
+    sat_time_mark_time_elapsed(&timer, &elapsed);
+    printf("Network: %.3f ms\\n", elapsed * 1000);
+}
+.fi
+.SS Timestamp Logging
+.nf
+#include <sat_time.h>
+#include <stdio.h>
+
+void log_with_timestamp(const char *message) {
+    char timestamp[64];
+    time_t now = sat_time_get_epoch_now();
+    
+    sat_time_get_date_by_epoch(timestamp, sizeof(timestamp),
+                                "%Y-%m-%d %H:%M:%S", now);
+    printf("[%s] %s\\n", timestamp, message);
+}
+
+void application_start(void) {
+    log_with_timestamp("Application started");
+    // Application code...
+    log_with_timestamp("Processing completed");
+}
+.fi
+.SH NOTES
+.IP \(bu 2
+All epoch times are relative to January 1, 1970, 00:00:00 UTC (Unix epoch).
+.IP \(bu 2
+The time measurement functions use CLOCK_REALTIME, which can be affected by
+system time adjustments. For monotonic timing unaffected by time changes,
+consider using CLOCK_MONOTONIC directly with
+.BR clock_gettime (2).
+.IP \(bu 2
+Nanosecond precision is theoretical maximum; actual precision depends on
+system hardware and kernel configuration.
+.IP \(bu 2
+.BR sat_time_get_epoch_by_string ()
+returns 0 on parsing failure, which is a valid epoch time (Jan 1, 1970).
+Check return value carefully or validate input strings.
+.IP \(bu 2
+Buffer sizes for
+.BR sat_time_get_date_by_epoch ()
+should be large enough for the formatted output plus null terminator.
+.IP \(bu 2
+Format strings for time conversion follow
+.BR strptime (3)
+and
+.BR strftime (3)
+conventions. See those man pages for complete format specifier lists.
+.SH SEE ALSO
+.BR time (2),
+.BR gettimeofday (2),
+.BR clock_gettime (2),
+.BR strftime (3),
+.BR strptime (3),
+.BR localtime (3),
+.BR gmtime (3),
+.BR mktime (3)
+.SH AUTHOR
+SAT Library Team
+.SH COPYRIGHT
+Copyright \(co 2025 SAT Library Project. Licensed under MIT License.
