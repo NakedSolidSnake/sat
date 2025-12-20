@@ -13,6 +13,7 @@ target_include_directories (sat_file
 target_link_libraries (sat_file
     PUBLIC
     sat_status
+    m
 )
 
 install (FILES include/sat_file.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
