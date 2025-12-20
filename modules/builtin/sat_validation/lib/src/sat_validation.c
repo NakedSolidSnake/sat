@@ -1,7 +1,7 @@
 #include <sat_validation.h>
 #include <string.h>
 
-sat_status_t sat_validation_init (sat_validation_t *object)
+sat_status_t sat_validation_init (sat_validation_t *const object)
 {
     sat_status_t status = sat_status_set (&status, false, "sat validation init error");
 
@@ -14,7 +14,7 @@ sat_status_t sat_validation_init (sat_validation_t *object)
     return status;
 }
 
-sat_status_t sat_validation_add (sat_validation_t *object, sat_criteria_t criteria)
+sat_status_t sat_validation_add (sat_validation_t *const object, sat_criteria_t criteria)
 {
     sat_status_t status = sat_status_set (&status, false, "sat validation add error");
 
@@ -29,7 +29,7 @@ sat_status_t sat_validation_add (sat_validation_t *object, sat_criteria_t criter
     return status;
 }
 
-sat_status_t sat_validation_verify (sat_validation_t *object, void *data)
+sat_status_t sat_validation_verify (const sat_validation_t *const object, const void *const data)
 {
     sat_status_t status = sat_status_set (&status, true, "");
 

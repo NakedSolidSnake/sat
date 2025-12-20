@@ -20,7 +20,7 @@ list (APPEND SAT_SOURCES
                         #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_time.c
                         #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_status.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_log.c
-                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_validation.c
+                        #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_validation.c
                         #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_event.c
                         #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_stack.c
                         #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_array.c
@@ -93,6 +93,7 @@ list (APPEND SAT_LIBRARIES
              sat_stack
              sat_process
              sat_file
+             sat_validation
              )
 
 list (APPEND SAT_INCLUDES ${CMAKE_CURRENT_LIST_DIR}/include
@@ -127,7 +128,7 @@ install (FILES include/sat.h             DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 # install (FILES include/sat_time.h        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 # install (FILES include/sat_status.h      DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install (FILES include/sat_log.h         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install (FILES include/sat_validation.h  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+# install (FILES include/sat_validation.h  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 # install (FILES include/sat_event.h       DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 # install (FILES include/sat_stack.h       DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 # install (FILES include/sat_array.h       DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})

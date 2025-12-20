@@ -1,0 +1,432 @@
+.TH SAT_VALIDATION 3 "December 2025" "SAT Library" "SAT Library Manual"
+.SH NAME
+sat_validation \- data validation framework with composable criteria
+.SH SYNOPSIS
+.nf
+.B #include <sat_validation.h>
+.PP
+.BI "sat_status_t sat_validation_init(sat_validation_t *" object );
+.BI "sat_status_t sat_validation_add(sat_validation_t *" object ", sat_criteria_t " criteria );
+.BI "sat_status_t sat_validation_verify(const sat_validation_t *" object ", const void *" data );
+.PP
+.B "typedef sat_status_t (*sat_criteria_t)(const void *data);"
+.PP
+Link with \fI\-lsat_validation\fP.
+.fi
+.SH DESCRIPTION
+The
+.B sat_validation
+module provides a flexible, composable validation framework for data validation.
+It allows defining multiple validation criteria and combining them into a single
+validator that checks all criteria sequentially. This is useful for input
+validation, data integrity checking, and business rule enforcement.
+.PP
+The framework uses a callback-based approach where each criterion is a function
+that validates a specific aspect of the data. Validation succeeds only if all
+registered criteria pass. The first failing criterion stops further evaluation
+and returns its error status.
+.PP
+This module is useful for:
+.IP \(bu 2
+Input validation with multiple rules
+.IP \(bu 2
+Data integrity checking with composable constraints
+.IP \(bu 2
+Business rule enforcement with reusable criteria
+.IP \(bu 2
+Form validation with field-level rules
+.IP \(bu 2
+Configuration validation with semantic checks
+.SS Constants
+.TP
+.B SAT_VALIDATION_CRITERIA_AMOUNT
+Maximum number of criteria that can be registered in a single validator (10).
+.SS Types
+.TP
+.B sat_criteria_t
+Function pointer type for validation criteria:
+.RS
+.PP
+.BI "typedef sat_status_t (*sat_criteria_t)(const void *" data );
+.PP
+Each criterion function receives a pointer to the data to validate and returns
+a status indicating whether the criterion is satisfied:
+.IP \(bu 2
+Return
+.B SAT_STATUS_OK
+if the criterion is satisfied
+.IP \(bu 2
+Return
+.B SAT_STATUS_ERROR
+with a descriptive message if validation fails
+.PP
+Criteria should not modify the data being validated. The data pointer's actual
+type depends on the validation context and should be cast appropriately within
+the criterion function.
+.RE
+.TP
+.B sat_validation_t
+Structure representing a validation object:
+.RS
+.IP \(bu 2
+.B criterias[]
+\- Array of registered criterion functions
+.IP \(bu 2
+.B amount
+\- Number of currently registered criteria
+.PP
+This structure should be initialized with
+.BR sat_validation_init ()
+before use.
+.RE
+.SS Functions
+.TP
+.BR sat_validation_init ()
+Initializes a validation object by clearing all fields. This prepares the
+validator for use and must be called before adding criteria or performing
+validation.
+.RS
+.PP
+Returns a status indicating success or failure. Fails only if the object
+pointer is NULL.
+.RE
+.TP
+.BR sat_validation_add ()
+Registers a new criterion function with the validator. Criteria are executed
+in the order they are added during validation. A maximum of
+.B SAT_VALIDATION_CRITERIA_AMOUNT
+criteria can be registered.
+.RS
+.PP
+Returns a status indicating success or failure. Fails if:
+.IP \(bu 2
+Object or criteria pointer is NULL
+.IP \(bu 2
+Maximum number of criteria already registered
+.PP
+.B Note:
+Criteria should be added in order of computational cost or logical dependency,
+as validation stops at the first failure.
+.RE
+.TP
+.BR sat_validation_verify ()
+Executes all registered criteria functions against the provided data. Each
+criterion is evaluated sequentially in the order it was added. Validation
+stops at the first failing criterion.
+.RS
+.PP
+Returns a status indicating success (all criteria passed) or failure (at least
+one criterion failed). The returned status from a failing criterion includes
+its error message for diagnostics.
+.PP
+If object or data pointer is NULL, returns an error status. If no criteria
+are registered, returns success (empty validation always passes).
+.PP
+.B Note:
+The data pointer is passed as
+.BR "void *"
+to allow validating any data type. Criterion functions should cast it to the
+appropriate type.
+.RE
+.SH RETURN VALUE
+All functions return
+.B sat_status_t
+indicating success or failure. Use SAT status utility functions like
+.BR sat_status_is_ok ()
+to check results. The status also contains descriptive error messages.
+.SH EXAMPLES
+.SS Simple String Validation
+.nf
+#include <sat_validation.h>
+#include <string.h>
+#include <stdio.h>
+
+// Criterion: string must not be NULL or empty
+sat_status_t not_empty(const void *data) {
+    sat_status_t status;
+    const char *str = (const char *)data;
+    
+    if (str == NULL || strlen(str) == 0) {
+        return sat_status_set(&status, false, 
+                              "String cannot be empty");
+    }
+    return sat_status_set(&status, true, "");
+}
+
+// Criterion: string length must be <= 50
+sat_status_t max_length(const void *data) {
+    sat_status_t status;
+    const char *str = (const char *)data;
+    
+    if (strlen(str) > 50) {
+        return sat_status_set(&status, false, 
+                              "String too long (max 50)");
+    }
+    return sat_status_set(&status, true, "");
+}
+
+void validate_username(const char *username) {
+    sat_validation_t validator;
+    
+    sat_validation_init(&validator);
+    sat_validation_add(&validator, not_empty);
+    sat_validation_add(&validator, max_length);
+    
+    sat_status_t result = sat_validation_verify(&validator, username);
+    if (sat_status_is_ok(result)) {
+        printf("Username is valid\\n");
+    } else {
+        printf("Invalid: %s\\n", sat_status_get_message(&result));
+    }
+}
+.fi
+.SS Integer Range Validation
+.nf
+#include <sat_validation.h>
+#include <stdio.h>
+
+typedef struct {
+    int value;
+    int min;
+    int max;
+} range_data_t;
+
+sat_status_t check_positive(const void *data) {
+    sat_status_t status;
+    int value = *(const int *)data;
+    
+    if (value < 0) {
+        return sat_status_set(&status, false, 
+                              "Value must be positive");
+    }
+    return sat_status_set(&status, true, "");
+}
+
+sat_status_t check_range(const void *data) {
+    sat_status_t status;
+    const range_data_t *rd = (const range_data_t *)data;
+    
+    if (rd->value < rd->min || rd->value > rd->max) {
+        return sat_status_set(&status, false, 
+                              "Value out of range");
+    }
+    return sat_status_set(&status, true, "");
+}
+
+void validate_port(int port) {
+    sat_validation_t validator;
+    range_data_t data = {port, 1024, 65535};
+    
+    sat_validation_init(&validator);
+    sat_validation_add(&validator, check_positive);
+    sat_validation_add(&validator, check_range);
+    
+    if (sat_status_is_ok(sat_validation_verify(&validator, &data))) {
+        printf("Port %d is valid\\n", port);
+    }
+}
+.fi
+.SS Email Validation
+.nf
+#include <sat_validation.h>
+#include <string.h>
+#include <ctype.h>
+
+sat_status_t has_at_symbol(const void *data) {
+    sat_status_t status;
+    const char *email = (const char *)data;
+    
+    if (strchr(email, '@') == NULL) {
+        return sat_status_set(&status, false, 
+                              "Email must contain @");
+    }
+    return sat_status_set(&status, true, "");
+}
+
+sat_status_t has_domain(const void *data) {
+    sat_status_t status;
+    const char *email = (const char *)data;
+    const char *at = strchr(email, '@');
+    
+    if (at == NULL || strchr(at + 1, '.') == NULL) {
+        return sat_status_set(&status, false, 
+                              "Email must have domain");
+    }
+    return sat_status_set(&status, true, "");
+}
+
+sat_status_t no_spaces(const void *data) {
+    sat_status_t status;
+    const char *email = (const char *)data;
+    
+    if (strchr(email, ' ') != NULL) {
+        return sat_status_set(&status, false, 
+                              "Email cannot contain spaces");
+    }
+    return sat_status_set(&status, true, "");
+}
+
+bool validate_email(const char *email) {
+    sat_validation_t validator;
+    
+    sat_validation_init(&validator);
+    sat_validation_add(&validator, has_at_symbol);
+    sat_validation_add(&validator, has_domain);
+    sat_validation_add(&validator, no_spaces);
+    
+    return sat_status_is_ok(
+        sat_validation_verify(&validator, email)
+    );
+}
+.fi
+.SS Password Strength Validation
+.nf
+#include <sat_validation.h>
+#include <string.h>
+#include <ctype.h>
+
+sat_status_t min_length_8(const void *data) {
+    sat_status_t status;
+    const char *pwd = (const char *)data;
+    
+    if (strlen(pwd) < 8) {
+        return sat_status_set(&status, false, 
+                              "Password must be at least 8 characters");
+    }
+    return sat_status_set(&status, true, "");
+}
+
+sat_status_t has_uppercase(const void *data) {
+    sat_status_t status;
+    const char *pwd = (const char *)data;
+    
+    for (const char *p = pwd; *p; p++) {
+        if (isupper(*p)) {
+            return sat_status_set(&status, true, "");
+        }
+    }
+    return sat_status_set(&status, false, 
+                          "Password must contain uppercase letter");
+}
+
+sat_status_t has_digit(const void *data) {
+    sat_status_t status;
+    const char *pwd = (const char *)data;
+    
+    for (const char *p = pwd; *p; p++) {
+        if (isdigit(*p)) {
+            return sat_status_set(&status, true, "");
+        }
+    }
+    return sat_status_set(&status, false, 
+                          "Password must contain a digit");
+}
+
+void check_password(const char *password) {
+    sat_validation_t validator;
+    
+    sat_validation_init(&validator);
+    sat_validation_add(&validator, min_length_8);
+    sat_validation_add(&validator, has_uppercase);
+    sat_validation_add(&validator, has_digit);
+    
+    sat_status_t result = sat_validation_verify(&validator, password);
+    if (sat_status_is_ok(result)) {
+        printf("Password meets all requirements\\n");
+    } else {
+        printf("Password rejected: %s\\n", 
+               sat_status_get_message(&result));
+    }
+}
+.fi
+.SS Configuration Validation
+.nf
+#include <sat_validation.h>
+
+typedef struct {
+    int port;
+    char *host;
+    int timeout;
+} config_t;
+
+sat_status_t valid_port(const void *data) {
+    sat_status_t status;
+    const config_t *cfg = (const config_t *)data;
+    
+    if (cfg->port < 1 || cfg->port > 65535) {
+        return sat_status_set(&status, false, 
+                              "Invalid port number");
+    }
+    return sat_status_set(&status, true, "");
+}
+
+sat_status_t valid_host(const void *data) {
+    sat_status_t status;
+    const config_t *cfg = (const config_t *)data;
+    
+    if (cfg->host == NULL || strlen(cfg->host) == 0) {
+        return sat_status_set(&status, false, 
+                              "Host cannot be empty");
+    }
+    return sat_status_set(&status, true, "");
+}
+
+sat_status_t valid_timeout(const void *data) {
+    sat_status_t status;
+    const config_t *cfg = (const config_t *)data;
+    
+    if (cfg->timeout < 0 || cfg->timeout > 300) {
+        return sat_status_set(&status, false, 
+                              "Timeout must be 0-300 seconds");
+    }
+    return sat_status_set(&status, true, "");
+}
+
+bool validate_config(const config_t *config) {
+    sat_validation_t validator;
+    
+    sat_validation_init(&validator);
+    sat_validation_add(&validator, valid_port);
+    sat_validation_add(&validator, valid_host);
+    sat_validation_add(&validator, valid_timeout);
+    
+    return sat_status_is_ok(
+        sat_validation_verify(&validator, config)
+    );
+}
+.fi
+.SH NOTES
+.IP \(bu 2
+Validation stops at the first failing criterion, so order matters for
+performance and user feedback.
+.IP \(bu 2
+Criteria functions should be pure (no side effects) and should not modify
+the data being validated.
+.IP \(bu 2
+The maximum number of criteria is fixed at compile time to
+.BR SAT_VALIDATION_CRITERIA_AMOUNT
+(10 by default).
+.IP \(bu 2
+The data pointer is passed as
+.BR "void *"
+to allow validating any type. Type safety is the responsibility of the
+criterion functions.
+.IP \(bu 2
+Criteria can be reused across multiple validators, promoting code reuse
+and consistency.
+.IP \(bu 2
+Empty validators (no criteria) always succeed when verified.
+.IP \(bu 2
+The framework is thread-safe if criterion functions are thread-safe and
+validators are not shared between threads.
+.IP \(bu 2
+For complex validations, consider ordering criteria from cheapest to most
+expensive computation.
+.IP \(bu 2
+Criterion error messages should be descriptive for good user feedback.
+.SH SEE ALSO
+.BR sat_status (3)
+.SH AUTHOR
+SAT Library Team
+.SH COPYRIGHT
+Copyright \(co 2025 SAT Library Project. Licensed under MIT License.

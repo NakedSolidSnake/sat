@@ -2,7 +2,7 @@
 # create_test (test_sat_time)
 create_test (test_sat_status)
 create_test (test_sat_log)
-create_test (test_sat_validation)
+# create_test (test_sat_validation)
 # create_test (test_sat_stack)
 create_test (test_sat_map)
 create_test (test_sat_tcp)

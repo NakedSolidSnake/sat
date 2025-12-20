@@ -12,8 +12,8 @@ typedef struct
     int stars;
 } customer_t;
 
-sat_status_t criteria_customer_credit (void *object);
-sat_status_t criteria_customer_stars (void *object);
+sat_status_t criteria_customer_credit (const void *const object);
+sat_status_t criteria_customer_stars (const void *const object);
 
 int main (int argc, char *argv[])
 {
@@ -52,24 +52,28 @@ int main (int argc, char *argv[])
     return 0;
 }
 
-sat_status_t criteria_customer_credit (void *object)
+sat_status_t criteria_customer_credit (const void *const object)
 {
     sat_status_t status = sat_status_set (&status, false, "criteria customer credit error");
-    customer_t *customer = (customer_t *)object;
+    const customer_t *customer = (const customer_t *)object;
 
     if (customer->credit > 300.0)
+    {
         sat_status_set (&status, true, "");
+    }
 
     return status;
 }
 
-sat_status_t criteria_customer_stars (void *object)
+sat_status_t criteria_customer_stars (const void *const object)
 {
     sat_status_t status = sat_status_set (&status, false, "criteria customer stars error");
-    customer_t *customer = (customer_t *)object;
+    const customer_t *customer = (const customer_t *)object;
 
     if (customer->stars > 3)
+    {
         sat_status_set (&status, true, "");
+    }
 
     return status;
 }
