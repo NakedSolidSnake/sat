@@ -1,4 +1,4 @@
-create_test (test_sat_file)
+# create_test (test_sat_file)
 # create_test (test_sat_time)
 create_test (test_sat_status)
 create_test (test_sat_log)

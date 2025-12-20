@@ -15,7 +15,8 @@ include ("${CMAKE_CURRENT_SOURCE_DIR}/cmake/LoadModules.txt")
 
 add_subdirectory (modules)
 
-list (APPEND SAT_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/sat_file.c
+list (APPEND SAT_SOURCES 
+                        #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_file.c
                         #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_time.c
                         #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_status.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_log.c
@@ -91,6 +92,7 @@ list (APPEND SAT_LIBRARIES
              sat_time
              sat_stack
              sat_process
+             sat_file
              )
 
 list (APPEND SAT_INCLUDES ${CMAKE_CURRENT_LIST_DIR}/include
@@ -121,7 +123,7 @@ install (TARGETS sat LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 install (FILES include/sat.h             DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 # install (FILES include/sat_uuid.h        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install (FILES include/sat_file.h        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+# install (FILES include/sat_file.h        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 # install (FILES include/sat_time.h        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 # install (FILES include/sat_status.h      DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install (FILES include/sat_log.h         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
