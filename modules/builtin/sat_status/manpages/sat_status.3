@@ -1,0 +1,597 @@
+.TH SAT_STATUS 3 "December 2025" "SAT Library" "SAT Library Manual"
+.SH NAME
+sat_status \- status handling and error reporting system
+.SH SYNOPSIS
+.nf
+.B #include <sat_status.h>
+.PP
+.BI "sat_status_t sat_status_set(sat_status_t *" object ", "
+.BI "                            bool " result ", char *" motive );
+.BI "bool sat_status_get_result(sat_status_t *" object );
+.BI "char *sat_status_get_motive(sat_status_t *" object );
+.PP
+.BI "sat_status_t sat_status_success(sat_status_t *" object );
+.BI "sat_status_t sat_status_failure(sat_status_t *" object ", char *" motive );
+.PP
+.BI "sat_status_break_on_error(" status );
+.BI "sat_status_continue_on_error(" status );
+.PP
+Link with \fI\-lsat_status\fP.
+.fi
+.SH DESCRIPTION
+The
+.B sat_status
+module provides a structured approach to function return status handling with
+boolean success indicators and descriptive error messages. It offers a
+lightweight alternative to traditional error code systems by combining a
+success/failure flag with human-readable error descriptions.
+.PP
+The module is used throughout the SAT library to provide consistent error
+reporting and is designed to integrate seamlessly with C's control flow
+mechanisms through convenience macros.
+.SS Design Philosophy
+Unlike traditional integer error codes that require lookup tables or constants,
+sat_status provides immediate clarity:
+.IP \(bu 2
+Binary result: success (true) or failure (false)
+.IP \(bu 2
+Descriptive motive: human-readable error message
+.IP \(bu 2
+Macro helpers: streamlined error handling patterns
+.PP
+This approach reduces cognitive load and makes error conditions immediately
+apparent without consulting documentation.
+.SS Types
+.TP
+.B sat_status_t
+Structure representing an operation's outcome:
+.RS
+.IP \(bu 2
+.B result
+\- Boolean indicating success (true) or failure (false)
+.IP \(bu 2
+.B motive
+\- String pointer containing error description or "No error"
+.PP
+The structure is designed to be returned by value, allowing for convenient
+function chaining and inline initialization.
+.RE
+.SS Macros
+.TP
+.BR sat_status_break_on_error ()
+Macro that evaluates a status and breaks out of the current loop if the
+status indicates failure. This is particularly useful in do-while(false)
+error handling patterns where sequential operations need to stop at the
+first error.
+.RS
+.PP
+.nf
+do {
+    status = operation1();
+    sat_status_break_on_error(status);
+    
+    status = operation2();
+    sat_status_break_on_error(status);
+    
+    status = operation3();
+} while (false);
+.fi
+.RE
+.TP
+.BR sat_status_continue_on_error ()
+Macro that evaluates a status and continues to the next loop iteration if
+the status indicates failure. Useful when processing multiple items where
+individual failures should not terminate the entire operation.
+.RS
+.PP
+.nf
+for (int i = 0; i < count; i++) {
+    status = process_item(items[i]);
+    sat_status_continue_on_error(status);
+    
+    // Only reached for successful items
+    finalize_item(items[i]);
+}
+.fi
+.RE
+.SS Functions
+.TP
+.BR sat_status_set ()
+Configures a status object with the specified result and error message.
+This is the fundamental function for creating status objects.
+.RS
+.PP
+If the
+.I motive
+parameter is NULL or an empty string, the motive is automatically set to
+"No error". This ensures that the motive field always contains a valid
+string pointer.
+.PP
+The function returns the status by value, allowing for convenient inline
+usage:
+.PP
+.nf
+return sat_status_set(&status, false, "Connection timeout");
+.fi
+.PP
+The function asserts that
+.I object
+is not NULL.
+.RE
+.TP
+.BR sat_status_get_result ()
+Extracts the boolean result from a status object. Returns true for success,
+false for failure.
+.RS
+.PP
+This is the primary method for checking if an operation succeeded:
+.PP
+.nf
+if (sat_status_get_result(&status)) {
+    // Success path
+} else {
+    // Error path
+}
+.fi
+.PP
+The function asserts that
+.I object
+is not NULL.
+.RE
+.TP
+.BR sat_status_get_motive ()
+Retrieves the error description string from a status object. For successful
+operations, returns "No error".
+.RS
+.PP
+The returned pointer points to the internal motive string and should not be
+freed by the caller. The string remains valid as long as the status object
+is not modified.
+.PP
+.nf
+if (!sat_status_get_result(&status)) {
+    fprintf(stderr, "Error: %s\\n", sat_status_get_motive(&status));
+}
+.fi
+.PP
+The function asserts that
+.I object
+is not NULL.
+.RE
+.TP
+.BR sat_status_success ()
+Convenience function that creates a success status with result set to true
+and motive set to an empty string (which becomes "No error").
+.RS
+.PP
+This is functionally equivalent to:
+.PP
+.nf
+sat_status_set(object, true, "");
+.fi
+.PP
+Common usage pattern:
+.PP
+.nf
+sat_status_t my_function(void) {
+    sat_status_t status = sat_status_success(&status);
+    // ... function logic ...
+    return status;
+}
+.fi
+.RE
+.TP
+.BR sat_status_failure ()
+Convenience function that creates a failure status with result set to false
+and the specified error message.
+.RS
+.PP
+This is functionally equivalent to:
+.PP
+.nf
+sat_status_set(object, false, motive);
+.fi
+.PP
+Common usage pattern:
+.PP
+.nf
+sat_status_t my_function(int fd) {
+    sat_status_t status;
+    
+    if (fd < 0) {
+        return sat_status_failure(&status, "Invalid file descriptor");
+    }
+    
+    return sat_status_success(&status);
+}
+.fi
+.RE
+.SH RETURN VALUE
+.TP
+.BR sat_status_set (),
+.BR sat_status_success (),
+.BR sat_status_failure ()
+Return the configured
+.B sat_status_t
+structure by value.
+.TP
+.BR sat_status_get_result ()
+Returns
+.B true
+if the status indicates success,
+.B false
+if it indicates failure.
+.TP
+.BR sat_status_get_motive ()
+Returns a pointer to the error description string. Never returns NULL.
+.SH EXAMPLES
+.SS Basic Success and Failure
+.nf
+#include <sat_status.h>
+#include <stdio.h>
+
+sat_status_t divide(int a, int b, int *result) {
+    sat_status_t status;
+    
+    if (b == 0) {
+        return sat_status_failure(&status, "Division by zero");
+    }
+    
+    *result = a / b;
+    return sat_status_success(&status);
+}
+
+int main(void) {
+    int result;
+    sat_status_t status;
+    
+    status = divide(10, 2, &result);
+    if (sat_status_get_result(&status)) {
+        printf("Result: %d\\n", result);
+    } else {
+        printf("Error: %s\\n", sat_status_get_motive(&status));
+    }
+    
+    status = divide(10, 0, &result);
+    if (!sat_status_get_result(&status)) {
+        printf("Error: %s\\n", sat_status_get_motive(&status));
+    }
+    
+    return 0;
+}
+
+/* Output:
+Result: 5
+Error: Division by zero
+*/
+.fi
+.SS Sequential Operations with Break on Error
+.nf
+#include <sat_status.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+sat_status_t allocate_memory(void **ptr, size_t size) {
+    sat_status_t status;
+    
+    *ptr = malloc(size);
+    if (*ptr == NULL) {
+        return sat_status_failure(&status, "Memory allocation failed");
+    }
+    
+    return sat_status_success(&status);
+}
+
+sat_status_t initialize_data(void *ptr) {
+    sat_status_t status;
+    
+    if (ptr == NULL) {
+        return sat_status_failure(&status, "Null pointer");
+    }
+    
+    // Initialization logic...
+    return sat_status_success(&status);
+}
+
+sat_status_t setup_system(void) {
+    sat_status_t status;
+    void *buffer = NULL;
+    
+    do {
+        // Step 1: Allocate memory
+        status = allocate_memory(&buffer, 1024);
+        sat_status_break_on_error(status);
+        
+        // Step 2: Initialize data
+        status = initialize_data(buffer);
+        sat_status_break_on_error(status);
+        
+        // Step 3: More operations...
+        printf("System setup complete\\n");
+        
+    } while (false);
+    
+    // Cleanup on error
+    if (!sat_status_get_result(&status)) {
+        printf("Setup failed: %s\\n", sat_status_get_motive(&status));
+        if (buffer) free(buffer);
+    }
+    
+    return status;
+}
+
+int main(void) {
+    setup_system();
+    return 0;
+}
+.fi
+.SS Processing Multiple Items with Continue on Error
+.nf
+#include <sat_status.h>
+#include <stdio.h>
+#include <string.h>
+
+sat_status_t process_file(const char *filename) {
+    sat_status_t status;
+    
+    if (filename == NULL || strlen(filename) == 0) {
+        return sat_status_failure(&status, "Empty filename");
+    }
+    
+    // Simulate processing
+    if (strcmp(filename, "bad.txt") == 0) {
+        return sat_status_failure(&status, "Corrupted file");
+    }
+    
+    printf("Processed: %s\\n", filename);
+    return sat_status_success(&status);
+}
+
+int main(void) {
+    const char *files[] = {
+        "file1.txt",
+        "bad.txt",
+        "file2.txt",
+        "",
+        "file3.txt"
+    };
+    int success_count = 0;
+    
+    for (int i = 0; i < 5; i++) {
+        sat_status_t status = process_file(files[i]);
+        
+        if (!sat_status_get_result(&status)) {
+            printf("Failed [%s]: %s\\n", 
+                   files[i], sat_status_get_motive(&status));
+            sat_status_continue_on_error(status);
+        }
+        
+        success_count++;
+    }
+    
+    printf("Successfully processed %d/%d files\\n", success_count, 5);
+    
+    return 0;
+}
+
+/* Output:
+Processed: file1.txt
+Failed [bad.txt]: Corrupted file
+Processed: file2.txt
+Failed []: Empty filename
+Processed: file3.txt
+Successfully processed 3/5 files
+*/
+.fi
+.SS Inline Status Creation
+.nf
+#include <sat_status.h>
+#include <stdio.h>
+
+sat_status_t validate_input(int value) {
+    sat_status_t status;
+    
+    if (value < 0)
+        return sat_status_failure(&status, "Negative value not allowed");
+    
+    if (value > 100)
+        return sat_status_failure(&status, "Value exceeds maximum");
+    
+    return sat_status_success(&status);
+}
+
+sat_status_t complex_operation(int a, int b) {
+    sat_status_t status;
+    
+    // Inline status checking
+    status = validate_input(a);
+    if (!sat_status_get_result(&status))
+        return status;
+    
+    status = validate_input(b);
+    if (!sat_status_get_result(&status))
+        return status;
+    
+    printf("Processing: %d, %d\\n", a, b);
+    return sat_status_success(&status);
+}
+
+int main(void) {
+    sat_status_t status;
+    
+    status = complex_operation(50, 75);
+    printf("Result: %s\\n", 
+           sat_status_get_result(&status) ? "Success" : "Failure");
+    
+    status = complex_operation(-5, 50);
+    if (!sat_status_get_result(&status)) {
+        printf("Error: %s\\n", sat_status_get_motive(&status));
+    }
+    
+    status = complex_operation(50, 150);
+    if (!sat_status_get_result(&status)) {
+        printf("Error: %s\\n", sat_status_get_motive(&status));
+    }
+    
+    return 0;
+}
+
+/* Output:
+Processing: 50, 75
+Result: Success
+Error: Negative value not allowed
+Error: Value exceeds maximum
+*/
+.fi
+.SS Direct Status Manipulation
+.nf
+#include <sat_status.h>
+#include <stdio.h>
+
+void demonstrate_api(void) {
+    sat_status_t status;
+    
+    // Method 1: Using sat_status_set directly
+    status = sat_status_set(&status, true, "");
+    printf("Status 1 - Result: %d, Motive: %s\\n",
+           sat_status_get_result(&status),
+           sat_status_get_motive(&status));
+    
+    // Method 2: Using sat_status_success
+    status = sat_status_success(&status);
+    printf("Status 2 - Result: %d, Motive: %s\\n",
+           sat_status_get_result(&status),
+           sat_status_get_motive(&status));
+    
+    // Method 3: Using sat_status_failure
+    status = sat_status_failure(&status, "Custom error message");
+    printf("Status 3 - Result: %d, Motive: %s\\n",
+           sat_status_get_result(&status),
+           sat_status_get_motive(&status));
+    
+    // Method 4: Using sat_status_set with NULL motive
+    status = sat_status_set(&status, false, NULL);
+    printf("Status 4 - Result: %d, Motive: %s\\n",
+           sat_status_get_result(&status),
+           sat_status_get_motive(&status));
+}
+
+int main(void) {
+    demonstrate_api();
+    return 0;
+}
+
+/* Output:
+Status 1 - Result: 1, Motive: No error
+Status 2 - Result: 1, Motive: No error
+Status 3 - Result: 0, Motive: Custom error message
+Status 4 - Result: 0, Motive: No error
+*/
+.fi
+.SS Nested Function Calls
+.nf
+#include <sat_status.h>
+#include <stdio.h>
+
+sat_status_t low_level_operation(int value) {
+    sat_status_t status;
+    
+    if (value < 0) {
+        return sat_status_failure(&status, "Low level: invalid value");
+    }
+    
+    return sat_status_success(&status);
+}
+
+sat_status_t mid_level_operation(int value) {
+    sat_status_t status;
+    
+    status = low_level_operation(value);
+    if (!sat_status_get_result(&status)) {
+        // Propagate error with additional context
+        char error_msg[256];
+        snprintf(error_msg, sizeof(error_msg),
+                 "Mid level failed: %s", sat_status_get_motive(&status));
+        return sat_status_failure(&status, error_msg);
+    }
+    
+    return sat_status_success(&status);
+}
+
+sat_status_t high_level_operation(int value) {
+    sat_status_t status;
+    
+    status = mid_level_operation(value);
+    if (!sat_status_get_result(&status)) {
+        // Propagate error up the stack
+        return status;
+    }
+    
+    printf("Operation completed successfully\\n");
+    return sat_status_success(&status);
+}
+
+int main(void) {
+    sat_status_t status;
+    
+    status = high_level_operation(10);
+    
+    status = high_level_operation(-5);
+    if (!sat_status_get_result(&status)) {
+        printf("Error: %s\\n", sat_status_get_motive(&status));
+    }
+    
+    return 0;
+}
+
+/* Output:
+Operation completed successfully
+Error: Mid level failed: Low level: invalid value
+*/
+.fi
+.SH NOTES
+.IP \(bu 2
+All functions that take a status pointer assert that the pointer is not NULL.
+Passing NULL will cause a runtime assertion failure in debug builds.
+.IP \(bu 2
+The motive string is stored as a pointer, not copied. Ensure that string
+literals or dynamically allocated strings remain valid for the lifetime
+of the status object.
+.IP \(bu 2
+Setting motive to NULL or an empty string automatically converts it to
+"No error" to ensure the field always contains a valid string.
+.IP \(bu 2
+Status objects are designed to be returned by value, which is efficient for
+small structures and provides convenient inline usage.
+.IP \(bu 2
+The
+.BR sat_status_break_on_error ()
+and
+.BR sat_status_continue_on_error ()
+macros reference the status variable by name, so the variable must be
+named "status" for these macros to work.
+.IP \(bu 2
+For error propagation up the call stack, simply return the status from
+lower-level functions without modification.
+.IP \(bu 2
+When using dynamically allocated error messages, ensure proper memory
+management to avoid leaks.
+.IP \(bu 2
+The module is thread-safe as it uses no global state. Each status object
+is independent.
+.IP \(bu 2
+Consider using consistent error message formats across your application
+for easier parsing and logging.
+.IP \(bu 2
+The boolean result can be tested directly in conditionals without calling
+.BR sat_status_get_result ()
+if you access the structure member directly, though using the accessor
+function is recommended for consistency.
+.SH SEE ALSO
+.BR assert (3),
+.BR errno (3),
+.BR strerror (3)
+.SH AUTHOR
+SAT Library Team
+.SH COPYRIGHT
+Copyright \(co 2025 SAT Library Project. Licensed under MIT License.
