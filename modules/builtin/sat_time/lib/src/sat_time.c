@@ -54,7 +54,7 @@ time_t sat_time_get_utc_epoch_now (void)
     return now;
 }
 
-time_t sat_time_get_epoch_by_string (const char *time_string, const char *format)
+time_t sat_time_get_epoch_by_string (const char *const time_string, const char *const format)
 {
     time_t epoch = 0;
 
@@ -70,7 +70,7 @@ time_t sat_time_get_epoch_by_string (const char *time_string, const char *format
     return epoch;
 }
 
-bool sat_time_get_date_by_epoch (char *buffer, uint8_t size, const char *format, time_t epoch)
+bool sat_time_get_date_by_epoch (char *const buffer, uint8_t size, const char *const format, time_t epoch)
 {
     bool status = false;
     struct tm *ptm = NULL;
@@ -86,7 +86,7 @@ bool sat_time_get_date_by_epoch (char *buffer, uint8_t size, const char *format,
     return status;
 }
 
-bool sat_time_mark_start (sat_time_t *object)
+bool sat_time_mark_start (sat_time_t *const object)
 {
     bool status = false;
 
@@ -98,7 +98,7 @@ bool sat_time_mark_start (sat_time_t *object)
     return status;
 }
 
-bool sat_time_mark_stop (sat_time_t *object)
+bool sat_time_mark_stop (sat_time_t *const object)
 {
     bool status = false;
 
@@ -110,7 +110,7 @@ bool sat_time_mark_stop (sat_time_t *object)
     return status;
 }
 
-bool sat_time_mark_time_elapsed (sat_time_t *object, double *time_elapsed)
+bool sat_time_mark_time_elapsed (const sat_time_t *const object, double *const time_elapsed)
 {
      bool status = false;
 

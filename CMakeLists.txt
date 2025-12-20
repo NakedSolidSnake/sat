@@ -21,7 +21,7 @@ list (APPEND SAT_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/sat_file.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_log.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_validation.c
                         #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_event.c
-                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_stack.c
+                        #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_stack.c
                         #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_array.c
                         #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_udp.c
                         #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_udp/sat_udp_server.c
@@ -89,6 +89,7 @@ list (APPEND SAT_LIBRARIES
              sat_network
              sat_worker
              sat_time
+             sat_stack
              )
 
 list (APPEND SAT_INCLUDES ${CMAKE_CURRENT_LIST_DIR}/include
@@ -125,7 +126,7 @@ install (FILES include/sat_file.h        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 install (FILES include/sat_log.h         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install (FILES include/sat_validation.h  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 # install (FILES include/sat_event.h       DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install (FILES include/sat_stack.h       DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+# install (FILES include/sat_stack.h       DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 # install (FILES include/sat_array.h       DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 # install (FILES include/sat_udp.h         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 # install (FILES include/sat_udp/sat_udp_types.h         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sat_udp)
