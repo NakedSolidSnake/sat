@@ -46,8 +46,8 @@ list (APPEND SAT_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/sat_file.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_shared_memory.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_queue_ipc.c
                         #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_iterator.c
-                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_process/sat_process.c
-                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_process/sat_process_monitor.c
+                        #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_process/sat_process.c
+                        #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_process/sat_process_monitor.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_interest.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_frame.c
@@ -90,12 +90,13 @@ list (APPEND SAT_LIBRARIES
              sat_worker
              sat_time
              sat_stack
+             sat_process
              )
 
 list (APPEND SAT_INCLUDES ${CMAKE_CURRENT_LIST_DIR}/include
                           ${CMAKE_CURRENT_LIST_DIR}/include/sat_tcp/
                         #   ${CMAKE_CURRENT_LIST_DIR}/include/sat_udp/
-                          ${CMAKE_CURRENT_LIST_DIR}/include/sat_process/
+                        #   ${CMAKE_CURRENT_LIST_DIR}/include/sat_process/
                           ${CMAKE_CURRENT_LIST_DIR}/include/sat_discovery/)
 
 file (WRITE ${CMAKE_CURRENT_LIST_DIR}/include/sat_optionals.h "")
@@ -144,8 +145,8 @@ install (FILES include/sat_scheduler.h   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 install (FILES include/sat_shared_memory.h     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install (FILES include/sat_queue_ipc.h   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 # install (FILES include/sat_iterator.h    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install (FILES include/sat_process/sat_process.h    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sat_process)
-install (FILES include/sat_process/sat_process_monitor.h    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sat_process)
+# install (FILES include/sat_process/sat_process.h    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sat_process)
+# install (FILES include/sat_process/sat_process_monitor.h    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sat_process)
 # install (FILES include/sat_network.h    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install (FILES include/sat_discovery/sat_discovery.h    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 # install (FILES include/sat_directory.h    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})

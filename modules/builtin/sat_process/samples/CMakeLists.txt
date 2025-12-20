@@ -1,0 +1,5 @@
+create_sample (sat_process_sample sat_process)
+create_sample (hello sat_process)
+create_sample (hello_args sat_process)
+create_sample (critical sat_process)
+create_sample (sat_process_monitor_sample sat_process)

@@ -1,5 +1,0 @@
-create_sample (sat_process_sample process)
-create_sample (hello process)
-create_sample (hello_args process)
-create_sample (critical process)
-create_sample (sat_process_monitor_sample process)

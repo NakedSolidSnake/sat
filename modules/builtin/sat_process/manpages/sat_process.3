@@ -1,0 +1,451 @@
+.TH SAT_PROCESS 3 "December 2025" "SAT Library" "SAT Library Manual"
+.SH NAME
+sat_process, sat_process_monitor \- process management and automatic recovery system
+.SH SYNOPSIS
+.nf
+.B #include <sat_process.h>
+.B #include <sat_process_monitor.h>
+.PP
+.BI "sat_status_t sat_process_create(sat_process_t *" object ", const sat_process_args_t *" args );
+.BI "sat_status_t sat_process_spawn(sat_process_t *" object );
+.PP
+.BI "sat_status_t sat_process_monitor_open(sat_process_monitor_t *" object );
+.BI "sat_status_t sat_process_monitor_add(sat_process_monitor_t *" object ", sat_process_t " process );
+.BI "sat_status_t sat_process_monitor_start(sat_process_monitor_t *" object );
+.BI "sat_status_t sat_process_monitor_scan(sat_process_monitor_t *" object );
+.BI "sat_status_t sat_process_monitor_stop(sat_process_monitor_t *" object );
+.PP
+Link with \fI\-lsat_process\fP.
+.fi
+.SH DESCRIPTION
+The
+.B sat_process
+and
+.B sat_process_monitor
+modules provide comprehensive process management capabilities including process
+spawning, monitoring, and automatic recovery. Together they form a reliable
+system for managing child processes with configurable restart policies.
+.PP
+The
+.B sat_process
+module handles individual process creation and spawning, supporting both
+processes with and without command-line arguments. The
+.B sat_process_monitor
+module provides supervision capabilities, automatically detecting terminated
+processes and restarting them according to configured policies.
+.PP
+This is useful for applications that need:
+.IP \(bu 2
+Reliable process supervision with automatic restart
+.IP \(bu 2
+Management of multiple child processes
+.IP \(bu 2
+Configurable recovery strategies (no recovery, automatic restart, critical)
+.IP \(bu 2
+Building resilient systems that recover from process failures
+.IP \(bu 2
+Service orchestration and process lifecycle management
+.SS Constants
+.TP
+.B SAT_PROCESS_NAME_SIZE
+Maximum size for process name/path (128 bytes).
+.TP
+.B SAT_PROCESS_ARGS_SIZE
+Maximum size for process arguments string (1024 bytes).
+.SS Types
+.TP
+.B sat_process_mode_t
+Enumeration for process recovery modes:
+.RS
+.IP \(bu 2
+.B sat_process_mode_no_recover
+\- Do not restart process on termination
+.IP \(bu 2
+.B sat_process_mode_recover
+\- Automatically restart process on termination
+.IP \(bu 2
+.B sat_process_mode_critical
+\- Restart process; terminate monitor if restart fails
+.RE
+.TP
+.B sat_process_spawn_type_t
+Enumeration for process spawn type (internal):
+.RS
+.IP \(bu 2
+.B sat_process_spawn_type_no_args
+\- Spawn without arguments
+.IP \(bu 2
+.B sat_process_spawn_type_with_args
+\- Spawn with command-line arguments
+.RE
+.TP
+.B sat_process_t
+Structure representing a managed process:
+.RS
+.IP \(bu 2
+.B name[]
+\- Process name or path to executable
+.IP \(bu 2
+.B args[]
+\- Command-line arguments (space-separated)
+.IP \(bu 2
+.B mode
+\- Recovery mode
+.IP \(bu 2
+.B pid
+\- Process ID (set after spawning)
+.IP \(bu 2
+.B initialized
+\- Initialization status flag
+.IP \(bu 2
+.B type
+\- Spawn type (with/without args)
+.RE
+.TP
+.B sat_process_args_t
+Configuration structure for process creation:
+.RS
+.IP \(bu 2
+.B name[]
+\- Process name or path to executable
+.IP \(bu 2
+.B args[]
+\- Command-line arguments (space-separated)
+.IP \(bu 2
+.B mode
+\- Recovery mode
+.RE
+.TP
+.B sat_process_monitor_t
+Structure representing a process monitor:
+.RS
+.IP \(bu 2
+.B array
+\- Array of managed processes
+.IP \(bu 2
+.B initialized
+\- Initialization status
+.IP \(bu 2
+.B start
+\- Monitor running status
+.RE
+.SS Process Management Functions
+.TP
+.BR sat_process_create ()
+Creates and configures a process object with the specified parameters. The
+process name should be the full path to an executable or a command in PATH.
+Arguments are specified as a space-separated string.
+.RS
+.PP
+The process is not started until
+.BR sat_process_spawn ()
+is called. This allows configuration before execution.
+.PP
+Returns a status indicating success or failure. Fails if object or args are
+NULL, if the name is empty, or if parameters are invalid.
+.RE
+.TP
+.BR sat_process_spawn ()
+Spawns the configured process using
+.BR fork (2)
+and
+.BR exec (3).
+In the parent process, stores the child PID and returns. In the child process,
+replaces the current process image with the new program.
+.RS
+.PP
+If the process has no arguments, uses
+.BR execl (3).
+If the process has arguments, parses them and uses
+.BR execv (3).
+.PP
+Returns a status indicating success or failure. Fails if object is NULL, not
+initialized, or if
+.BR fork (2)
+fails.
+.PP
+.B Note:
+The child process does not return from this function as it is replaced by
+the new program.
+.RE
+.SS Process Monitor Functions
+.TP
+.BR sat_process_monitor_open ()
+Initializes a process monitor with an empty process list. The monitor is ready
+to accept process registrations but not yet started.
+.RS
+.PP
+Creates an internal dynamic array to manage processes. Returns a status indicating
+success or failure.
+.RE
+.TP
+.BR sat_process_monitor_add ()
+Registers a process with the monitor for tracking and automatic recovery. The
+process should be created with
+.BR sat_process_create ()
+before adding.
+.RS
+.PP
+The process structure is copied into the monitor, so the original can be reused
+for creating additional processes. If the monitor is already started, the process
+is spawned immediately upon addition.
+.PP
+Returns a status indicating success or failure. Fails if object is NULL, not
+initialized, or if the array add operation fails.
+.RE
+.TP
+.BR sat_process_monitor_start ()
+Activates the monitor, enabling process supervision and automatic recovery.
+All registered processes are spawned at startup.
+.RS
+.PP
+After starting, you must call
+.BR sat_process_monitor_scan ()
+periodically (typically in a loop) to check for terminated processes and
+trigger recovery.
+.PP
+Returns a status indicating success or failure.
+.RE
+.TP
+.BR sat_process_monitor_scan ()
+Checks all monitored processes for termination and handles recovery according
+to each process's configured mode. Uses
+.BR waitpid (2)
+with WNOHANG for non-blocking operation.
+.RS
+.PP
+For each terminated process:
+.IP \(bu 2
+If mode is
+.BR sat_process_mode_no_recover ,
+the process is not restarted
+.IP \(bu 2
+If mode is
+.BR sat_process_mode_recover ,
+the process is automatically restarted
+.IP \(bu 2
+If mode is
+.BR sat_process_mode_critical
+and restart fails, the entire monitor terminates
+.PP
+This function should be called periodically in a loop to maintain continuous
+supervision. The scan is non-blocking and returns immediately.
+.PP
+Returns a status indicating success or failure.
+.RE
+.TP
+.BR sat_process_monitor_stop ()
+Stops the monitor and terminates all managed processes. Sends SIGTERM to each
+process and waits for them to exit. Cleans up all resources.
+.RS
+.PP
+This function blocks until all processes have terminated. All processes are
+terminated regardless of their recovery mode.
+.PP
+Returns a status indicating success or failure.
+.RE
+.SH RETURN VALUE
+All functions return
+.B sat_status_t
+indicating success or failure. Use SAT status utility functions to check results.
+.SH EXAMPLES
+.SS Creating and Spawning a Single Process
+.nf
+#include <sat_process.h>
+
+sat_process_t proc;
+sat_process_args_t args = {
+    .name = "/usr/bin/sleep",
+    .args = "60",
+    .mode = sat_process_mode_no_recover
+};
+
+if (sat_status_is_ok(sat_process_create(&proc, &args))) {
+    if (sat_status_is_ok(sat_process_spawn(&proc))) {
+        printf("Process spawned with PID: %d\\n", proc.pid);
+    }
+}
+.fi
+.SS Process Monitor with Multiple Processes
+.nf
+#include <sat_process.h>
+#include <sat_process_monitor.h>
+#include <unistd.h>
+
+int main(void) {
+    sat_process_monitor_t monitor;
+    
+    // Initialize monitor
+    sat_process_monitor_open(&monitor);
+    
+    // Create and add first process
+    sat_process_t proc1;
+    sat_process_args_t args1 = {
+        .name = "/usr/bin/my_service",
+        .args = "--config /etc/service.conf",
+        .mode = sat_process_mode_recover
+    };
+    sat_process_create(&proc1, &args1);
+    sat_process_monitor_add(&monitor, proc1);
+    
+    // Create and add second process
+    sat_process_t proc2;
+    sat_process_args_t args2 = {
+        .name = "/usr/bin/my_daemon",
+        .args = "",
+        .mode = sat_process_mode_critical
+    };
+    sat_process_create(&proc2, &args2);
+    sat_process_monitor_add(&monitor, proc2);
+    
+    // Start monitoring
+    sat_process_monitor_start(&monitor);
+    
+    // Main monitoring loop
+    while (1) {
+        sat_process_monitor_scan(&monitor);
+        sleep(1);  // Check every second
+    }
+    
+    // Cleanup
+    sat_process_monitor_stop(&monitor);
+    
+    return 0;
+}
+.fi
+.SS Recovery Modes Example
+.nf
+#include <sat_process.h>
+#include <sat_process_monitor.h>
+
+void setup_services(void) {
+    sat_process_monitor_t monitor;
+    sat_process_monitor_open(&monitor);
+    
+    // Critical service - system exits if this fails
+    sat_process_t critical_service;
+    sat_process_args_t args_critical = {
+        .name = "/usr/bin/database_server",
+        .args = "--port 5432",
+        .mode = sat_process_mode_critical
+    };
+    sat_process_create(&critical_service, &args_critical);
+    sat_process_monitor_add(&monitor, critical_service);
+    
+    // Auto-recover service - restarts automatically
+    sat_process_t web_service;
+    sat_process_args_t args_web = {
+        .name = "/usr/bin/web_server",
+        .args = "--port 8080",
+        .mode = sat_process_mode_recover
+    };
+    sat_process_create(&web_service, &args_web);
+    sat_process_monitor_add(&monitor, web_service);
+    
+    // One-shot service - runs once, no restart
+    sat_process_t init_service;
+    sat_process_args_t args_init = {
+        .name = "/usr/bin/init_db",
+        .args = "",
+        .mode = sat_process_mode_no_recover
+    };
+    sat_process_create(&init_service, &args_init);
+    sat_process_monitor_add(&monitor, init_service);
+    
+    sat_process_monitor_start(&monitor);
+    
+    // Monitor loop
+    while (1) {
+        sat_process_monitor_scan(&monitor);
+        usleep(100000);  // 100ms
+    }
+}
+.fi
+.SS Graceful Shutdown
+.nf
+#include <sat_process.h>
+#include <sat_process_monitor.h>
+#include <signal.h>
+
+sat_process_monitor_t g_monitor;
+volatile sig_atomic_t g_shutdown = 0;
+
+void signal_handler(int sig) {
+    g_shutdown = 1;
+}
+
+int main(void) {
+    signal(SIGINT, signal_handler);
+    signal(SIGTERM, signal_handler);
+    
+    sat_process_monitor_open(&g_monitor);
+    
+    // Add processes...
+    sat_process_t proc;
+    sat_process_args_t args = {
+        .name = "/usr/bin/my_app",
+        .args = "",
+        .mode = sat_process_mode_recover
+    };
+    sat_process_create(&proc, &args);
+    sat_process_monitor_add(&g_monitor, proc);
+    
+    sat_process_monitor_start(&g_monitor);
+    
+    // Monitor loop with graceful shutdown
+    while (!g_shutdown) {
+        sat_process_monitor_scan(&g_monitor);
+        usleep(100000);
+    }
+    
+    printf("Shutting down...\\n");
+    sat_process_monitor_stop(&g_monitor);
+    printf("All processes terminated\\n");
+    
+    return 0;
+}
+.fi
+.SH NOTES
+.IP \(bu 2
+Process arguments are specified as a single space-separated string and are
+parsed automatically by the library.
+.IP \(bu 2
+The process name should be an absolute path or a command available in PATH.
+.IP \(bu 2
+.BR sat_process_monitor_scan ()
+must be called periodically to detect terminated processes. The recommended
+interval is 100ms to 1 second depending on responsiveness requirements.
+.IP \(bu 2
+Critical processes (
+.BR sat_process_mode_critical )
+will cause the entire monitor to terminate if they cannot be restarted,
+making them suitable for essential services.
+.IP \(bu 2
+The monitor uses
+.BR waitpid (2)
+with WNOHANG, so
+.BR sat_process_monitor_scan ()
+is non-blocking.
+.IP \(bu 2
+When stopping the monitor, SIGTERM is sent to all processes. Processes that
+don't respond may need SIGKILL handling in production code.
+.IP \(bu 2
+Process structures are copied when added to the monitor, allowing reuse of
+.BR sat_process_t
+objects for creating multiple similar processes.
+.IP \(bu 2
+The child process environment is inherited from the parent. Set environment
+variables before spawning if needed.
+.SH SEE ALSO
+.BR sat_status (3),
+.BR sat_array (3),
+.BR fork (2),
+.BR exec (3),
+.BR execl (3),
+.BR execv (3),
+.BR waitpid (2),
+.BR signal (7)
+.SH AUTHOR
+SAT Library Team
+.SH COPYRIGHT
+Copyright \(co 2025 SAT Library Project. Licensed under MIT License.
