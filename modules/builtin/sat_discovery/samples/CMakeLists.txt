@@ -1,0 +1,5 @@
+# create_sample (sat_discovery_sample sat_discovery)
+create_sample (sat_discovery_vanish sat_discovery)
+# create_sample (sat_discovery_protocol_sample sat_discovery)
+create_sample (sat_discovery_server sat_discovery)
+create_sample (sat_discovery_client sat_discovery)

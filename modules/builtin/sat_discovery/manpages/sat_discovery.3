@@ -1,0 +1,618 @@
+.TH SAT_DISCOVERY 3 "December 2025" "SAT Library" "SAT Library Manual"
+.SH NAME
+sat_discovery \- distributed service discovery system with automatic registration
+.SH SYNOPSIS
+.nf
+.B #include <sat_discovery.h>
+.PP
+.BI "sat_status_t sat_discovery_init(sat_discovery_t *" object );
+.BI "sat_status_t sat_discovery_open(sat_discovery_t *" object ", "
+.BI "                                sat_discovery_args_t *" args );
+.BI "sat_status_t sat_discovery_add_interest(sat_discovery_t *" object ", "
+.BI "                                        const char *" service_name );
+.BI "sat_status_t sat_discovery_start(sat_discovery_t *" object );
+.BI "sat_status_t sat_discovery_stop(sat_discovery_t *" object );
+.BI "sat_status_t sat_discovery_get_service_info(sat_discovery_t *" object ", "
+.BI "                                            const char *" service ", "
+.BI "                                            sat_discovery_service_info_t *" info );
+.BI "void sat_discovery_registered_services(sat_discovery_t *" object );
+.PP
+Link with \fI\-lsat_discovery \-lsat_udp \-lsat_scheduler \-lsat_set \-lsat_array \-lsat_uuid \-lpthread\fP.
+.fi
+.SH DESCRIPTION
+The
+.B sat_discovery
+module provides a zero-configuration, distributed service discovery protocol
+that enables services to automatically announce themselves and discover other
+services on a local network. It implements a resilient, decentralized system
+with no single point of failure.
+.PP
+The discovery system uses UDP multicast for communication, allowing services
+to broadcast their presence and listen for other services simultaneously.
+Each service is uniquely identified by a UUID and maintains its presence
+through periodic heartbeat messages.
+.SS Architecture
+The discovery protocol is fully distributed with the following characteristics:
+.IP \(bu 2
+.B Zero Configuration
+\- No central server or configuration files needed
+.IP \(bu 2
+.B Automatic Registration
+\- Services announce themselves on startup
+.IP \(bu 2
+.B Heartbeat Monitoring
+\- Periodic heartbeats maintain service liveness
+.IP \(bu 2
+.B Node Aging
+\- Inactive services are automatically removed
+.IP \(bu 2
+.B Interest-Based Discovery
+\- Services can request specific service types
+.IP \(bu 2
+.B Graceful Shutdown
+\- Services send vanish messages on departure
+.SS Protocol Messages
+The discovery protocol uses five message types:
+.TP
+.B Announce
+Initial service announcement with name, address, and port
+.TP
+.B Heartbeat
+Periodic keepalive message to maintain presence
+.TP
+.B Interest
+Query for specific service types
+.TP
+.B Vanish
+Notification of service shutdown
+.TP
+.B Scan
+Request for all active services to respond
+.SS Types
+.TP
+.B sat_discovery_service_info_t
+Structure containing discovered service information:
+.RS
+.IP \(bu 2
+.B name
+\- Service name (up to 128 characters)
+.IP \(bu 2
+.B address
+\- IP address of the service
+.IP \(bu 2
+.B port
+\- Port number as string
+.RE
+.TP
+.B sat_discovery_t
+Structure representing a discovery service instance:
+.RS
+.IP \(bu 2
+.B udp
+\- UDP multicast server for communication
+.IP \(bu 2
+.B scheduler
+\- Scheduler managing periodic tasks
+.IP \(bu 2
+.B interests
+\- Set of service names to watch for
+.IP \(bu 2
+.B nodes
+\- Set of discovered active services
+.IP \(bu 2
+.B uuid
+\- Unique identifier for this instance
+.IP \(bu 2
+.B interfaces
+\- Network interface information
+.IP \(bu 2
+.B service_name
+\- Name of this service
+.IP \(bu 2
+.B channel
+\- Multicast channel configuration (address and port)
+.IP \(bu 2
+.B app_port
+\- Application service port
+.RE
+.TP
+.B sat_discovery_args_t
+Configuration structure for discovery service:
+.RS
+.IP \(bu 2
+.B service.name
+\- Name for this service
+.IP \(bu 2
+.B service.interface
+\- Network interface (NULL for all)
+.IP \(bu 2
+.B service.port
+\- Port this service listens on
+.IP \(bu 2
+.B channel.service
+\- Multicast port for discovery protocol
+.IP \(bu 2
+.B channel.address
+\- Multicast address for discovery protocol
+.RE
+.SS Functions
+.TP
+.BR sat_discovery_init ()
+Initializes a discovery service object by clearing all fields. Must be called
+before
+.BR sat_discovery_open ().
+Returns a status indicating success or failure.
+.TP
+.BR sat_discovery_open ()
+Configures and prepares the discovery service with the specified parameters.
+This function:
+.RS
+.IP \(bu 2
+Sets up the UDP multicast server on the specified channel
+.IP \(bu 2
+Initializes the scheduler with five periodic tasks:
+.RS
+.IP \- 4
+Announce (one-shot, 10ms): Initial service announcement
+.IP \- 4
+Scan (periodic, 100ms): Request service list
+.IP \- 4
+Heartbeat (periodic, 5s): Maintain presence
+.IP \- 4
+Interest (periodic, 1s): Query for specific services
+.IP \- 4
+Aging (periodic, 1s): Remove inactive nodes
+.RE
+.IP \(bu 2
+Creates data structures for interests and discovered nodes
+.IP \(bu 2
+Generates a unique UUID for this instance
+.IP \(bu 2
+Retrieves network interface information
+.PP
+The service is ready to run but does not start until
+.BR sat_discovery_start ()
+is called.
+.PP
+Returns a status indicating success or failure. Fails if parameters are
+invalid or resources cannot be allocated.
+.RE
+.TP
+.BR sat_discovery_add_interest ()
+Registers interest in a specific service by name. When this discovery service
+announces itself or sends interest messages, it will specifically query for
+the registered service names.
+.RS
+.PP
+Multiple interests can be registered by calling this function multiple times.
+Interest matching is based on exact string comparison of service names.
+.PP
+Returns a status indicating success or failure. Fails if parameters are null
+or the interest cannot be added to the internal set.
+.RE
+.TP
+.BR sat_discovery_start ()
+Starts the discovery service by activating the scheduler. Once started:
+.RS
+.IP \(bu 2
+An announce message is sent after 10ms
+.IP \(bu 2
+Scan messages are sent every 100ms to discover services
+.IP \(bu 2
+Heartbeat messages are sent every 5 seconds
+.IP \(bu 2
+Interest messages are sent every second for registered interests
+.IP \(bu 2
+Node aging runs every second to remove inactive services
+.PP
+The service processes incoming announce, heartbeat, interest, and vanish
+messages from other services, maintaining an up-to-date view of the network.
+.PP
+Returns a status indicating success or failure.
+.RE
+.TP
+.BR sat_discovery_stop ()
+Stops the discovery service gracefully. The function:
+.RS
+.IP \(bu 2
+Sends a vanish message to inform other services of departure
+.IP \(bu 2
+Stops the scheduler and all periodic tasks
+.IP \(bu 2
+Waits 1 second to ensure the vanish message is sent
+.PP
+After stopping, the service can be restarted with
+.BR sat_discovery_start ().
+Internal state (discovered nodes, interests) is preserved.
+.PP
+Returns a status indicating success or failure.
+.RE
+.TP
+.BR sat_discovery_get_service_info ()
+Queries the list of discovered nodes for a specific service by name and
+retrieves its network information.
+.RS
+.PP
+The function iterates through all discovered nodes and returns the first
+match found. If multiple services have the same name (uncommon), only
+the first is returned.
+.PP
+Returns a status indicating success if the service is found, failure with
+"Service not found" message if not found, or failure with "Invalid parameters"
+if any parameter is null.
+.RE
+.TP
+.BR sat_discovery_registered_services ()
+Prints information about all currently discovered and active services to
+the log using
+.BR sat_log_info ().
+Each entry shows the service name, IP address, and port.
+.RS
+.PP
+This function is useful for debugging, monitoring, and displaying the current
+state of discovered services. It has no return value.
+.RE
+.SH RETURN VALUE
+All functions except
+.BR sat_discovery_registered_services ()
+return
+.B sat_status_t
+indicating success or failure with descriptive error messages.
+.SH EXAMPLES
+.SS Basic Service Discovery
+.nf
+#include <sat_discovery.h>
+#include <stdio.h>
+
+int main(void) {
+    sat_discovery_t discovery;
+    
+    // Initialize discovery service
+    sat_discovery_init(&discovery);
+    
+    // Configure as "MyService" on multicast group 234.1.1.1:1234
+    sat_discovery_args_t args = {
+        .service = {
+            .name = "MyService",
+            .interface = NULL,      // Use all interfaces
+            .port = "8080"          // Service listens on port 8080
+        },
+        .channel = {
+            .service = "1234",      // Discovery uses UDP port 1234
+            .address = "234.1.1.1"  // Multicast group
+        }
+    };
+    
+    sat_status_t status = sat_discovery_open(&discovery, &args);
+    if (!sat_status_get_result(&status)) {
+        fprintf(stderr, "Failed to open: %s\\n", 
+                sat_status_get_motive(&status));
+        return 1;
+    }
+    
+    // Start discovery
+    sat_discovery_start(&discovery);
+    
+    printf("Service announced and discovering...\\n");
+    
+    // Run for some time
+    sleep(60);
+    
+    // Graceful shutdown
+    sat_discovery_stop(&discovery);
+    
+    return 0;
+}
+.fi
+.SS Client Finding a Service
+.nf
+#include <sat_discovery.h>
+#include <sat_udp.h>
+#include <stdio.h>
+
+int main(void) {
+    sat_discovery_t discovery;
+    sat_discovery_service_info_t server_info;
+    
+    sat_discovery_init(&discovery);
+    
+    sat_discovery_args_t args = {
+        .service = {
+            .name = "Client",
+            .interface = NULL,
+            .port = "0"  // Client doesn't need to listen
+        },
+        .channel = {
+            .service = "1234",
+            .address = "234.1.1.1"
+        }
+    };
+    
+    sat_discovery_open(&discovery, &args);
+    
+    // Register interest in "Server" service
+    sat_discovery_add_interest(&discovery, "Server");
+    
+    sat_discovery_start(&discovery);
+    
+    // Wait for server to be discovered
+    printf("Waiting for Server...\\n");
+    sat_status_t status;
+    
+    while (1) {
+        sleep(2);
+        
+        status = sat_discovery_get_service_info(&discovery, 
+                                                "Server", 
+                                                &server_info);
+        
+        if (sat_status_get_result(&status)) {
+            printf("Found Server at %s:%s\\n", 
+                   server_info.address, 
+                   server_info.port);
+            break;
+        }
+    }
+    
+    // Now connect to the discovered server
+    printf("Connecting to %s:%s...\\n", 
+           server_info.address, 
+           server_info.port);
+    
+    // Use sat_udp or sat_tcp to connect...
+    
+    sat_discovery_stop(&discovery);
+    
+    return 0;
+}
+.fi
+.SS Multiple Service Discovery
+.nf
+#include <sat_discovery.h>
+#include <stdio.h>
+
+void check_services(sat_discovery_t *discovery, 
+                    const char *names[], 
+                    int count) {
+    sat_discovery_service_info_t info;
+    
+    printf("\\nDiscovered Services:\\n");
+    printf("------------------\\n");
+    
+    for (int i = 0; i < count; i++) {
+        sat_status_t status = 
+            sat_discovery_get_service_info(discovery, names[i], &info);
+        
+        if (sat_status_get_result(&status)) {
+            printf("%s: %s:%s\\n", 
+                   info.name, info.address, info.port);
+        } else {
+            printf("%s: Not found\\n", names[i]);
+        }
+    }
+}
+
+int main(void) {
+    sat_discovery_t discovery;
+    
+    sat_discovery_init(&discovery);
+    
+    sat_discovery_args_t args = {
+        .service = {
+            .name = "Monitor",
+            .interface = NULL,
+            .port = "9000"
+        },
+        .channel = {
+            .service = "1234",
+            .address = "234.1.1.1"
+        }
+    };
+    
+    sat_discovery_open(&discovery, &args);
+    
+    // Register interest in multiple services
+    sat_discovery_add_interest(&discovery, "Database");
+    sat_discovery_add_interest(&discovery, "WebServer");
+    sat_discovery_add_interest(&discovery, "Cache");
+    
+    sat_discovery_start(&discovery);
+    
+    // Periodically check which services are available
+    const char *services[] = {"Database", "WebServer", "Cache"};
+    
+    for (int i = 0; i < 10; i++) {
+        sleep(5);
+        check_services(&discovery, services, 3);
+    }
+    
+    sat_discovery_stop(&discovery);
+    
+    return 0;
+}
+.fi
+.SS Service with Auto-Reconnect
+.nf
+#include <sat_discovery.h>
+#include <sat_tcp.h>
+#include <stdio.h>
+#include <stdbool.h>
+
+typedef struct {
+    sat_discovery_t discovery;
+    sat_tcp_client_t *client;
+    bool connected;
+} client_app_t;
+
+void try_connect(client_app_t *app) {
+    sat_discovery_service_info_t info;
+    
+    sat_status_t status = 
+        sat_discovery_get_service_info(&app->discovery, 
+                                       "DataService", 
+                                       &info);
+    
+    if (!sat_status_get_result(&status)) {
+        printf("DataService not available yet...\\n");
+        return;
+    }
+    
+    // Try to connect
+    sat_tcp_client_args_t tcp_args = {
+        .address = info.address,
+        .service = info.port
+    };
+    
+    status = sat_tcp_client_open(&app->client, &tcp_args);
+    
+    if (sat_status_get_result(&status)) {
+        printf("Connected to DataService at %s:%s\\n",
+               info.address, info.port);
+        app->connected = true;
+    } else {
+        printf("Failed to connect: %s\\n", 
+               sat_status_get_motive(&status));
+    }
+}
+
+int main(void) {
+    client_app_t app = {0};
+    
+    sat_discovery_init(&app.discovery);
+    
+    sat_discovery_args_t args = {
+        .service = {
+            .name = "DataClient",
+            .interface = NULL,
+            .port = "0"
+        },
+        .channel = {
+            .service = "1234",
+            .address = "234.1.1.1"
+        }
+    };
+    
+    sat_discovery_open(&app.discovery, &args);
+    sat_discovery_add_interest(&app.discovery, "DataService");
+    sat_discovery_start(&app.discovery);
+    
+    // Main loop with auto-reconnect
+    while (1) {
+        if (!app.connected) {
+            try_connect(&app);
+        }
+        
+        if (app.connected) {
+            // Use the connection...
+            // If connection fails, set app.connected = false
+        }
+        
+        sleep(2);
+    }
+    
+    if (app.client) {
+        sat_tcp_client_close(app.client);
+    }
+    sat_discovery_stop(&app.discovery);
+    
+    return 0;
+}
+.fi
+.SS Monitoring All Services
+.nf
+#include <sat_discovery.h>
+#include <stdio.h>
+
+int main(void) {
+    sat_discovery_t discovery;
+    
+    sat_log_init_by_env("info");  // Enable info-level logging
+    
+    sat_discovery_init(&discovery);
+    
+    sat_discovery_args_t args = {
+        .service = {
+            .name = "ServiceMonitor",
+            .interface = NULL,
+            .port = "9999"
+        },
+        .channel = {
+            .service = "1234",
+            .address = "234.1.1.1"
+        }
+    };
+    
+    sat_discovery_open(&discovery, &args);
+    sat_discovery_start(&discovery);
+    
+    printf("Monitoring network services...\\n");
+    printf("Press Ctrl+C to stop\\n\\n");
+    
+    // Periodically display all discovered services
+    while (1) {
+        sleep(10);
+        
+        printf("\\n=== Active Services ===\\n");
+        sat_discovery_registered_services(&discovery);
+        printf("\\n");
+    }
+    
+    return 0;
+}
+.fi
+.SH NOTES
+.IP \(bu 2
+The discovery protocol uses UDP multicast, which is typically limited to
+local networks. It will not work across routers unless multicast routing
+is configured.
+.IP \(bu 2
+All services must use the same multicast address and port to discover
+each other.
+.IP \(bu 2
+Service names should be unique within the network. Duplicate names may
+cause unpredictable behavior.
+.IP \(bu 2
+The heartbeat interval is 5 seconds. Services that don't send heartbeats
+are removed after approximately 10-15 seconds (configurable through aging).
+.IP \(bu 2
+The discovery system is not designed for authentication or security. All
+messages are sent in plaintext over UDP multicast.
+.IP \(bu 2
+Each discovery instance generates a unique UUID to identify itself and
+ignore its own messages.
+.IP \(bu 2
+The vanish message on shutdown is best-effort. If a process crashes or
+loses network connectivity, other services will detect the absence through
+missing heartbeats.
+.IP \(bu 2
+Interest-based discovery is optional. Services without interests will still
+discover all services through announce and scan messages.
+.IP \(bu 2
+The system requires the following SAT modules: sat_udp, sat_scheduler,
+sat_set, sat_array, sat_uuid, sat_network, and sat_log.
+.IP \(bu 2
+Multicast addresses should be in the range 224.0.0.0 to 239.255.255.255
+for IPv4. The commonly used 234.x.x.x range is administratively scoped.
+.IP \(bu 2
+Port numbers should be above 1024 to avoid requiring root privileges.
+.IP \(bu 2
+The discovery service runs in a separate thread managed by the scheduler.
+All callbacks occur in the scheduler's thread context.
+.SH ENVIRONMENT
+No specific environment variables are required, but
+.B SAT_LOG
+can be used to control logging verbosity when using
+.BR sat_log_init_by_env ().
+.SH SEE ALSO
+.BR sat_status (3),
+.BR sat_udp (3),
+.BR sat_scheduler (3),
+.BR sat_set (3),
+.BR sat_array (3),
+.BR sat_uuid (3),
+.BR sat_network (3),
+.BR sat_log (3)
+.SH AUTHOR
+SAT Library Team
+.SH COPYRIGHT
+Copyright \(co 2025 SAT Library Project. Licensed under MIT License.

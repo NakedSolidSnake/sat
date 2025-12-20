@@ -49,20 +49,20 @@ list (APPEND SAT_SOURCES
                         #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_iterator.c
                         #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_process/sat_process.c
                         #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_process/sat_process_monitor.c
-                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery.c
-                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_interest.c
-                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_frame.c
-                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_node.c
-                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_service_announce.c
-                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_service_heartbeat.c
-                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_service_interest.c
-                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_service_node_ageing.c
-                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_service_scan.c
-                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_handle_frame_announce.c
-                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_handle_frame_heartbeat.c
-                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_handle_frame_interest.c
-                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_handle_frame_vanish.c
-                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_service_vanish.c
+                        #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery.c
+                        #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_interest.c
+                        #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_frame.c
+                        #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_node.c
+                        #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_service_announce.c
+                        #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_service_heartbeat.c
+                        #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_service_interest.c
+                        #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_service_node_ageing.c
+                        #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_service_scan.c
+                        #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_handle_frame_announce.c
+                        #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_handle_frame_heartbeat.c
+                        #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_handle_frame_interest.c
+                        #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_handle_frame_vanish.c
+                        #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_service_vanish.c
                         #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_network.c
                         #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_directory.c
                          )
@@ -99,6 +99,7 @@ list (APPEND SAT_LIBRARIES
              sat_tcp
              sat_scheduler
              sat_shared_memory
+             sat_discovery
              )
 
 list (APPEND SAT_INCLUDES ${CMAKE_CURRENT_LIST_DIR}/include
@@ -156,7 +157,7 @@ install (FILES include/sat_queue_ipc.h   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 # install (FILES include/sat_process/sat_process.h    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sat_process)
 # install (FILES include/sat_process/sat_process_monitor.h    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sat_process)
 # install (FILES include/sat_network.h    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install (FILES include/sat_discovery/sat_discovery.h    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+# install (FILES include/sat_discovery/sat_discovery.h    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 # install (FILES include/sat_directory.h    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 install (FILES include/sat_optionals.h   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})

@@ -12,7 +12,7 @@ target_include_directories (sat_uuid
 
 target_link_libraries (sat_uuid
     PUBLIC
-    # add your dependency here
+    uuid
 )
 
 install (FILES include/sat_uuid.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
