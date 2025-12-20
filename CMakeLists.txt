@@ -44,7 +44,7 @@ list (APPEND SAT_SOURCES
                         #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_cache.c
                         #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_scheduler.c
                         #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_channel.c
-                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_shared_memory.c
+                        #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_shared_memory.c
                          ${CMAKE_CURRENT_LIST_DIR}/src/sat_queue_ipc.c
                         #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_iterator.c
                         #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_process/sat_process.c
@@ -98,6 +98,7 @@ list (APPEND SAT_LIBRARIES
              sat_map
              sat_tcp
              sat_scheduler
+             sat_shared_memory
              )
 
 list (APPEND SAT_INCLUDES ${CMAKE_CURRENT_LIST_DIR}/include
@@ -149,7 +150,7 @@ install (FILES include/sat.h             DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 # install (FILES include/sat_cache.h       DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 # install (FILES include/sat_scheduler.h   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 # install (FILES include/sat_channel.h     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install (FILES include/sat_shared_memory.h     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+# install (FILES include/sat_shared_memory.h     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install (FILES include/sat_queue_ipc.h   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 # install (FILES include/sat_iterator.h    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 # install (FILES include/sat_process/sat_process.h    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sat_process)

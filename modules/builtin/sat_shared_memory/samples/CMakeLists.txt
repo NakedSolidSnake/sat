@@ -1,0 +1,1 @@
+create_sample (sat_shared_memory_sample sat_shared_memory)

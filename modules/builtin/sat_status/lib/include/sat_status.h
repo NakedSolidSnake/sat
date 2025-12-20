@@ -45,6 +45,12 @@
         continue; \
     }
 
+#define sat_status_break_if_equals(status, expected) \
+    if (sat_status_get_result (&status) == expected) \
+    { \
+        break; \
+    }
+
 /**
  * @brief Status structure with result and error message
  * 
