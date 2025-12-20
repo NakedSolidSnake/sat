@@ -1,0 +1,510 @@
+.TH SAT_LOG 3 "December 2025" "SAT Library" "SAT Library Manual"
+.SH NAME
+sat_log \- flexible logging system with multiple levels and custom loggers
+.SH SYNOPSIS
+.nf
+.B #include <sat_log.h>
+.PP
+.BI "sat_log_error(" fmt ", " ... );
+.BI "sat_log_warn(" fmt ", " ... );
+.BI "sat_log_info(" fmt ", " ... );
+.BI "sat_log_debug(" fmt ", " ... );
+.PP
+.BI "sat_status_t sat_log_init(sat_log_t *" object );
+.BI "sat_status_t sat_log_open(sat_log_t *" object ", sat_log_args_t *" args );
+.BI "sat_status_t sat_log_registry(sat_log_t *" object ", sat_log_level_t " level ", const char *" format ", " ... );
+.BI "sat_status_t sat_log_close(sat_log_t *" object );
+.BI "sat_status_t sat_log_init_by_env(const char *" fallback );
+.PP
+.B "extern int sat_log_enabled;"
+.PP
+Link with \fI\-lsat_log\fP.
+.fi
+.SH DESCRIPTION
+The
+.B sat_log
+module provides a comprehensive logging system with multiple severity levels,
+custom logger support, and convenient macros for quick logging. It offers two
+complementary approaches to logging:
+.PP
+.IP 1. 3
+.B Quick macros
+for simple, zero-configuration logging with automatic file location
+.IP 2. 3
+.B Structured logging
+with logger objects and custom output handlers
+.PP
+The module is suitable for applications ranging from simple debugging to
+production logging with custom backends (files, syslog, network, etc.).
+.SS Macro-Based Logging
+Four convenience macros provide quick logging without setup:
+.IP \(bu 2
+.BR sat_log_error ()
+\- Error messages (stderr, with location)
+.IP \(bu 2
+.BR sat_log_warn ()
+\- Warning messages (stderr, with location)
+.IP \(bu 2
+.BR sat_log_info ()
+\- Informational messages (stdout)
+.IP \(bu 2
+.BR sat_log_debug ()
+\- Debug messages (stderr, with location)
+.PP
+These macros check
+.B sat_log_enabled
+to determine if output is produced, allowing runtime control of logging levels
+without recompilation.
+.SS Structured Logging
+The structured API provides:
+.IP \(bu 2
+Logger objects with configurable backends
+.IP \(bu 2
+Six severity levels from fatal to trace
+.IP \(bu 2
+Custom logger functions for specialized output
+.IP \(bu 2
+Built-in logger implementations (none, default, custom)
+.SS Types
+.TP
+.B sat_log_enabled
+Global integer controlling macro-based logging:
+.RS
+.IP \(bu 2
+.B 0
+\- No logging
+.IP \(bu 2
+.B 1
+\- ERROR only
+.IP \(bu 2
+.B 2
+\- ERROR, WARN
+.IP \(bu 2
+.B 3
+\- ERROR, WARN, INFO
+.IP \(bu 2
+.B 4
+\- ERROR, WARN, INFO, DEBUG
+.PP
+Can be set directly or via
+.BR sat_log_init_by_env ().
+.RE
+.TP
+.B sat_log_type_t
+Enumeration for logger types:
+.RS
+.IP \(bu 2
+.B sat_log_type_none
+\- Discard all messages
+.IP \(bu 2
+.B sat_log_type_default
+\- Use vprintf for output
+.IP \(bu 2
+.B sat_log_type_custom
+\- Use user-provided logger function
+.RE
+.TP
+.B sat_log_level_t
+Enumeration for log severity levels:
+.RS
+.IP \(bu 2
+.B sat_log_level_fatal
+\- Fatal error, application cannot continue
+.IP \(bu 2
+.B sat_log_level_error
+\- Error condition
+.IP \(bu 2
+.B sat_log_level_warning
+\- Warning condition
+.IP \(bu 2
+.B sat_log_level_information
+\- Informational message
+.IP \(bu 2
+.B sat_log_level_debug
+\- Debug information
+.IP \(bu 2
+.B sat_log_level_trace
+\- Detailed trace information
+.RE
+.TP
+.B sat_log_logger_t
+Function pointer type for custom loggers:
+.RS
+.PP
+.BI "typedef void (*sat_log_logger_t)(sat_log_level_t " level ", const char *" format ", va_list " list );
+.PP
+Custom logger implementations receive the severity level, format string, and
+variable argument list for processing.
+.RE
+.TP
+.B sat_log_t
+Structure representing a logger instance:
+.RS
+.IP \(bu 2
+.B type
+\- Logger type
+.IP \(bu 2
+.B logger
+\- Logger function pointer
+.RE
+.TP
+.B sat_log_args_t
+Configuration structure for logger creation:
+.RS
+.IP \(bu 2
+.B type
+\- Logger type to create
+.IP \(bu 2
+.B logger
+\- Custom logger function (required for custom type)
+.RE
+.SS Macro Functions
+.TP
+.BR sat_log_error ()
+Logs an error message to stderr with line number and function name. Only
+produces output if
+.B sat_log_enabled
+>= 1. Takes printf-style format string and arguments.
+.TP
+.BR sat_log_warn ()
+Logs a warning message to stderr with line number and function name. Only
+produces output if
+.B sat_log_enabled
+>= 2. Takes printf-style format string and arguments.
+.TP
+.BR sat_log_info ()
+Logs an informational message to stdout. Only produces output if
+.B sat_log_enabled
+>= 3. Takes printf-style format string and arguments. Does not include
+file location.
+.TP
+.BR sat_log_debug ()
+Logs a debug message to stderr with line number and function name. Only
+produces output if
+.B sat_log_enabled
+>= 4. Takes printf-style format string and arguments.
+.SS Structured Logging Functions
+.TP
+.BR sat_log_init ()
+Initializes a logger object by clearing all fields. Must be called before
+.BR sat_log_open ().
+Returns a status indicating success or failure.
+.TP
+.BR sat_log_open ()
+Configures a logger with the specified type and handler. For
+.BR sat_log_type_custom ,
+a custom logger function must be provided in
+.IR args->logger .
+.RS
+.PP
+Returns a status indicating success or failure. Fails if the type is invalid
+or required parameters are missing.
+.RE
+.TP
+.BR sat_log_registry ()
+Logs a message through the configured logger with the specified severity level.
+Takes printf-style format string and variable arguments.
+.RS
+.PP
+The message is formatted and passed to the logger function. The actual output
+format and destination depend on the logger type.
+.PP
+Returns a status indicating success or failure.
+.RE
+.TP
+.BR sat_log_close ()
+Closes a logger and releases resources. After calling this, the logger object
+is no longer valid.
+.RS
+.PP
+Returns a status indicating success or failure.
+.RE
+.TP
+.BR sat_log_init_by_env ()
+Configures
+.B sat_log_enabled
+based on the
+.B SAT_LOG
+environment variable:
+.RS
+.IP \(bu 2
+"debug": Enable all levels (4)
+.IP \(bu 2
+"info": Enable info, warn, error (3)
+.IP \(bu 2
+"warn": Enable warn, error (2)
+.IP \(bu 2
+Other values: Enable error only (1)
+.PP
+If the environment variable is not set, returns an error and the fallback
+parameter is ignored (for future use).
+.PP
+Call this at application startup to configure macro-based logging from the
+environment.
+.RE
+.SH RETURN VALUE
+Structured logging functions return
+.B sat_status_t
+indicating success or failure.
+.PP
+Macro functions have no return value but conditionally produce output based on
+.BR sat_log_enabled .
+.SH EXAMPLES
+.SS Quick Macro Logging
+.nf
+#include <sat_log.h>
+
+int main(void) {
+    // Enable all logging levels
+    sat_log_enabled = 4;
+    
+    sat_log_error("Connection failed: %s", "timeout");
+    sat_log_warn("Retrying connection attempt %d", 3);
+    sat_log_info("Application started successfully");
+    sat_log_debug("Config: port=%d, host=%s", 8080, "localhost");
+    
+    return 0;
+}
+
+/* Output:
+[ERROR] 7:main(): Connection failed: timeout
+[WARN] 8:main(): Retrying connection attempt 3
+[INFO] Application started successfully
+[DEBUG] 10:main(): Config: port=8080, host=localhost
+*/
+.fi
+.SS Environment-Based Configuration
+.nf
+#include <sat_log.h>
+
+int main(void) {
+    // Configure from SAT_LOG environment variable
+    sat_log_init_by_env("info");
+    
+    // These will respect the environment setting
+    sat_log_error("Critical error occurred");
+    sat_log_info("Processing request");
+    sat_log_debug("Variable x = %d", 42);  // May not appear
+    
+    return 0;
+}
+
+/* Run with: SAT_LOG=debug ./program
+   All messages appear
+   
+   Run with: SAT_LOG=warn ./program
+   Only error appears
+*/
+.fi
+.SS Default Structured Logger
+.nf
+#include <sat_log.h>
+
+int main(void) {
+    sat_log_t logger;
+    
+    sat_log_init(&logger);
+    
+    sat_log_args_t args = {
+        .type = sat_log_type_default,
+        .logger = NULL
+    };
+    
+    sat_log_open(&logger, &args);
+    
+    sat_log_registry(&logger, sat_log_level_error, 
+                     "Error code: %d", 404);
+    sat_log_registry(&logger, sat_log_level_information,
+                     "Request from %s", "192.168.1.100");
+    
+    sat_log_close(&logger);
+    
+    return 0;
+}
+.fi
+.SS Custom Logger Implementation
+.nf
+#include <sat_log.h>
+#include <stdio.h>
+#include <time.h>
+
+void custom_logger(sat_log_level_t level, 
+                   const char *format, 
+                   va_list list) {
+    const char *level_names[] = {
+        "FATAL", "ERROR", "WARN", "INFO", "DEBUG", "TRACE"
+    };
+    
+    // Add timestamp
+    time_t now = time(NULL);
+    struct tm *t = localtime(&now);
+    printf("[%02d:%02d:%02d] [%s] ", 
+           t->tm_hour, t->tm_min, t->tm_sec,
+           level_names[level]);
+    
+    // Print the message
+    vprintf(format, list);
+    printf("\\n");
+}
+
+int main(void) {
+    sat_log_t logger;
+    
+    sat_log_init(&logger);
+    
+    sat_log_args_t args = {
+        .type = sat_log_type_custom,
+        .logger = custom_logger
+    };
+    
+    sat_log_open(&logger, &args);
+    
+    sat_log_registry(&logger, sat_log_level_information,
+                     "Server started on port %d", 8080);
+    sat_log_registry(&logger, sat_log_level_debug,
+                     "Debug mode enabled");
+    
+    sat_log_close(&logger);
+    
+    return 0;
+}
+
+/* Output:
+[15:30:45] [INFO] Server started on port 8080
+[15:30:45] [DEBUG] Debug mode enabled
+*/
+.fi
+.SS File Logger
+.nf
+#include <sat_log.h>
+#include <stdio.h>
+
+FILE *log_file = NULL;
+
+void file_logger(sat_log_level_t level,
+                 const char *format,
+                 va_list list) {
+    if (log_file) {
+        const char *levels[] = {
+            "FATAL", "ERROR", "WARN", "INFO", "DEBUG", "TRACE"
+        };
+        fprintf(log_file, "[%s] ", levels[level]);
+        vfprintf(log_file, format, list);
+        fprintf(log_file, "\\n");
+        fflush(log_file);
+    }
+}
+
+int main(void) {
+    log_file = fopen("application.log", "a");
+    
+    sat_log_t logger;
+    sat_log_init(&logger);
+    
+    sat_log_args_t args = {
+        .type = sat_log_type_custom,
+        .logger = file_logger
+    };
+    
+    sat_log_open(&logger, &args);
+    
+    sat_log_registry(&logger, sat_log_level_information,
+                     "Application started");
+    sat_log_registry(&logger, sat_log_level_error,
+                     "Failed to load config: %s", "file not found");
+    
+    sat_log_close(&logger);
+    fclose(log_file);
+    
+    return 0;
+}
+.fi
+.SS Combined Logging
+.nf
+#include <sat_log.h>
+
+int main(void) {
+    // Use macros for quick debugging
+    sat_log_enabled = 3;  // error, warn, info
+    sat_log_info("Starting initialization");
+    
+    // Use structured logging for important events
+    sat_log_t logger;
+    sat_log_init(&logger);
+    
+    sat_log_args_t args = {
+        .type = sat_log_type_default,
+        .logger = NULL
+    };
+    sat_log_open(&logger, &args);
+    
+    // Quick debug during development
+    int config_loaded = 1;
+    sat_log_debug("Config loaded: %d", config_loaded);
+    
+    // Structured for production logging
+    sat_log_registry(&logger, sat_log_level_information,
+                     "Service ready to accept connections");
+    
+    sat_log_close(&logger);
+    return 0;
+}
+.fi
+.SH NOTES
+.IP \(bu 2
+Macro-based logging has zero overhead when
+.B sat_log_enabled
+is 0, as the compiler can optimize out the entire conditional.
+.IP \(bu 2
+Error, warning, and debug macros output to stderr; info outputs to stdout.
+.IP \(bu 2
+Custom logger functions receive a
+.BR va_list ,
+not varargs directly. Use
+.BR vprintf (3)
+family of functions.
+.IP \(bu 2
+The
+.B sat_log_type_none
+logger discards all messages without processing them.
+.IP \(bu 2
+Logger objects are not thread-safe. For multi-threaded applications,
+implement thread-safe custom loggers or use per-thread logger instances.
+.IP \(bu 2
+The
+.B SAT_LOG
+environment variable is checked only by
+.BR sat_log_init_by_env ().
+It does not automatically configure logging.
+.IP \(bu 2
+Macro output includes line numbers and function names for error, warn, and
+debug levels to aid debugging.
+.IP \(bu 2
+For production use, consider implementing custom loggers that:
+.RS
+.IP \(bu 2
+Add timestamps
+.IP \(bu 2
+Write to rotating log files
+.IP \(bu 2
+Send logs to centralized logging systems
+.IP \(bu 2
+Filter by severity level
+.IP \(bu 2
+Include context information (thread ID, request ID, etc.)
+.RE
+.SH ENVIRONMENT
+.TP
+.B SAT_LOG
+Controls logging level when using
+.BR sat_log_init_by_env ().
+Valid values: "debug", "info", "warn", or any other value for error-only.
+.SH SEE ALSO
+.BR sat_status (3),
+.BR printf (3),
+.BR vprintf (3),
+.BR syslog (3)
+.SH AUTHOR
+SAT Library Team
+.SH COPYRIGHT
+Copyright \(co 2025 SAT Library Project. Licensed under MIT License.
