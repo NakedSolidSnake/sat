@@ -1,0 +1,626 @@
+.TH SAT_SCHEDULER 3 "December 2025" "SAT Library" "SAT Library Manual"
+.SH NAME
+sat_scheduler \- event scheduler with periodic and one-shot timers
+.SH SYNOPSIS
+.nf
+.B #include <sat_scheduler.h>
+.PP
+.BI "sat_status_t sat_scheduler_init(sat_scheduler_t *" object );
+.BI "sat_status_t sat_scheduler_open(sat_scheduler_t *" object ", "
+.BI "                                const sat_scheduler_args_t *" args );
+.BI "sat_status_t sat_scheduler_add_event(sat_scheduler_t *" object ", "
+.BI "                                     const sat_scheduler_event_t *" event );
+.BI "sat_status_t sat_scheduler_start(sat_scheduler_t *" object );
+.BI "sat_status_t sat_scheduler_stop(sat_scheduler_t *" object );
+.BI "sat_status_t sat_scheduler_is_running(sat_scheduler_t *" object );
+.BI "sat_status_t sat_scheduler_get_amount(const sat_scheduler_t *" object ", "
+.BI "                                      uint16_t *" amount );
+.BI "sat_status_t sat_scheduler_close(sat_scheduler_t *" object );
+.PP
+Link with \fI\-lsat_scheduler \-lpthread\fP.
+.fi
+.SH DESCRIPTION
+The
+.B sat_scheduler
+module provides a flexible event scheduling system that executes event handlers
+at specified intervals in a separate thread. It supports both periodic events
+that repeat continuously and one-shot events that execute once and are removed.
+.PP
+The scheduler uses millisecond precision timing based on epoch timestamps and
+can manage multiple events with different intervals simultaneously. Events are
+identified by unique names and can carry custom context data.
+.PP
+Typical applications include:
+.IP \(bu 2
+Periodic status polling or health checks
+.IP \(bu 2
+Timeout handling and delayed operations
+.IP \(bu 2
+Task scheduling in server applications
+.IP \(bu 2
+Periodic data collection or logging
+.IP \(bu 2
+Watchdog timer implementation
+.SS Architecture
+The scheduler operates in a dedicated thread that continuously checks event
+timeouts at 10-microsecond intervals. When an event's timeout expires, its
+handler function is called with the associated context object.
+.PP
+For periodic events, the scheduler automatically reschedules them after
+execution. For one-shot events, they are removed from the scheduler after
+their first execution.
+.SS Types
+.TP
+.B sat_scheduler_handler_t
+Function pointer type for event handlers:
+.RS
+.PP
+.BI "typedef void (*sat_scheduler_handler_t)(void *" object );
+.PP
+Event handlers receive a context pointer that was specified when the event
+was added. This allows handlers to access application-specific data.
+.RE
+.TP
+.B sat_scheduler_t
+Structure representing a scheduler instance:
+.RS
+.IP \(bu 2
+.B set
+\- Internal collection of scheduled events
+.IP \(bu 2
+.B events_amount
+\- Maximum number of events
+.IP \(bu 2
+.B thread
+\- Scheduler thread handle
+.IP \(bu 2
+.B running
+\- Scheduler running state flag
+.RE
+.TP
+.B sat_scheduler_mode_t
+Enumeration for scheduler modes:
+.RS
+.IP \(bu 2
+.B sat_scheduler_mode_static
+\- Fixed-size event collection
+.IP \(bu 2
+.B sat_scheduler_mode_dynamic
+\- Dynamic event collection (can grow)
+.RE
+.TP
+.B sat_scheduler_type_t
+Enumeration for event types:
+.RS
+.IP \(bu 2
+.B sat_scheduler_type_periodic
+\- Event repeats after each timeout
+.IP \(bu 2
+.B sat_scheduler_type_one_shot
+\- Event executes once then is removed
+.RE
+.TP
+.B sat_scheduler_args_t
+Configuration structure for scheduler creation:
+.RS
+.IP \(bu 2
+.B event_amount
+\- Maximum number of events (uint16_t)
+.IP \(bu 2
+.B mode
+\- Scheduler mode (static or dynamic)
+.RE
+.TP
+.B sat_scheduler_event_t
+Structure representing a scheduled event:
+.RS
+.IP \(bu 2
+.B object
+\- Context pointer passed to handler
+.IP \(bu 2
+.B name
+\- Unique event name (string)
+.IP \(bu 2
+.B handler
+\- Event handler function
+.IP \(bu 2
+.B type
+\- Event type (periodic or one-shot)
+.IP \(bu 2
+.B timeout
+\- Timeout in milliseconds
+.IP \(bu 2
+.B last_update
+\- Last execution timestamp (internal)
+.RE
+.SS Functions
+.TP
+.BR sat_scheduler_init ()
+Initializes a scheduler object by clearing all fields. Must be called before
+.BR sat_scheduler_open ().
+Returns a status indicating success or failure.
+.TP
+.BR sat_scheduler_open ()
+Configures a scheduler with the specified parameters. Creates the internal
+event collection with the given capacity and mode.
+.RS
+.PP
+The
+.I event_amount
+specifies the maximum number of concurrent events. The
+.I mode
+determines whether the collection has a fixed size (static) or can grow
+dynamically.
+.PP
+Returns a status indicating success or failure. Fails if parameters are
+invalid or memory allocation fails.
+.RE
+.TP
+.BR sat_scheduler_add_event ()
+Adds a new event to the scheduler's event collection. The event will not
+execute until the scheduler is started with
+.BR sat_scheduler_start ().
+.RS
+.PP
+Event names must be unique within the scheduler. The event structure must
+have a valid name, handler function, and timeout value.
+.PP
+Returns a status indicating success or failure. Fails if the event is
+invalid or the collection is full (in static mode).
+.RE
+.TP
+.BR sat_scheduler_start ()
+Starts the scheduler thread, which begins monitoring events and executing
+handlers when their timeouts expire. All events begin timing from the moment
+the scheduler starts.
+.RS
+.PP
+The scheduler runs in a separate thread created with default attributes.
+Event handlers are called in the scheduler's thread context.
+.PP
+Returns a status indicating success or failure. Fails if the object is null.
+.RE
+.TP
+.BR sat_scheduler_stop ()
+Stops the scheduler thread and waits for it to terminate gracefully. Events
+are preserved in the collection but no longer execute until the scheduler is
+restarted.
+.RS
+.PP
+This function blocks until the scheduler thread terminates. Event execution
+state is not preserved across stop/start cycles.
+.PP
+Returns a status indicating success or failure. Fails if the object is null.
+.RE
+.TP
+.BR sat_scheduler_is_running ()
+Checks whether the scheduler thread is currently active and processing events.
+.RS
+.PP
+Returns a status indicating success if the scheduler is running, or failure
+with an error message if it is not running or the object is null.
+.RE
+.TP
+.BR sat_scheduler_get_amount ()
+Retrieves the current number of events in the scheduler. For schedulers with
+one-shot events, this count may decrease as events execute and are removed.
+.RS
+.PP
+The returned count reflects the actual number of events currently scheduled,
+which may be less than the maximum capacity.
+.PP
+Returns a status indicating success or failure. Fails if parameters are null.
+.RE
+.TP
+.BR sat_scheduler_close ()
+Stops the scheduler if running, destroys the event collection, and releases
+all resources. The scheduler object is cleared and must be reinitialized
+before reuse.
+.RS
+.PP
+This function ensures clean shutdown by stopping the thread and cleaning up
+all internal structures.
+.PP
+Returns a status indicating success or failure. Fails if the object is null.
+.RE
+.SH RETURN VALUE
+All functions return
+.B sat_status_t
+indicating success or failure. On failure, the status contains an error
+message describing the problem.
+.SH EXAMPLES
+.SS Periodic Event
+.nf
+#include <sat_scheduler.h>
+#include <stdio.h>
+
+void periodic_handler(void *object) {
+    int *counter = (int *)object;
+    (*counter)++;
+    printf("Periodic event: count = %d\\n", *counter);
+}
+
+int main(void) {
+    sat_scheduler_t scheduler;
+    int counter = 0;
+    
+    // Initialize and configure scheduler
+    sat_scheduler_init(&scheduler);
+    
+    sat_scheduler_args_t args = {
+        .event_amount = 10,
+        .mode = sat_scheduler_mode_static
+    };
+    sat_scheduler_open(&scheduler, &args);
+    
+    // Add periodic event (every 1 second)
+    sat_scheduler_event_t event = {
+        .object = &counter,
+        .name = "periodic_counter",
+        .handler = periodic_handler,
+        .type = sat_scheduler_type_periodic,
+        .timeout = 1000  // 1000ms = 1 second
+    };
+    sat_scheduler_add_event(&scheduler, &event);
+    
+    // Start scheduler and wait
+    sat_scheduler_start(&scheduler);
+    sleep(5);  // Run for 5 seconds
+    
+    // Cleanup
+    sat_scheduler_close(&scheduler);
+    
+    return 0;
+}
+.fi
+.SS One-Shot Event
+.nf
+#include <sat_scheduler.h>
+#include <stdio.h>
+
+void timeout_handler(void *object) {
+    char *message = (char *)object;
+    printf("Timeout: %s\\n", message);
+}
+
+int main(void) {
+    sat_scheduler_t scheduler;
+    
+    sat_scheduler_init(&scheduler);
+    
+    sat_scheduler_args_t args = {
+        .event_amount = 5,
+        .mode = sat_scheduler_mode_static
+    };
+    sat_scheduler_open(&scheduler, &args);
+    
+    // Add one-shot event (executes once after 2 seconds)
+    sat_scheduler_event_t event = {
+        .object = "Operation timed out",
+        .name = "timeout_event",
+        .handler = timeout_handler,
+        .type = sat_scheduler_type_one_shot,
+        .timeout = 2000  // 2 seconds
+    };
+    sat_scheduler_add_event(&scheduler, &event);
+    
+    sat_scheduler_start(&scheduler);
+    sleep(3);  // Wait for event to execute
+    
+    sat_scheduler_close(&scheduler);
+    
+    return 0;
+}
+.fi
+.SS Multiple Events with Different Intervals
+.nf
+#include <sat_scheduler.h>
+#include <stdio.h>
+
+typedef struct {
+    char *name;
+    int count;
+} event_context_t;
+
+void multi_handler(void *object) {
+    event_context_t *ctx = (event_context_t *)object;
+    ctx->count++;
+    printf("[%s] executed %d times\\n", ctx->name, ctx->count);
+}
+
+int main(void) {
+    sat_scheduler_t scheduler;
+    
+    event_context_t fast_ctx = { .name = "Fast", .count = 0 };
+    event_context_t slow_ctx = { .name = "Slow", .count = 0 };
+    
+    sat_scheduler_init(&scheduler);
+    
+    sat_scheduler_args_t args = {
+        .event_amount = 10,
+        .mode = sat_scheduler_mode_static
+    };
+    sat_scheduler_open(&scheduler, &args);
+    
+    // Fast event (every 500ms)
+    sat_scheduler_event_t fast_event = {
+        .object = &fast_ctx,
+        .name = "fast_periodic",
+        .handler = multi_handler,
+        .type = sat_scheduler_type_periodic,
+        .timeout = 500
+    };
+    sat_scheduler_add_event(&scheduler, &fast_event);
+    
+    // Slow event (every 2 seconds)
+    sat_scheduler_event_t slow_event = {
+        .object = &slow_ctx,
+        .name = "slow_periodic",
+        .handler = multi_handler,
+        .type = sat_scheduler_type_periodic,
+        .timeout = 2000
+    };
+    sat_scheduler_add_event(&scheduler, &slow_event);
+    
+    sat_scheduler_start(&scheduler);
+    sleep(5);  // Run for 5 seconds
+    
+    sat_scheduler_close(&scheduler);
+    
+    printf("Final: Fast=%d, Slow=%d\\n", 
+           fast_ctx.count, slow_ctx.count);
+    
+    return 0;
+}
+.fi
+.SS Dynamic Scheduler with Mixed Event Types
+.nf
+#include <sat_scheduler.h>
+#include <stdio.h>
+
+void startup_handler(void *object) {
+    printf("System startup complete\\n");
+}
+
+void heartbeat_handler(void *object) {
+    printf("Heartbeat\\n");
+}
+
+void shutdown_handler(void *object) {
+    printf("Shutting down...\\n");
+}
+
+int main(void) {
+    sat_scheduler_t scheduler;
+    
+    sat_scheduler_init(&scheduler);
+    
+    // Dynamic mode allows adding events without pre-defined limit
+    sat_scheduler_args_t args = {
+        .event_amount = 5,  // Initial capacity
+        .mode = sat_scheduler_mode_dynamic
+    };
+    sat_scheduler_open(&scheduler, &args);
+    
+    // One-shot startup event
+    sat_scheduler_event_t startup = {
+        .name = "startup",
+        .handler = startup_handler,
+        .type = sat_scheduler_type_one_shot,
+        .timeout = 500
+    };
+    sat_scheduler_add_event(&scheduler, &startup);
+    
+    // Periodic heartbeat
+    sat_scheduler_event_t heartbeat = {
+        .name = "heartbeat",
+        .handler = heartbeat_handler,
+        .type = sat_scheduler_type_periodic,
+        .timeout = 1000
+    };
+    sat_scheduler_add_event(&scheduler, &heartbeat);
+    
+    // One-shot shutdown event
+    sat_scheduler_event_t shutdown = {
+        .name = "shutdown",
+        .handler = shutdown_handler,
+        .type = sat_scheduler_type_one_shot,
+        .timeout = 5000
+    };
+    sat_scheduler_add_event(&scheduler, &shutdown);
+    
+    sat_scheduler_start(&scheduler);
+    
+    // Wait until scheduler stops
+    while (sat_scheduler_is_running(&scheduler) == sat_status_true) {
+        sleep(1);
+    }
+    
+    sat_scheduler_close(&scheduler);
+    
+    return 0;
+}
+.fi
+.SS Watchdog Timer Implementation
+.nf
+#include <sat_scheduler.h>
+#include <stdio.h>
+#include <stdbool.h>
+
+typedef struct {
+    bool activity_detected;
+    int timeout_count;
+} watchdog_context_t;
+
+void watchdog_handler(void *object) {
+    watchdog_context_t *ctx = (watchdog_context_t *)object;
+    
+    if (!ctx->activity_detected) {
+        ctx->timeout_count++;
+        printf("WARNING: No activity detected! (timeout #%d)\\n",
+               ctx->timeout_count);
+        
+        if (ctx->timeout_count >= 3) {
+            printf("CRITICAL: System unresponsive\\n");
+        }
+    } else {
+        // Reset watchdog
+        ctx->activity_detected = false;
+        ctx->timeout_count = 0;
+    }
+}
+
+void simulate_activity(watchdog_context_t *ctx) {
+    ctx->activity_detected = true;
+    printf("Activity detected\\n");
+}
+
+int main(void) {
+    sat_scheduler_t scheduler;
+    watchdog_context_t watchdog_ctx = {
+        .activity_detected = false,
+        .timeout_count = 0
+    };
+    
+    sat_scheduler_init(&scheduler);
+    
+    sat_scheduler_args_t args = {
+        .event_amount = 5,
+        .mode = sat_scheduler_mode_static
+    };
+    sat_scheduler_open(&scheduler, &args);
+    
+    // Watchdog checks every 2 seconds
+    sat_scheduler_event_t watchdog = {
+        .object = &watchdog_ctx,
+        .name = "watchdog",
+        .handler = watchdog_handler,
+        .type = sat_scheduler_type_periodic,
+        .timeout = 2000
+    };
+    sat_scheduler_add_event(&scheduler, &watchdog);
+    
+    sat_scheduler_start(&scheduler);
+    
+    // Simulate activity pattern
+    sleep(1);
+    simulate_activity(&watchdog_ctx);
+    sleep(3);  // Miss one watchdog check
+    simulate_activity(&watchdog_ctx);
+    sleep(5);  // Miss multiple checks
+    
+    sat_scheduler_close(&scheduler);
+    
+    return 0;
+}
+.fi
+.SS Checking Scheduler State
+.nf
+#include <sat_scheduler.h>
+#include <stdio.h>
+
+void dummy_handler(void *object) {
+    printf("Event executed\\n");
+}
+
+int main(void) {
+    sat_scheduler_t scheduler;
+    uint16_t count;
+    
+    sat_scheduler_init(&scheduler);
+    
+    sat_scheduler_args_t args = {
+        .event_amount = 10,
+        .mode = sat_scheduler_mode_static
+    };
+    sat_scheduler_open(&scheduler, &args);
+    
+    // Add multiple events
+    for (int i = 0; i < 3; i++) {
+        char name[32];
+        snprintf(name, sizeof(name), "event_%d", i);
+        
+        sat_scheduler_event_t event = {
+            .name = strdup(name),  // Duplicate name string
+            .handler = dummy_handler,
+            .type = sat_scheduler_type_periodic,
+            .timeout = 1000 * (i + 1)
+        };
+        sat_scheduler_add_event(&scheduler, &event);
+    }
+    
+    // Check event count
+    sat_scheduler_get_amount(&scheduler, &count);
+    printf("Events scheduled: %u\\n", count);
+    
+    // Check running state
+    if (sat_scheduler_is_running(&scheduler) != sat_status_true) {
+        printf("Scheduler is stopped\\n");
+    }
+    
+    // Start and check again
+    sat_scheduler_start(&scheduler);
+    
+    if (sat_scheduler_is_running(&scheduler) == sat_status_true) {
+        printf("Scheduler is running\\n");
+    }
+    
+    sleep(2);
+    
+    sat_scheduler_stop(&scheduler);
+    
+    if (sat_scheduler_is_running(&scheduler) != sat_status_true) {
+        printf("Scheduler stopped successfully\\n");
+    }
+    
+    sat_scheduler_close(&scheduler);
+    
+    return 0;
+}
+.fi
+.SH NOTES
+.IP \(bu 2
+All event handlers execute in the scheduler's thread context. Handlers should
+be thread-safe if they access shared data.
+.IP \(bu 2
+Event names must be unique within a scheduler. Adding an event with a
+duplicate name will fail.
+.IP \(bu 2
+The scheduler checks events every 10 microseconds, providing millisecond-level
+precision. Very short timeouts (< 10ms) may have reduced accuracy.
+.IP \(bu 2
+Event handlers should complete quickly. Long-running handlers will delay the
+execution of other events.
+.IP \(bu 2
+One-shot events are automatically removed after execution. The event count
+decreases accordingly.
+.IP \(bu 2
+Stopping and restarting a scheduler resets all event timers. Events begin
+timing from the new start time.
+.IP \(bu 2
+The
+.I object
+pointer passed to handlers must remain valid for the lifetime of the event.
+Do not pass pointers to stack variables that may go out of scope.
+.IP \(bu 2
+Dynamic mode allows adding more events than the initial capacity, but may
+incur reallocation overhead.
+.IP \(bu 2
+Event names should be dynamically allocated strings if they need to persist
+across the event's lifetime.
+.IP \(bu 2
+The scheduler uses
+.BR sat_time_get_epoch_now_ms ()
+for timing, which provides millisecond resolution based on system time.
+.IP \(bu 2
+Closing a scheduler automatically stops it if running and cleans up all events.
+.SH SEE ALSO
+.BR sat_status (3),
+.BR sat_set (3),
+.BR sat_time (3),
+.BR pthread_create (3),
+.BR pthread_join (3)
+.SH AUTHOR
+SAT Library Team
+.SH COPYRIGHT
+Copyright \(co 2025 SAT Library Project. Licensed under MIT License.
