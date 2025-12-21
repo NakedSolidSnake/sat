@@ -18,16 +18,21 @@ typedef struct
     char bank [NAME_SIZE];
 } account_t;
 
-int main (int argc, char *argv[])
+int main (int argc, char *argv [])
 {
-    char filename [NAME_SIZE] = {0};
     sat_properties_t properties;
 
     account_t account;
 
+    if (argc != 2)
+    {
+        printf ("Usage: %s <configuration file path>\n", argv [0]);
+        return -1;
+    }
+
     memset (&account, 0, sizeof (account_t));
 
-    snprintf (filename, 511, "%s/%s", argv [1], "configuration.ini");
+    // snprintf (filename, 511, "%s/%s", argv [1], "configuration.ini");
 
     sat_properties_map_t map = 
     {
@@ -41,7 +46,7 @@ int main (int argc, char *argv[])
         .amount = 4
     };
 
-    sat_status_t status = sat_properties_open (&properties, filename);
+    sat_status_t status = sat_properties_open (&properties, argv [1]);
     assert (sat_status_get_result (&status) == true);
 
     status = sat_properties_read (&properties, &map);

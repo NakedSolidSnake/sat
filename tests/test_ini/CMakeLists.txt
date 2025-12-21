@@ -1,5 +1,0 @@
-if (${SAT_PROPERTIES})
-    add_executable (test_sat_properties ${CMAKE_CURRENT_LIST_DIR}/test_sat_properties.c)
-    target_link_libraries (test_sat_properties PUBLIC sat)
-    add_test (NAME test_sat_properties COMMAND test_sat_properties ${CMAKE_CURRENT_LIST_DIR})
-endif ()

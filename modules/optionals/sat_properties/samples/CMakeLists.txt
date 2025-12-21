@@ -1,0 +1,1 @@
+create_sample (sat_properties_sample sat_properties)
