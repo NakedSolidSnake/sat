@@ -15,7 +15,7 @@ include ("${CMAKE_CURRENT_SOURCE_DIR}/cmake/LoadModules.txt")
 
 add_subdirectory (modules)
 
-list (APPEND SAT_SOURCES 
+# list (APPEND SAT_SOURCES 
                         #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_file.c
                         #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_time.c
                         #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_status.c
@@ -45,7 +45,7 @@ list (APPEND SAT_SOURCES
                         #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_scheduler.c
                         #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_channel.c
                         #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_shared_memory.c
-                         ${CMAKE_CURRENT_LIST_DIR}/src/sat_queue_ipc.c
+                        #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_queue_ipc.c
                         #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_iterator.c
                         #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_process/sat_process.c
                         #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_process/sat_process_monitor.c
@@ -65,7 +65,7 @@ list (APPEND SAT_SOURCES
                         #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_discovery/sat_discovery_service_vanish.c
                         #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_network.c
                         #  ${CMAKE_CURRENT_LIST_DIR}/src/sat_directory.c
-                         )
+                        #  )
 
 
 # Check if it is necessary to link some libraries
@@ -100,13 +100,15 @@ list (APPEND SAT_LIBRARIES
              sat_scheduler
              sat_shared_memory
              sat_discovery
+             sat_queue_ipc
              )
 
 list (APPEND SAT_INCLUDES ${CMAKE_CURRENT_LIST_DIR}/include
                         #   ${CMAKE_CURRENT_LIST_DIR}/include/sat_tcp/
                         #   ${CMAKE_CURRENT_LIST_DIR}/include/sat_udp/
                         #   ${CMAKE_CURRENT_LIST_DIR}/include/sat_process/
-                          ${CMAKE_CURRENT_LIST_DIR}/include/sat_discovery/)
+                        #   ${CMAKE_CURRENT_LIST_DIR}/include/sat_discovery/
+                          )
 
 file (WRITE ${CMAKE_CURRENT_LIST_DIR}/include/sat_optionals.h "")
 
@@ -115,8 +117,8 @@ list (APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 add_library (sat SHARED "")
 target_link_libraries (sat ${SAT_LIBRARIES})
 target_sources (sat
-    PUBLIC 
-        ${SAT_SOURCES}
+    PRIVATE 
+        ${CMAKE_CURRENT_LIST_DIR}/src/sat.c
     )
 target_include_directories (sat
     PUBLIC 
@@ -152,7 +154,7 @@ install (FILES include/sat.h             DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 # install (FILES include/sat_scheduler.h   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 # install (FILES include/sat_channel.h     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 # install (FILES include/sat_shared_memory.h     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install (FILES include/sat_queue_ipc.h   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+# install (FILES include/sat_queue_ipc.h   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 # install (FILES include/sat_iterator.h    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 # install (FILES include/sat_process/sat_process.h    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sat_process)
 # install (FILES include/sat_process/sat_process_monitor.h    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sat_process)

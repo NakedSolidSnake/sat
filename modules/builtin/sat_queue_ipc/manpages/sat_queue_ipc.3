@@ -1,0 +1,616 @@
+.TH SAT_QUEUE_IPC 3 "December 2025" "SAT Library" "SAT Library Manual"
+.SH NAME
+sat_queue_ipc \- System V message queue inter-process communication
+.SH SYNOPSIS
+.nf
+.B #include <sat_queue_ipc.h>
+.PP
+.BI "sat_status_t sat_queue_ipc_open(sat_queue_ipc_t *" object ", "
+.BI "                                const sat_queue_ipc_args_t *" args );
+.BI "sat_status_t sat_queue_ipc_send(sat_queue_ipc_t *" object ", "
+.BI "                                const sat_queue_data_t *" data );
+.BI "sat_status_t sat_queue_ipc_receive(sat_queue_ipc_t *" object ", "
+.BI "                                   sat_queue_data_t *" data );
+.BI "sat_status_t sat_queue_ipc_destroy(sat_queue_ipc_t *" object );
+.PP
+Link with \fI\-lsat_queue_ipc\fP.
+.fi
+.SH DESCRIPTION
+The
+.B sat_queue_ipc
+module provides a high-level interface to System V message queues for
+inter-process communication (IPC). It wraps the POSIX message queue functions
+with a convenient and safe API.
+.PP
+System V message queues allow multiple processes to exchange messages in a
+structured format. Each message has a type field that enables selective
+message reception, making it suitable for implementing various communication
+patterns including request-response, publish-subscribe, and work queues.
+.PP
+Message queues persist in the kernel until explicitly destroyed or system
+reboot, allowing processes to start and stop independently while maintaining
+the message queue.
+.SS Key Features
+.IP \(bu 2
+.B Type-based filtering
+\- Messages can be selectively received by type
+.IP \(bu 2
+.B Persistent
+\- Queues survive process termination
+.IP \(bu 2
+.B Blocking operations
+\- Send/receive block when queue is full/empty
+.IP \(bu 2
+.B Kernel-managed
+\- No shared memory or file locking required
+.IP \(bu 2
+.B System-wide visibility
+\- Accessible by any process with proper permissions
+.SS Message Size Limit
+The maximum message size is 8192 bytes (8KB). Messages larger than this
+will be rejected with an error.
+.SS Types
+.TP
+.B sat_queue_ipc_flags_t
+Enumeration for queue permission flags:
+.RS
+.IP \(bu 2
+.B sat_queue_ipc_flags_read_and_write
+\- Read and write permissions for all users (0666)
+.RE
+.TP
+.B sat_queue_ipc_t
+Structure representing a message queue instance:
+.RS
+.IP \(bu 2
+.B key
+\- IPC key used to identify the queue
+.IP \(bu 2
+.B id
+\- System V message queue identifier returned by msgget()
+.IP \(bu 2
+.B initialized
+\- Boolean flag indicating if queue is ready for use
+.RE
+.TP
+.B sat_queue_ipc_args_t
+Configuration structure for queue creation:
+.RS
+.IP \(bu 2
+.B key
+\- Unique positive integer identifier (must be > 0)
+.IP \(bu 2
+.B flags
+\- Permission flags (typically sat_queue_ipc_flags_read_and_write)
+.RE
+.TP
+.B sat_queue_data_t
+Message data structure:
+.RS
+.IP \(bu 2
+.B type
+\- Message type identifier (must be > 0 for send)
+.IP \(bu 2
+.B buffer
+\- Pointer to message data
+.IP \(bu 2
+.B size
+\- Message size in bytes (0 < size < 8192)
+.RE
+.SS Functions
+.TP
+.BR sat_queue_ipc_open ()
+Creates a new message queue or opens an existing one identified by the
+specified key. The IPC_CREAT flag is automatically applied, so if a queue
+with the given key doesn't exist, it will be created.
+.RS
+.PP
+If multiple processes open the same key, they will share the same message
+queue. The first process to open a non-existent queue creates it with the
+specified permissions.
+.PP
+Keys should be chosen carefully to avoid conflicts. The
+.BR ftok (3)
+function can be used to generate unique keys based on file paths, or you
+can use arbitrary positive integers.
+.PP
+Returns a status indicating success or failure. Fails if the object is null,
+the key is invalid (<= 0), or the system limit for message queues is reached.
+.RE
+.TP
+.BR sat_queue_ipc_send ()
+Sends a message to the queue. The message must have a positive type value
+and a size between 1 and 8191 bytes inclusive.
+.RS
+.PP
+If the queue is full, this function will block until space becomes available.
+The message is copied into kernel space, so the caller's buffer can be freed
+or reused immediately after this call returns.
+.PP
+Messages are stored in the order they are sent (FIFO) within each type.
+.PP
+Returns a status indicating success or failure. Fails if the queue is not
+initialized, data parameters are invalid, or the system call fails.
+.RE
+.TP
+.BR sat_queue_ipc_receive ()
+Receives a message from the queue based on the type field in the data
+structure. The behavior depends on the type value:
+.RS
+.IP \(bu 2
+.B type > 0
+\- Receive the first message with exactly this type
+.IP \(bu 2
+.B type = 0
+\- Receive the first message regardless of type (FIFO order)
+.IP \(bu 2
+.B type < 0
+\- Receive the first message with the lowest type value that is less than
+or equal to the absolute value of type
+.PP
+If no matching message is available, this function blocks until one arrives.
+The caller must allocate the buffer before calling this function and set
+the size to the maximum bytes to read.
+.PP
+The received message is copied into the caller's buffer and removed from
+the queue.
+.PP
+Returns a status indicating success or failure. Fails if the queue is not
+initialized, data parameters are invalid, or the system call fails.
+.RE
+.TP
+.BR sat_queue_ipc_destroy ()
+Removes the message queue from the system. All messages currently in the
+queue are discarded, and the queue identifier becomes invalid.
+.RS
+.PP
+Other processes that have the queue open will receive errors on subsequent
+operations. Typically, one process (usually the creator) should be responsible
+for destroying the queue when it's no longer needed.
+.PP
+Message queues persist in the kernel even after all processes close them,
+so explicit destruction is necessary to free system resources.
+.PP
+Returns a status indicating success or failure. Fails if the queue is not
+initialized or the msgctl() system call fails.
+.RE
+.SH RETURN VALUE
+All functions return
+.B sat_status_t
+indicating success or failure with descriptive error messages.
+.SH EXAMPLES
+.SS Producer-Consumer Pattern
+.nf
+#include <sat_queue_ipc.h>
+#include <stdio.h>
+#include <string.h>
+
+#define QUEUE_KEY 12345
+#define MSG_TYPE 1
+
+// Producer process
+void producer(void) {
+    sat_queue_ipc_t queue;
+    
+    sat_queue_ipc_args_t args = {
+        .key = QUEUE_KEY,
+        .flags = sat_queue_ipc_flags_read_and_write
+    };
+    
+    sat_status_t status = sat_queue_ipc_open(&queue, &args);
+    if (!sat_status_get_result(&status)) {
+        fprintf(stderr, "Failed to open queue\\n");
+        return;
+    }
+    
+    // Send messages
+    for (int i = 0; i < 10; i++) {
+        char buffer[256];
+        snprintf(buffer, sizeof(buffer), "Message %d", i);
+        
+        sat_queue_data_t data = {
+            .type = MSG_TYPE,
+            .buffer = buffer,
+            .size = strlen(buffer) + 1
+        };
+        
+        status = sat_queue_ipc_send(&queue, &data);
+        if (sat_status_get_result(&status)) {
+            printf("Sent: %s\\n", buffer);
+        }
+    }
+    
+    // Producer doesn't destroy - consumer will do that
+}
+
+// Consumer process
+void consumer(void) {
+    sat_queue_ipc_t queue;
+    
+    sat_queue_ipc_args_t args = {
+        .key = QUEUE_KEY,
+        .flags = sat_queue_ipc_flags_read_and_write
+    };
+    
+    sat_status_t status = sat_queue_ipc_open(&queue, &args);
+    if (!sat_status_get_result(&status)) {
+        fprintf(stderr, "Failed to open queue\\n");
+        return;
+    }
+    
+    // Receive messages
+    for (int i = 0; i < 10; i++) {
+        char buffer[256];
+        
+        sat_queue_data_t data = {
+            .type = MSG_TYPE,
+            .buffer = buffer,
+            .size = sizeof(buffer)
+        };
+        
+        status = sat_queue_ipc_receive(&queue, &data);
+        if (sat_status_get_result(&status)) {
+            printf("Received: %s\\n", buffer);
+        }
+    }
+    
+    // Consumer destroys the queue
+    sat_queue_ipc_destroy(&queue);
+}
+.fi
+.SS Multi-Type Message Routing
+.nf
+#include <sat_queue_ipc.h>
+#include <stdio.h>
+#include <string.h>
+
+#define QUEUE_KEY 54321
+#define TYPE_LOG 1
+#define TYPE_ERROR 2
+#define TYPE_ALERT 3
+
+void sender(void) {
+    sat_queue_ipc_t queue;
+    
+    sat_queue_ipc_args_t args = {
+        .key = QUEUE_KEY,
+        .flags = sat_queue_ipc_flags_read_and_write
+    };
+    
+    sat_queue_ipc_open(&queue, &args);
+    
+    // Send different message types
+    char log_msg[] = "System started";
+    sat_queue_data_t log_data = {
+        .type = TYPE_LOG,
+        .buffer = log_msg,
+        .size = strlen(log_msg) + 1
+    };
+    sat_queue_ipc_send(&queue, &log_data);
+    
+    char error_msg[] = "Connection timeout";
+    sat_queue_data_t error_data = {
+        .type = TYPE_ERROR,
+        .buffer = error_msg,
+        .size = strlen(error_msg) + 1
+    };
+    sat_queue_ipc_send(&queue, &error_data);
+    
+    char alert_msg[] = "High CPU usage";
+    sat_queue_data_t alert_data = {
+        .type = TYPE_ALERT,
+        .buffer = alert_msg,
+        .size = strlen(alert_msg) + 1
+    };
+    sat_queue_ipc_send(&queue, &alert_data);
+}
+
+// Receiver that only processes errors
+void error_handler(void) {
+    sat_queue_ipc_t queue;
+    
+    sat_queue_ipc_args_t args = {
+        .key = QUEUE_KEY,
+        .flags = sat_queue_ipc_flags_read_and_write
+    };
+    
+    sat_queue_ipc_open(&queue, &args);
+    
+    char buffer[256];
+    sat_queue_data_t data = {
+        .type = TYPE_ERROR,  // Only receive error messages
+        .buffer = buffer,
+        .size = sizeof(buffer)
+    };
+    
+    while (1) {
+        sat_status_t status = sat_queue_ipc_receive(&queue, &data);
+        if (sat_status_get_result(&status)) {
+            printf("ERROR: %s\\n", buffer);
+            // Process error...
+        }
+    }
+}
+
+// Receiver that processes all messages
+void log_handler(void) {
+    sat_queue_ipc_t queue;
+    
+    sat_queue_ipc_args_t args = {
+        .key = QUEUE_KEY,
+        .flags = sat_queue_ipc_flags_read_and_write
+    };
+    
+    sat_queue_ipc_open(&queue, &args);
+    
+    char buffer[256];
+    sat_queue_data_t data = {
+        .type = 0,  // Receive any message type
+        .buffer = buffer,
+        .size = sizeof(buffer)
+    };
+    
+    while (1) {
+        sat_status_t status = sat_queue_ipc_receive(&queue, &data);
+        if (sat_status_get_result(&status)) {
+            printf("Message (type %ld): %s\\n", data.type, buffer);
+        }
+    }
+}
+.fi
+.SS Request-Response Pattern
+.nf
+#include <sat_queue_ipc.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+
+#define REQUEST_QUEUE_KEY 10001
+#define RESPONSE_QUEUE_KEY 10002
+#define REQUEST_TYPE 1
+#define RESPONSE_TYPE 2
+
+// Server
+void server(void) {
+    sat_queue_ipc_t req_queue, resp_queue;
+    
+    sat_queue_ipc_args_t args = {
+        .key = REQUEST_QUEUE_KEY,
+        .flags = sat_queue_ipc_flags_read_and_write
+    };
+    sat_queue_ipc_open(&req_queue, &args);
+    
+    args.key = RESPONSE_QUEUE_KEY;
+    sat_queue_ipc_open(&resp_queue, &args);
+    
+    printf("Server: Waiting for requests...\\n");
+    
+    while (1) {
+        char req_buffer[256];
+        sat_queue_data_t req_data = {
+            .type = REQUEST_TYPE,
+            .buffer = req_buffer,
+            .size = sizeof(req_buffer)
+        };
+        
+        // Receive request
+        sat_status_t status = sat_queue_ipc_receive(&req_queue, &req_data);
+        if (sat_status_get_result(&status)) {
+            printf("Server: Received request: %s\\n", req_buffer);
+            
+            // Process and send response
+            char resp_buffer[256];
+            snprintf(resp_buffer, sizeof(resp_buffer), 
+                     "Processed: %s", req_buffer);
+            
+            sat_queue_data_t resp_data = {
+                .type = RESPONSE_TYPE,
+                .buffer = resp_buffer,
+                .size = strlen(resp_buffer) + 1
+            };
+            
+            sat_queue_ipc_send(&resp_queue, &resp_data);
+            printf("Server: Sent response\\n");
+        }
+    }
+}
+
+// Client
+void client(void) {
+    sat_queue_ipc_t req_queue, resp_queue;
+    
+    sat_queue_ipc_args_t args = {
+        .key = REQUEST_QUEUE_KEY,
+        .flags = sat_queue_ipc_flags_read_and_write
+    };
+    sat_queue_ipc_open(&req_queue, &args);
+    
+    args.key = RESPONSE_QUEUE_KEY;
+    sat_queue_ipc_open(&resp_queue, &args);
+    
+    // Send request
+    char request[] = "Calculate 2 + 2";
+    sat_queue_data_t req_data = {
+        .type = REQUEST_TYPE,
+        .buffer = request,
+        .size = strlen(request) + 1
+    };
+    
+    printf("Client: Sending request: %s\\n", request);
+    sat_queue_ipc_send(&req_queue, &req_data);
+    
+    // Wait for response
+    char resp_buffer[256];
+    sat_queue_data_t resp_data = {
+        .type = RESPONSE_TYPE,
+        .buffer = resp_buffer,
+        .size = sizeof(resp_buffer)
+    };
+    
+    printf("Client: Waiting for response...\\n");
+    sat_status_t status = sat_queue_ipc_receive(&resp_queue, &resp_data);
+    if (sat_status_get_result(&status)) {
+        printf("Client: Got response: %s\\n", resp_buffer);
+    }
+}
+.fi
+.SS Work Queue with Multiple Workers
+.nf
+#include <sat_queue_ipc.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+
+#define WORK_QUEUE_KEY 20001
+#define TASK_TYPE 1
+
+// Master process - distributes work
+void master(void) {
+    sat_queue_ipc_t queue;
+    
+    sat_queue_ipc_args_t args = {
+        .key = WORK_QUEUE_KEY,
+        .flags = sat_queue_ipc_flags_read_and_write
+    };
+    sat_queue_ipc_open(&queue, &args);
+    
+    // Send 100 tasks
+    for (int i = 0; i < 100; i++) {
+        char task[256];
+        snprintf(task, sizeof(task), "Task #%d", i);
+        
+        sat_queue_data_t data = {
+            .type = TASK_TYPE,
+            .buffer = task,
+            .size = strlen(task) + 1
+        };
+        
+        sat_queue_ipc_send(&queue, &data);
+        printf("Master: Queued %s\\n", task);
+    }
+    
+    printf("Master: All tasks queued\\n");
+}
+
+// Worker process - processes tasks
+void worker(int worker_id) {
+    sat_queue_ipc_t queue;
+    
+    sat_queue_ipc_args_t args = {
+        .key = WORK_QUEUE_KEY,
+        .flags = sat_queue_ipc_flags_read_and_write
+    };
+    sat_queue_ipc_open(&queue, &args);
+    
+    printf("Worker %d: Started\\n", worker_id);
+    
+    while (1) {
+        char task[256];
+        sat_queue_data_t data = {
+            .type = TASK_TYPE,
+            .buffer = task,
+            .size = sizeof(task)
+        };
+        
+        sat_status_t status = sat_queue_ipc_receive(&queue, &data);
+        if (sat_status_get_result(&status)) {
+            printf("Worker %d: Processing %s\\n", worker_id, task);
+            
+            // Simulate work
+            sleep(1);
+            
+            printf("Worker %d: Completed %s\\n", worker_id, task);
+        }
+    }
+}
+
+int main(void) {
+    // Fork multiple worker processes
+    for (int i = 0; i < 4; i++) {
+        pid_t pid = fork();
+        if (pid == 0) {
+            // Child process
+            worker(i);
+            return 0;
+        }
+    }
+    
+    // Parent is master
+    master();
+    
+    // Wait a bit then cleanup
+    sleep(120);
+    
+    sat_queue_ipc_t queue;
+    sat_queue_ipc_args_t args = {
+        .key = WORK_QUEUE_KEY,
+        .flags = sat_queue_ipc_flags_read_and_write
+    };
+    sat_queue_ipc_open(&queue, &args);
+    sat_queue_ipc_destroy(&queue);
+    
+    return 0;
+}
+.fi
+.SH NOTES
+.IP \(bu 2
+Message queues are system-wide resources and persist until explicitly
+destroyed or system reboot. Use
+.BR ipcs (1)
+to view active queues and
+.BR ipcrm (1)
+to remove them manually if needed.
+.IP \(bu 2
+The maximum message size is 8192 bytes. Larger messages must be split
+into multiple parts or use shared memory instead.
+.IP \(bu 2
+Message queue keys must be positive integers. Using
+.BR ftok (3)
+to generate keys from file paths helps avoid conflicts.
+.IP \(bu 2
+Both send and receive operations are blocking by default. For non-blocking
+operations, use the native msgrcv() with IPC_NOWAIT flag.
+.IP \(bu 2
+System limits on message queues are configurable via /proc/sys/kernel/msgmni
+(max queues), /proc/sys/kernel/msgmax (max message size), and
+/proc/sys/kernel/msgmnb (max bytes per queue).
+.IP \(bu 2
+Message types must be positive values. Type 0 has special meaning in receive
+operations (receive any message).
+.IP \(bu 2
+For type < 0 in receive, the function retrieves the first message with the
+lowest type value <= |type|, useful for priority queue implementations.
+.IP \(bu 2
+Destroying a queue that other processes are using will cause their operations
+to fail. Coordinate cleanup between processes.
+.IP \(bu 2
+The initialized flag helps prevent operations on unopened queues but does
+not protect against use-after-destroy scenarios.
+.IP \(bu 2
+Error messages from msgsnd(), msgrcv(), and msgctl() can be obtained via
+errno for detailed diagnostics.
+.SH FILES
+.TP
+.I /proc/sys/kernel/msgmni
+Maximum number of message queue identifiers
+.TP
+.I /proc/sys/kernel/msgmax
+Maximum message size in bytes
+.TP
+.I /proc/sys/kernel/msgmnb
+Maximum number of bytes in a message queue
+.SH SEE ALSO
+.BR sat_status (3),
+.BR sat_shared_memory (3),
+.BR msgget (2),
+.BR msgsnd (2),
+.BR msgrcv (2),
+.BR msgctl (2),
+.BR ftok (3),
+.BR ipcs (1),
+.BR ipcrm (1)
+.SH AUTHOR
+SAT Library Team
+.SH COPYRIGHT
+Copyright \(co 2025 SAT Library Project. Licensed under MIT License.

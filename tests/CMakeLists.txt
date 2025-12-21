@@ -9,7 +9,7 @@
 # create_test (test_sat_worker)
 # create_test (test_sat_scheduler)
 # create_test (test_sat_shared_memory)
-create_test (test_sat_queue_ipc)
+# create_test (test_sat_queue_ipc)
 
 
 add_subdirectory (test_mysql)

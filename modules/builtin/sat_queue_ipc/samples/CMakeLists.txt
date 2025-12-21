@@ -1,0 +1,1 @@
+create_sample (sat_queue_ipc_sample sat_queue_ipc)
