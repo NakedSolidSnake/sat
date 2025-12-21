@@ -59,6 +59,11 @@ if(SAT_PROPERTIES_BUILT)
     list(APPEND SAT_LIBRARIES sat_properties)
 endif()
 
+get_property(SAT_CURL_BUILT GLOBAL PROPERTY SAT_CURL_COMPILED)
+if(SAT_CURL_BUILT)
+    list(APPEND SAT_LIBRARIES sat_curl)
+endif()
+
 list (APPEND SAT_INCLUDES ${CMAKE_CURRENT_LIST_DIR}/include)
 
 add_library (sat SHARED "")
