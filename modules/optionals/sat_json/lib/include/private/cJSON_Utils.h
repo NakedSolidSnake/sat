@@ -20,8 +20,8 @@
   THE SOFTWARE.
 */
 
-#ifndef cJSON_Utils__h
-#define cJSON_Utils__h
+#ifndef CJSON_UTILS_H
+#define CJSON_UTILS_H
 
 #ifdef __cplusplus
 extern "C"
@@ -85,4 +85,4 @@ CJSON_PUBLIC(void) cJSONUtils_SortObjectCaseSensitive(cJSON * const object);
 }
 #endif
 
-#endif
+#endif /* CJSON_UTILS_H */
