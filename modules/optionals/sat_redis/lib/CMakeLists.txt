@@ -18,6 +18,6 @@ target_link_libraries (sat_redis
 
 install (FILES include/sat_redis.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-file (APPEND ${CMAKE_SOURCE_DIR}/include/sat_optionals.h "#include <sat_redis.h>\n")
+file (APPEND ${CMAKE_SOURCE_DIR}/modules/main/include/sat_optionals.h "#include <sat_redis.h>\n")
 
 set_property (GLOBAL PROPERTY SAT_REDIS_COMPILED TRUE)

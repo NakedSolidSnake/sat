@@ -29,6 +29,6 @@ install (FILES include/sat_gtk3_window.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 
 add_definitions (${GTK_CFLAGS} ${GTK_CFLAGS_OTHER})
 
-file (APPEND ${CMAKE_SOURCE_DIR}/include/sat_optionals.h "#include <sat_gtk3.h>\n")
+file (APPEND ${CMAKE_SOURCE_DIR}/modules/main/include/sat_optionals.h "#include <sat_gtk3.h>\n")
 
 set_property (GLOBAL PROPERTY SAT_GTK3_COMPILED TRUE)

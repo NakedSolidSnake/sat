@@ -27,6 +27,6 @@ install (FILES include/sat_kafka_groups.h  DESTINATION ${CMAKE_INSTALL_INCLUDEDI
 install (FILES include/sat_kafka_topics.h  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install (FILES include/sat_kafka_message.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-file (APPEND ${CMAKE_SOURCE_DIR}/include/sat_optionals.h "#include <sat_kafka.h>\n")
+file (APPEND ${CMAKE_SOURCE_DIR}/modules/main/include/sat_optionals.h "#include <sat_kafka.h>\n")
 
 set_property (GLOBAL PROPERTY SAT_KAFKA_COMPILED TRUE)

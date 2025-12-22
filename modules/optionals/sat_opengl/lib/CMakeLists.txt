@@ -38,5 +38,5 @@ target_link_libraries (sat_opengl
 install (FILES include/sat_opengl.h       DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install (FILES include/sat_opengl_types.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-file (APPEND ${CMAKE_SOURCE_DIR}/include/sat_optionals.h "#include <sat_opengl.h>\n")
+file (APPEND ${CMAKE_SOURCE_DIR}/modules/main/include/sat_optionals.h "#include <sat_opengl.h>\n")
 set_property (GLOBAL PROPERTY SAT_OPENGL_COMPILED TRUE)

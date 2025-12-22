@@ -18,7 +18,7 @@ target_link_libraries (sat_postgres
 
 install (FILES include/sat_postgres.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-file (APPEND ${CMAKE_SOURCE_DIR}/include/sat_optionals.h "#include <sat_postgres.h>\n")
+file (APPEND ${CMAKE_SOURCE_DIR}/modules/main/include/sat_optionals.h "#include <sat_postgres.h>\n")
 set_property (GLOBAL PROPERTY SAT_POSTGRES_COMPILED TRUE)
 
 list (APPEND SAT_INCLUDES /usr/include/postgresql)

@@ -18,5 +18,5 @@ target_link_libraries (sat_loki
 
 install (FILES include/sat_loki.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-file (APPEND ${CMAKE_SOURCE_DIR}/include/sat_optionals.h "#include <sat_loki.h>\n")
+file (APPEND ${CMAKE_SOURCE_DIR}/modules/main/include/sat_optionals.h "#include <sat_loki.h>\n")
 set_property (GLOBAL PROPERTY SAT_LOKI_COMPILED TRUE)

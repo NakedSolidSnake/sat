@@ -20,6 +20,6 @@ target_link_libraries (sat_properties
 
 install (FILES include/public/sat_properties.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-file (APPEND ${CMAKE_SOURCE_DIR}/include/sat_optionals.h "#include <sat_properties.h>\n")
+file (APPEND ${CMAKE_SOURCE_DIR}/modules/main/include/sat_optionals.h "#include <sat_properties.h>\n")
 
 set_property(GLOBAL PROPERTY SAT_PROPERTIES_COMPILED TRUE)
