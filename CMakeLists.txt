@@ -74,6 +74,11 @@ if(SAT_WEBSERVER_BUILT)
     list(APPEND SAT_LIBRARIES sat_webserver)
 endif()
 
+get_property(SAT_LOKI_BUILT GLOBAL PROPERTY SAT_LOKI_COMPILED)
+if(SAT_LOKI_BUILT)
+    list(APPEND SAT_LIBRARIES sat_loki)
+endif()
+
 list (APPEND SAT_INCLUDES ${CMAKE_CURRENT_LIST_DIR}/include)
 
 add_library (sat SHARED "")
@@ -88,7 +93,6 @@ target_include_directories (sat
     )
 
 add_subdirectory (tests)
-add_subdirectory (samples)
 
 install (TARGETS sat LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
