@@ -4,3 +4,4 @@
 #include <sat_loki.h>
 #include <sat_sqlite.h>
 #include <sat_mysql.h>
+#include <sat_redis.h>

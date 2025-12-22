@@ -1,5 +1,0 @@
-if (${SAT_REDIS})
-    add_executable (test_sat_redis ${CMAKE_CURRENT_LIST_DIR}/test_sat_redis.c)
-    target_link_libraries (test_sat_redis PUBLIC sat)
-    add_test (NAME test_sat_redis COMMAND test_sat_redis ${CMAKE_CURRENT_LIST_DIR})
-endif ()

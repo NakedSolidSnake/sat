@@ -89,6 +89,11 @@ if(SAT_MYSQL_BUILT)
     list(APPEND SAT_LIBRARIES sat_mysql)
 endif()
 
+get_property(SAT_REDIS_BUILT GLOBAL PROPERTY SAT_REDIS_COMPILED)
+if(SAT_REDIS_BUILT)
+    list(APPEND SAT_LIBRARIES sat_redis)
+endif()
+
 list (APPEND SAT_INCLUDES ${CMAKE_CURRENT_LIST_DIR}/include)
 
 add_library (sat SHARED "")
