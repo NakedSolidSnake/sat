@@ -22,7 +22,6 @@
 #ifndef SAT_WEBSERVER_H_
 #define SAT_WEBSERVER_H_
 
-#include <sat_status.h>
 #include <sat_array.h>
 #include <civetweb.h>
 

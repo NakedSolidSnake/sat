@@ -69,6 +69,11 @@ if(SAT_JSON_BUILT)
     list(APPEND SAT_LIBRARIES sat_json)
 endif()
 
+get_property(SAT_WEBSERVER_BUILT GLOBAL PROPERTY SAT_WEBSERVER_COMPILED)
+if(SAT_WEBSERVER_BUILT)
+    list(APPEND SAT_LIBRARIES sat_webserver)
+endif()
+
 list (APPEND SAT_INCLUDES ${CMAKE_CURRENT_LIST_DIR}/include)
 
 add_library (sat SHARED "")
