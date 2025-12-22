@@ -24,4 +24,4 @@
 # add_subdirectory (test_ini)
 # add_subdirectory (test_sdl)
 add_subdirectory (test_gtk3)
-add_subdirectory (test_opengl)
+# add_subdirectory (test_opengl)

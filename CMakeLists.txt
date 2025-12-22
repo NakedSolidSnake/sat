@@ -114,6 +114,11 @@ if (SAT_SDL_BUILT)
     list (APPEND SAT_LIBRARIES sat_sdl)
 endif ()
 
+get_property (SAT_OPENGL_BUILT GLOBAL PROPERTY SAT_OPENGL_COMPILED)
+if (SAT_OPENGL_BUILT)
+    list (APPEND SAT_LIBRARIES sat_opengl)
+endif ()
+
 list (APPEND SAT_INCLUDES ${CMAKE_CURRENT_LIST_DIR}/include)
 
 add_library (sat SHARED "")

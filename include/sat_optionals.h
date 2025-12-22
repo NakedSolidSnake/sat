@@ -9,3 +9,4 @@
 #include <sat_kafka.h>
 #include <sat_mqtt.h>
 #include <sat_sdl.h>
+#include <sat_opengl.h>
