@@ -84,6 +84,11 @@ if(SAT_SQLITE_BUILT)
     list(APPEND SAT_LIBRARIES sat_sqlite)
 endif()
 
+get_property(SAT_MYSQL_BUILT GLOBAL PROPERTY SAT_MYSQL_COMPILED)
+if(SAT_MYSQL_BUILT)
+    list(APPEND SAT_LIBRARIES sat_mysql)
+endif()
+
 list (APPEND SAT_INCLUDES ${CMAKE_CURRENT_LIST_DIR}/include)
 
 add_library (sat SHARED "")

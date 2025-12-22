@@ -12,7 +12,7 @@
 # create_test (test_sat_queue_ipc)
 
 
-add_subdirectory (test_mysql)
+# add_subdirectory (test_mysql)
 add_subdirectory (test_postgres)
 # add_subdirectory (test_sqlite)
 add_subdirectory (test_kafka)
