@@ -119,6 +119,11 @@ if (SAT_OPENGL_BUILT)
     list (APPEND SAT_LIBRARIES sat_opengl)
 endif ()
 
+get_property (SAT_GTK3_BUILT GLOBAL PROPERTY SAT_GTK3_COMPILED)
+if (SAT_GTK3_BUILT)
+    list (APPEND SAT_LIBRARIES sat_gtk3)
+endif ()
+
 list (APPEND SAT_INCLUDES ${CMAKE_CURRENT_LIST_DIR}/include)
 
 add_library (sat SHARED "")
@@ -131,8 +136,6 @@ target_include_directories (sat
     PUBLIC 
     ${SAT_INCLUDES}
     )
-
-add_subdirectory (tests)
 
 install (TARGETS sat LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 

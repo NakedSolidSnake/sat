@@ -10,3 +10,4 @@
 #include <sat_mqtt.h>
 #include <sat_sdl.h>
 #include <sat_opengl.h>
+#include <sat_gtk3.h>
