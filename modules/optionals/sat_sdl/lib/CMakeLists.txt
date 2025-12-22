@@ -38,4 +38,4 @@ install (FILES include/sat_sdl_types.h  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 file (APPEND ${CMAKE_SOURCE_DIR}/modules/main/include/sat_optionals.h "#include <sat_sdl.h>\n")
 
-set_property (GLOBAL PROPERTY SAT_SDL_COMPILED TRUE)
+set_property (GLOBAL APPEND PROPERTY SAT_OPTIONAL_LIBS "sat_sdl")

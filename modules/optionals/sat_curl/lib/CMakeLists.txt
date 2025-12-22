@@ -20,5 +20,5 @@ install (FILES include/sat_curl.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 file (APPEND ${CMAKE_SOURCE_DIR}/modules/main/include/sat_optionals.h "#include <sat_curl.h>\n")
 
-set_property (GLOBAL PROPERTY SAT_CURL_COMPILED TRUE)
+set_property (GLOBAL APPEND PROPERTY SAT_OPTIONAL_LIBS "sat_curl")
 

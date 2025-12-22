@@ -17,4 +17,6 @@ list (APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 file (WRITE ${CMAKE_CURRENT_LIST_DIR}/modules/main/include/sat_optionals.h "")
 
+set_property (GLOBAL PROPERTY SAT_OPTIONAL_LIBS "")
+
 add_subdirectory (modules)

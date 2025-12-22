@@ -22,4 +22,4 @@ install (FILES include/public/sat_properties.h DESTINATION ${CMAKE_INSTALL_INCLU
 
 file (APPEND ${CMAKE_SOURCE_DIR}/modules/main/include/sat_optionals.h "#include <sat_properties.h>\n")
 
-set_property(GLOBAL PROPERTY SAT_PROPERTIES_COMPILED TRUE)
+set_property (GLOBAL APPEND PROPERTY SAT_OPTIONAL_LIBS "sat_properties")

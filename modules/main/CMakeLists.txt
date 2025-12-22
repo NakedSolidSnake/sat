@@ -1,4 +1,4 @@
-list (APPEND SAT_LIBRARIES 
+list (APPEND SAT_BUILTIN_LIBRARIES 
              uuid
              m
              pthread
@@ -32,75 +32,7 @@ list (APPEND SAT_LIBRARIES
              sat_queue_ipc
              )
 
-get_property(SAT_PROPERTIES_BUILT GLOBAL PROPERTY SAT_PROPERTIES_COMPILED)
-if(SAT_PROPERTIES_BUILT)
-    list(APPEND SAT_LIBRARIES sat_properties)
-endif()
-
-get_property(SAT_CURL_BUILT GLOBAL PROPERTY SAT_CURL_COMPILED)
-if(SAT_CURL_BUILT)
-    list(APPEND SAT_LIBRARIES sat_curl)
-endif()
-
-get_property(SAT_JSON_BUILT GLOBAL PROPERTY SAT_JSON_COMPILED)
-if(SAT_JSON_BUILT)
-    list(APPEND SAT_LIBRARIES sat_json)
-endif()
-
-get_property(SAT_WEBSERVER_BUILT GLOBAL PROPERTY SAT_WEBSERVER_COMPILED)
-if(SAT_WEBSERVER_BUILT)
-    list(APPEND SAT_LIBRARIES sat_webserver)
-endif()
-
-get_property(SAT_LOKI_BUILT GLOBAL PROPERTY SAT_LOKI_COMPILED)
-if(SAT_LOKI_BUILT)
-    list(APPEND SAT_LIBRARIES sat_loki)
-endif()
-
-get_property(SAT_SQLITE_BUILT GLOBAL PROPERTY SAT_SQLITE_COMPILED)
-if(SAT_SQLITE_BUILT)
-    list(APPEND SAT_LIBRARIES sat_sqlite)
-endif()
-
-get_property(SAT_MYSQL_BUILT GLOBAL PROPERTY SAT_MYSQL_COMPILED)
-if(SAT_MYSQL_BUILT)
-    list(APPEND SAT_LIBRARIES sat_mysql)
-endif()
-
-get_property(SAT_REDIS_BUILT GLOBAL PROPERTY SAT_REDIS_COMPILED)
-if(SAT_REDIS_BUILT)
-    list(APPEND SAT_LIBRARIES sat_redis)
-endif()
-
-get_property(SAT_POSTGRES_BUILT GLOBAL PROPERTY SAT_POSTGRES_COMPILED)
-if(SAT_POSTGRES_BUILT)
-    list(APPEND SAT_LIBRARIES sat_postgres)
-endif()
-
-get_property(SAT_KAFKA_BUILT GLOBAL PROPERTY SAT_KAFKA_COMPILED)
-if(SAT_KAFKA_BUILT)
-    list(APPEND SAT_LIBRARIES sat_kafka)
-endif()
-
-get_property(SAT_MQTT_BUILT GLOBAL PROPERTY SAT_MQTT_COMPILED)
-if(SAT_MQTT_BUILT)
-    list(APPEND SAT_LIBRARIES sat_mqtt)
-endif()
-
-get_property (SAT_SDL_BUILT GLOBAL PROPERTY SAT_SDL_COMPILED)
-if (SAT_SDL_BUILT)
-    list (APPEND SAT_LIBRARIES sat_sdl)
-endif ()
-
-get_property (SAT_OPENGL_BUILT GLOBAL PROPERTY SAT_OPENGL_COMPILED)
-if (SAT_OPENGL_BUILT)
-    list (APPEND SAT_LIBRARIES sat_opengl)
-endif ()
-
-get_property (SAT_GTK3_BUILT GLOBAL PROPERTY SAT_GTK3_COMPILED)
-if (SAT_GTK3_BUILT)
-    list (APPEND SAT_LIBRARIES sat_gtk3)
-endif ()
+get_property (SAT_OPTIONALS_LIBRARIES GLOBAL PROPERTY SAT_OPTIONAL_LIBS)
 
 add_library (sat SHARED "")
 target_sources (sat
@@ -113,12 +45,10 @@ target_include_directories (sat
     ${CMAKE_CURRENT_LIST_DIR}/include
 )
 
-
-message (STATUS "Linking main library with optional libraries: ${SAT_LIBRARIES}")
-
 target_link_libraries (sat
     PUBLIC
-    ${SAT_LIBRARIES}
+    ${SAT_BUILTIN_LIBRARIES}
+    ${SAT_OPTIONALS_LIBRARIES}
 )
 
 install (FILES include/sat.h             DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})

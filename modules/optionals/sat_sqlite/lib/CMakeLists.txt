@@ -20,4 +20,4 @@ install (FILES include/sat_sqlite.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 file (APPEND ${CMAKE_SOURCE_DIR}/modules/main/include/sat_optionals.h "#include <sat_sqlite.h>\n")
 
-set_property (GLOBAL PROPERTY SAT_SQLITE_COMPILED TRUE)
+set_property (GLOBAL APPEND PROPERTY SAT_OPTIONAL_LIBS "sat_sqlite")

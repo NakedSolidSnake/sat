@@ -22,4 +22,5 @@ install (FILES include/sat_mqtt_qos.h              DESTINATION ${CMAKE_INSTALL_I
 install (FILES include/sat_mqtt_persistence_type.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 file (APPEND ${CMAKE_SOURCE_DIR}/modules/main/include/sat_optionals.h "#include <sat_mqtt.h>\n")
-set_property (GLOBAL PROPERTY SAT_MQTT_COMPILED TRUE)
+
+set_property (GLOBAL APPEND PROPERTY SAT_OPTIONAL_LIBS "sat_mqtt")

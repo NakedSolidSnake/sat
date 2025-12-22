@@ -29,4 +29,4 @@ install (FILES include/sat_kafka_message.h DESTINATION ${CMAKE_INSTALL_INCLUDEDI
 
 file (APPEND ${CMAKE_SOURCE_DIR}/modules/main/include/sat_optionals.h "#include <sat_kafka.h>\n")
 
-set_property (GLOBAL PROPERTY SAT_KAFKA_COMPILED TRUE)
+set_property (GLOBAL APPEND PROPERTY SAT_OPTIONAL_LIBS "sat_kafka")

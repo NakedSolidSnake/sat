@@ -39,4 +39,5 @@ install (FILES include/sat_opengl.h       DESTINATION ${CMAKE_INSTALL_INCLUDEDIR
 install (FILES include/sat_opengl_types.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 file (APPEND ${CMAKE_SOURCE_DIR}/modules/main/include/sat_optionals.h "#include <sat_opengl.h>\n")
-set_property (GLOBAL PROPERTY SAT_OPENGL_COMPILED TRUE)
+
+set_property (GLOBAL APPEND PROPERTY SAT_OPTIONAL_LIBS "sat_opengl")

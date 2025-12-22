@@ -21,4 +21,5 @@ target_link_libraries (sat_webserver
 install (FILES include/sat_webserver.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 file (APPEND ${CMAKE_SOURCE_DIR}/modules/main/include/sat_optionals.h "#include <sat_webserver.h>\n")
-set_property (GLOBAL PROPERTY SAT_WEBSERVER_COMPILED TRUE)
+
+set_property (GLOBAL APPEND PROPERTY SAT_OPTIONAL_LIBS "sat_webserver")

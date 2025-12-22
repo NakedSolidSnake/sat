@@ -31,4 +31,4 @@ add_definitions (${GTK_CFLAGS} ${GTK_CFLAGS_OTHER})
 
 file (APPEND ${CMAKE_SOURCE_DIR}/modules/main/include/sat_optionals.h "#include <sat_gtk3.h>\n")
 
-set_property (GLOBAL PROPERTY SAT_GTK3_COMPILED TRUE)
+set_property (GLOBAL APPEND PROPERTY SAT_OPTIONAL_LIBS "sat_gtk3")

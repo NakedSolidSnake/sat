@@ -23,4 +23,5 @@ target_link_libraries (sat_json
 install (FILES include/public/sat_json.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 file (APPEND ${CMAKE_SOURCE_DIR}/modules/main/include/sat_optionals.h "#include <sat_json.h>\n")
-set_property (GLOBAL PROPERTY SAT_JSON_COMPILED TRUE)
+
+set_property (GLOBAL APPEND PROPERTY SAT_OPTIONAL_LIBS "sat_json")
