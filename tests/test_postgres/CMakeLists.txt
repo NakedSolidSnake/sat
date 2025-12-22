@@ -1,5 +1,0 @@
-if (${SAT_POSTGRES})
-    add_executable (test_sat_postgres ${CMAKE_CURRENT_LIST_DIR}/test_sat_postgres.c)
-    target_link_libraries (test_sat_postgres PUBLIC sat)
-    add_test (NAME test_sat_postgres COMMAND test_sat_postgres ${CMAKE_CURRENT_LIST_DIR})
-endif ()

@@ -94,6 +94,11 @@ if(SAT_REDIS_BUILT)
     list(APPEND SAT_LIBRARIES sat_redis)
 endif()
 
+get_property(SAT_POSTGRES_BUILT GLOBAL PROPERTY SAT_POSTGRES_COMPILED)
+if(SAT_POSTGRES_BUILT)
+    list(APPEND SAT_LIBRARIES sat_postgres)
+endif()
+
 list (APPEND SAT_INCLUDES ${CMAKE_CURRENT_LIST_DIR}/include)
 
 add_library (sat SHARED "")
