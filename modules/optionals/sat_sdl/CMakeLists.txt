@@ -1,5 +1,7 @@
 if (${SAT_SDL})
 
+    message (STATUS "SAT_SDL support enable")
+
     check_library (SDL2 "sdl2")
     check_library (SDL2_IMAGE "SDL2_image")
     check_library (SDL2_TTF "SDL2_ttf")
