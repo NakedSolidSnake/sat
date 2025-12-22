@@ -7,3 +7,4 @@
 #include <sat_redis.h>
 #include <sat_postgres.h>
 #include <sat_kafka.h>
+#include <sat_mqtt.h>

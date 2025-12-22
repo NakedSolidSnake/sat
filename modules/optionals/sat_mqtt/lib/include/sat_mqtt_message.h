@@ -13,3 +13,4 @@ typedef struct
 } sat_mqtt_message_t;
 
 #endif/* SAT_MQTT_MESSAGE_H_ */
+

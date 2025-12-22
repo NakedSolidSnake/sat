@@ -104,6 +104,11 @@ if(SAT_KAFKA_BUILT)
     list(APPEND SAT_LIBRARIES sat_kafka)
 endif()
 
+get_property(SAT_MQTT_BUILT GLOBAL PROPERTY SAT_MQTT_COMPILED)
+if(SAT_MQTT_BUILT)
+    list(APPEND SAT_LIBRARIES sat_mqtt)
+endif()
+
 list (APPEND SAT_INCLUDES ${CMAKE_CURRENT_LIST_DIR}/include)
 
 add_library (sat SHARED "")

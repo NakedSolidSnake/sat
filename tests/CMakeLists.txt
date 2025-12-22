@@ -20,7 +20,7 @@
 # add_subdirectory (test_webserver)
 # add_subdirectory (test_json)
 # add_subdirectory (test_curl)
-add_subdirectory (test_mqtt)
+# add_subdirectory (test_mqtt)
 # add_subdirectory (test_ini)
 add_subdirectory (test_sdl)
 add_subdirectory (test_gtk3)
