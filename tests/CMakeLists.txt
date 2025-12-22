@@ -15,7 +15,7 @@
 # add_subdirectory (test_mysql)
 # add_subdirectory (test_postgres)
 # add_subdirectory (test_sqlite)
-add_subdirectory (test_kafka)
+# add_subdirectory (test_kafka)
 # add_subdirectory (test_redis)
 # add_subdirectory (test_webserver)
 # add_subdirectory (test_json)

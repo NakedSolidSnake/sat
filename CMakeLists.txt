@@ -99,6 +99,11 @@ if(SAT_POSTGRES_BUILT)
     list(APPEND SAT_LIBRARIES sat_postgres)
 endif()
 
+get_property(SAT_KAFKA_BUILT GLOBAL PROPERTY SAT_KAFKA_COMPILED)
+if(SAT_KAFKA_BUILT)
+    list(APPEND SAT_LIBRARIES sat_kafka)
+endif()
+
 list (APPEND SAT_INCLUDES ${CMAKE_CURRENT_LIST_DIR}/include)
 
 add_library (sat SHARED "")
