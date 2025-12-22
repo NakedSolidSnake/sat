@@ -79,6 +79,11 @@ if(SAT_LOKI_BUILT)
     list(APPEND SAT_LIBRARIES sat_loki)
 endif()
 
+get_property(SAT_SQLITE_BUILT GLOBAL PROPERTY SAT_SQLITE_COMPILED)
+if(SAT_SQLITE_BUILT)
+    list(APPEND SAT_LIBRARIES sat_sqlite)
+endif()
+
 list (APPEND SAT_INCLUDES ${CMAKE_CURRENT_LIST_DIR}/include)
 
 add_library (sat SHARED "")
