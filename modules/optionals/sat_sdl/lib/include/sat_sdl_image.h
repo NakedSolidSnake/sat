@@ -1,8 +1,8 @@
 #ifndef SAT_SDL_IMAGE_H_
 #define SAT_SDL_IMAGE_H_
 
+#include <sat_status.h>
 #include "sat_sdl_types.h"
-#include <sat.h>
 
 typedef struct 
 {

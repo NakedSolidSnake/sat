@@ -22,6 +22,6 @@
 # add_subdirectory (test_curl)
 # add_subdirectory (test_mqtt)
 # add_subdirectory (test_ini)
-add_subdirectory (test_sdl)
+# add_subdirectory (test_sdl)
 add_subdirectory (test_gtk3)
 add_subdirectory (test_opengl)

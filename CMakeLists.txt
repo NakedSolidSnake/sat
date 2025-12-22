@@ -109,6 +109,11 @@ if(SAT_MQTT_BUILT)
     list(APPEND SAT_LIBRARIES sat_mqtt)
 endif()
 
+get_property (SAT_SDL_BUILT GLOBAL PROPERTY SAT_SDL_COMPILED)
+if (SAT_SDL_BUILT)
+    list (APPEND SAT_LIBRARIES sat_sdl)
+endif ()
+
 list (APPEND SAT_INCLUDES ${CMAKE_CURRENT_LIST_DIR}/include)
 
 add_library (sat SHARED "")
