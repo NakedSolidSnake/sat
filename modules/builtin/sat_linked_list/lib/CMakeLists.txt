@@ -17,4 +17,6 @@ target_link_libraries (sat_linked_list
 
 install (FILES include/sat_linked_list.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
+file (APPEND ${CMAKE_SOURCE_DIR}/modules/main/include/sat_builtin.h "#include <sat_linked_list.h>\n")
+
 set_property (GLOBAL APPEND PROPERTY SAT_BUILTIN_LIBS "sat_linked_list")

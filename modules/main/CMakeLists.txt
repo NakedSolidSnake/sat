@@ -18,7 +18,8 @@ target_link_libraries (sat
     ${SAT_OPTIONALS_LIBRARIES}
 )
 
-install (FILES include/sat.h             DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install (FILES include/sat_optionals.h   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install (FILES include/sat.h           DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install (FILES include/sat_builtin.h   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install (FILES include/sat_optionals.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 install (TARGETS sat LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})

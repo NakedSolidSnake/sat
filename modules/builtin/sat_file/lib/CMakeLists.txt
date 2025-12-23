@@ -18,4 +18,6 @@ target_link_libraries (sat_file
 
 install (FILES include/sat_file.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
+file (APPEND ${CMAKE_SOURCE_DIR}/modules/main/include/sat_builtin.h "#include <sat_file.h>\n")
+
 set_property (GLOBAL APPEND PROPERTY SAT_BUILTIN_LIBS "sat_file")

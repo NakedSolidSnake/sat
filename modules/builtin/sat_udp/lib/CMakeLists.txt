@@ -25,4 +25,6 @@ target_link_libraries (sat_udp
 install (FILES include/public/sat_udp.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install (FILES include/public/sat_udp_types.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
+file (APPEND ${CMAKE_SOURCE_DIR}/modules/main/include/sat_builtin.h "#include <sat_udp.h>\n")
+
 set_property (GLOBAL APPEND PROPERTY SAT_BUILTIN_LIBS "sat_udp")

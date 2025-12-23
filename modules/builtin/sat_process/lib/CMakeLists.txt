@@ -19,4 +19,7 @@ target_link_libraries (sat_process
 install (FILES include/sat_process.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install (FILES include/sat_process_monitor.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
+file (APPEND ${CMAKE_SOURCE_DIR}/modules/main/include/sat_builtin.h "#include <sat_process.h>\n")
+file (APPEND ${CMAKE_SOURCE_DIR}/modules/main/include/sat_builtin.h "#include <sat_process_monitor.h>\n")
+
 set_property (GLOBAL APPEND PROPERTY SAT_BUILTIN_LIBS "sat_process")
