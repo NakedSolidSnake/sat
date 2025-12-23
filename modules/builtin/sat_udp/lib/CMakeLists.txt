@@ -23,4 +23,4 @@ target_link_libraries (sat_udp
 )
 
 install (FILES include/public/sat_udp.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install (FILES include/public/sat_udp_types.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sat_udp)
+install (FILES include/public/sat_udp_types.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})

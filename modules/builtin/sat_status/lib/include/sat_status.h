@@ -45,9 +45,31 @@
         continue; \
     }
 
-#define sat_status_break_if_equals(status, expected) \
-    if (sat_status_get_result (&status) == expected) \
+#define sat_status_break_if_equals(status, value, expected, message) \
+    if (value == expected) \
     { \
+        sat_status_failure (&status, "" message ""); \
+        break; \
+    }
+
+#define sat_status_break_if_not_equals(status, value, expected, message) \
+    if (value != expected) \
+    { \
+        sat_status_failure (&status, "" message ""); \
+        break; \
+    }
+
+#define sat_status_break_if_null(status, value, message) \
+    if (value == NULL) \
+    { \
+        sat_status_failure (&status, "" message ""); \
+        break; \
+    }
+
+#define sat_status_break_if_false(status, value, message) \
+    if (value == false) \
+    { \
+        sat_status_failure (&status, "" message ""); \
         break; \
     }
 
