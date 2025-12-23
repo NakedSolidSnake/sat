@@ -9,3 +9,7 @@ target_include_directories (sat_status
     PUBLIC
     ${CMAKE_CURRENT_LIST_DIR}/include
 )
+
+install (FILES include/sat_status.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+set_property (GLOBAL APPEND PROPERTY SAT_BUILTIN_LIBS "sat_status")

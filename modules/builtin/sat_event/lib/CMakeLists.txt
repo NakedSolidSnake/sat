@@ -16,3 +16,5 @@ target_link_libraries (sat_event
 )
 
 install (FILES include/sat_event.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+set_property (GLOBAL APPEND PROPERTY SAT_BUILTIN_LIBS "sat_event")

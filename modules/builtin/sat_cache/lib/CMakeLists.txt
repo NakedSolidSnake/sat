@@ -15,4 +15,6 @@ target_link_libraries (sat_cache
     sat_status
 )
 
-install (FILES include/sat_cache.h      DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install (FILES include/sat_cache.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+set_property (GLOBAL APPEND PROPERTY SAT_BUILTIN_LIBS "sat_cache")

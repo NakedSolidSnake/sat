@@ -18,3 +18,5 @@ target_link_libraries (sat_scheduler
 )
 
 install (FILES include/sat_scheduler.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+set_property (GLOBAL APPEND PROPERTY SAT_BUILTIN_LIBS "sat_scheduler")

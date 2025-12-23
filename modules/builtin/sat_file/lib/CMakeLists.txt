@@ -17,3 +17,5 @@ target_link_libraries (sat_file
 )
 
 install (FILES include/sat_file.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+set_property (GLOBAL APPEND PROPERTY SAT_BUILTIN_LIBS "sat_file")

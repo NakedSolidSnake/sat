@@ -16,3 +16,5 @@ target_include_directories (sat_time
 # )
 
 install (FILES include/sat_time.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+set_property (GLOBAL APPEND PROPERTY SAT_BUILTIN_LIBS "sat_time")

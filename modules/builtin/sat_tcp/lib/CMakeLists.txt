@@ -24,3 +24,5 @@ target_link_libraries (sat_tcp
 
 install (FILES include/public/sat_tcp.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install (FILES include/public/sat_tcp_types.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+set_property (GLOBAL APPEND PROPERTY SAT_BUILTIN_LIBS "sat_tcp")

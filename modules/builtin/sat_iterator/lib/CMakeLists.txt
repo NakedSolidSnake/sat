@@ -16,3 +16,5 @@ target_link_libraries (sat_iterator
 )
 
 install (FILES include/sat_iterator.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+set_property (GLOBAL APPEND PROPERTY SAT_BUILTIN_LIBS "sat_iterator")
