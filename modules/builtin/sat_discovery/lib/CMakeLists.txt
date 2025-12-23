@@ -34,7 +34,7 @@ target_link_libraries (sat_discovery
     sat_network
 )
 
-install (FILES include/sat_discovery.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install (FILES include/public/sat_discovery.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 file (APPEND ${CMAKE_SOURCE_DIR}/modules/main/include/sat_builtin.h "#include <sat_discovery.h>\n")
 
