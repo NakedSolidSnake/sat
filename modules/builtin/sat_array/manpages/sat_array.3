@@ -16,6 +16,7 @@ sat_array \- dynamic array data structure with configurable growth modes
 .BI "sat_status_t sat_array_get_size(const sat_array_t *const " object ", uint32_t *const " size );
 .BI "sat_status_t sat_array_get_capacity(const sat_array_t *const " object ", uint32_t *const " capacity );
 .BI "sat_status_t sat_array_clear(sat_array_t *const " object );
+.BI "sat_status_t sat_array_clone(const sat_array_t *const " object ", sat_array_t **const " cloned );
 .BI "sat_status_t sat_array_destroy(sat_array_t *const " object );
 .BI "void *sat_array_get_reference_by(const sat_array_t *const " object ", const uint32_t " index );
 .PP
@@ -180,6 +181,17 @@ output parameter.
 .BR sat_array_clear ()
 Removes all elements from the array, resetting size to 0. The allocated memory
 and capacity remain unchanged.
+.TP
+.BR sat_array_clone ()
+Creates a complete deep copy of the source array including all its elements,
+configuration (capacity, size, object_size, mode), and current state. The cloned
+array is fully independent - modifications to either the original or cloned array
+do not affect the other. All element data is copied using memcpy. Memory notification
+callbacks are NOT copied to the cloned array and must be reconfigured if needed.
+The caller is responsible for destroying the cloned array with
+.BR sat_array_destroy ().
+Returns success status with the cloned array pointer, or failure if memory
+allocation fails or the source array is NULL.
 .TP
 .BR sat_array_destroy ()
 Frees all memory associated with the array and invalidates the object pointer.
@@ -414,6 +426,71 @@ int main(void)
     return 0;
 }
 .fi
+.SS Array Cloning
+.nf
+#include <sat_array.h>
+#include <stdio.h>
+
+int main(void)
+{
+    sat_array_t *original, *cloned;
+    sat_status_t status;
+    
+    /* Create original array */
+    sat_array_args_t args = {
+        .size = 5,
+        .object_size = sizeof(int),
+        .mode = sat_array_mode_dynamic,
+        .notification = { NULL, NULL }
+    };
+    
+    sat_array_create(&original, &args);
+    
+    /* Add elements to original */
+    for (int i = 0; i < 10; i++) {
+        int value = i * 10;
+        sat_array_add(original, &value);
+    }
+    
+    /* Clone the array */
+    status = sat_array_clone(original, &cloned);
+    if (!sat_status_get_result(&status)) {
+        fprintf(stderr, "Clone failed: %s\\n",
+                sat_status_get_motive(&status));
+        sat_array_destroy(original);
+        return 1;
+    }
+    
+    /* Verify clone is independent */
+    uint32_t orig_size, cloned_size;
+    sat_array_get_size(original, &orig_size);
+    sat_array_get_size(cloned, &cloned_size);
+    printf("Original size: %u, Cloned size: %u\\n", 
+           orig_size, cloned_size);
+    
+    /* Modify original - clone is unaffected */
+    int new_value = 999;
+    sat_array_add(original, &new_value);
+    
+    sat_array_get_size(original, &orig_size);
+    sat_array_get_size(cloned, &cloned_size);
+    printf("After modification - Original: %u, Cloned: %u\\n",
+           orig_size, cloned_size);
+    
+    /* Verify cloned data */
+    for (uint32_t i = 0; i < cloned_size; i++) {
+        int value;
+        sat_array_get_object_by(cloned, i, &value);
+        printf("Cloned[%u] = %d\\n", i, value);
+    }
+    
+    /* Cleanup both arrays */
+    sat_array_destroy(original);
+    sat_array_destroy(cloned);
+    
+    return 0;
+}
+.fi
 .SH NOTES
 .IP \(bu 2
 Elements are stored contiguously in memory, enabling efficient cache usage.
@@ -436,6 +513,12 @@ the first parameter and the search parameter as the second.
 .IP \(bu 2
 Static mode is useful for performance-critical code where allocations must
 be predictable and bounded.
+.IP \(bu 2
+The
+.BR sat_array_clone ()
+function performs a deep copy of all array data. The cloned array is completely
+independent and has its own memory allocation. Memory notification callbacks
+are not copied and must be reconfigured for the cloned array if needed.
 .SH SEE ALSO
 .BR sat_linked_list (3),
 .BR sat_stack (3),

@@ -233,6 +233,25 @@ sat_status_t sat_array_get_size (const sat_array_t *const object, uint32_t *cons
 sat_status_t sat_array_clear (sat_array_t *const object);
 
 /**
+ * @brief Creates a deep copy of an array
+ * 
+ * Creates a complete copy of the source array including all its elements,
+ * configuration, and current state. The cloned array is independent and
+ * modifications to either array do not affect the other.
+ * 
+ * @param[in] object Pointer to the source sat_array_t object to clone
+ * @param[out] cloned Pointer to the pointer that will hold the cloned sat_array_t object
+ * @return sat_status_t indicating success or failure of the operation
+ * 
+ * @note The cloned array has the same capacity, size, mode, and element data as the original
+ * @note The caller is responsible for calling sat_array_destroy() on the cloned array
+ * @note Memory notification callbacks are NOT copied to the cloned array
+ * @see sat_array_create()
+ * @see sat_array_destroy()
+ */
+sat_status_t sat_array_clone (const sat_array_t *const object, sat_array_t **const cloned);
+
+/**
  * @brief Retrieves the capacity of the array
  * 
  * Returns the maximum number of elements the array can hold without reallocation.

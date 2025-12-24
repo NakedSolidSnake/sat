@@ -335,6 +335,41 @@ sat_status_t sat_array_clear (sat_array_t *const object)
     return status;
 }
 
+
+sat_status_t sat_array_clone (const sat_array_t *const object, sat_array_t **const cloned)
+{
+    sat_status_t status;
+
+    do
+    {
+        status = sat_array_is_initialized (object);
+        sat_status_break_on_error (status);
+
+        sat_status_break_if_null (status, cloned, "sat array error: cloned pointer is NULL");
+
+        sat_array_args_t args =
+        {
+            .size = object->size,
+            .object_size = object->object_size,
+            .mode = object->mode,
+            .notification =
+            {
+                .on_increase = NULL,
+                .user = NULL
+            }
+        };
+
+        status = sat_array_create (cloned, &args);
+        sat_status_break_on_error (status);
+
+        memcpy ((*cloned)->buffer, object->buffer, object->size * object->object_size);
+        (*cloned)->amount = object->amount;
+
+    } while (false);
+
+    return status;
+}
+
 sat_status_t sat_array_get_capacity (const sat_array_t *const object, uint32_t *const capacity)
 {
     sat_status_t status;

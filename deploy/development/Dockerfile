@@ -64,8 +64,7 @@ FROM external-libs AS sat-build
 RUN yes | unminimize
 RUN git clone https://github.com/NakedSolidSnake/sat && \
 	mkdir -p sat/build && \
-	cd sat && git checkout modules && \
-	# cd sat/build && \
+	cd sat/build && \
 	cd build && \
 	cmake \
 	-DSAT_WEBSERVER=ON \
