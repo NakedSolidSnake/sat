@@ -1,4 +1,4 @@
-add_library (sat_log SHARED "")
+add_library (sat_log "")
 
 target_sources (sat_log
     PRIVATE
