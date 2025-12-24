@@ -65,7 +65,6 @@ RUN yes | unminimize
 RUN git clone https://github.com/NakedSolidSnake/sat && \
 	mkdir -p sat/build && \
 	cd sat/build && \
-	cd build && \
 	cmake \
 	-DSAT_WEBSERVER=ON \
 	-DSAT_CURL=ON \
