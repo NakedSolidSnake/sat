@@ -6,5 +6,6 @@ if (${SAT_OPENGL})
     add_subdirectory (samples)
     add_subdirectory (tests)
     add_subdirectory (manpages)
+    add_subdirectory (mini)
 
 endif ()

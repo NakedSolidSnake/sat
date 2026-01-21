@@ -521,6 +521,25 @@ void *sat_array_get_reference_by (const sat_array_t *const object, const uint32_
     return item;
 }
 
+sat_status_t sat_array_get_buffer (const sat_array_t *const object, sat_array_buffer_t *const buffer)
+{
+    sat_status_t status;
+
+    do
+    {
+        status = sat_array_is_initialized (object);
+        sat_status_break_on_error (status);
+
+        sat_status_break_if_null (status, buffer, "sat array error: buffer pointer is NULL");
+
+        buffer->size = object->amount;
+        buffer->data = object->buffer;
+
+    } while (false);
+
+    return status;
+}
+
 static void sat_array_configure_iterator (sat_array_t *const object)
 {
     object->base.object = object;

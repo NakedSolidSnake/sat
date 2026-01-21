@@ -376,7 +376,6 @@ sat_status_t sat_opengl_draw_object (sat_opengl_t *object, sat_opengl_draw_type_
         {
             sat_status_set (&status, true, "");
         }
-
     }
 
     return status;
@@ -742,6 +741,12 @@ static void sat_opengl_draw_by (sat_opengl_draw_type_t type, uint32_t vertices_a
     {
         glDrawArrays (GL_TRIANGLES, 0, vertices_amount);
     }
+
+    else if (type == sat_opengl_draw_type_lines)
+    {
+        glDrawArrays (GL_LINES, 0, vertices_amount);
+    }
+
     else 
     {
         glDrawElements (GL_TRIANGLES, vertices_amount, GL_UNSIGNED_INT, 0);

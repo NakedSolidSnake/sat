@@ -76,6 +76,13 @@ typedef struct
 
 } sat_array_args_t;
 
+typedef struct
+{
+    void *data;
+    uint32_t size;
+
+} sat_array_buffer_t;
+
 /**
  * @brief Creates a new sat_array_t object
  * 
@@ -293,5 +300,7 @@ sat_status_t sat_array_destroy (sat_array_t *const object);
  * @note This function provides zero-copy access to array elements
  */
 void *sat_array_get_reference_by (const sat_array_t *const object, const uint32_t index);
+
+sat_status_t sat_array_get_buffer (const sat_array_t *const object, sat_array_buffer_t *const buffer);
 
 #endif/* SAT_ARRAY_H_ */
