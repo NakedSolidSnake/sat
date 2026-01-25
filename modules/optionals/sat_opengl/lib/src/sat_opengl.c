@@ -28,8 +28,11 @@ struct sat_opengl_t
 static sat_status_t sat_opengl_check_args (sat_opengl_args_t *args);
 static sat_status_t sat_opengl_init (void);
 static bool sat_opengl_is_program_equal (const void *element, const void *new_element);
+static bool sat_opengl_program_compare_by_name (const void *element, const void *name);
 static bool sat_opengl_is_vao_equal (const void *element, const void *new_element);
+static bool sat_opengl_vao_compare_by_name (const void *element, const void *name);
 static bool sat_opengl_is_textures_equal (const void *element, const void *new_element);
+static bool sat_opengl_texture_compare_by_name (const void *element, const void *name);
 static void sat_opengl_draw_by (sat_opengl_draw_type_t type, uint32_t vertices_amount);
 
 sat_status_t sat_opengl_create (sat_opengl_t **object, sat_opengl_args_t *args)
@@ -182,30 +185,21 @@ sat_status_t sat_opengl_add_shader_to_program (sat_opengl_t *object, const char 
 
     if (object != NULL && object->initialized == true && name != NULL && strlen (name) > 0 && filename != NULL)
     {
-        sat_iterator_t iterator;
+        sat_opengl_program_t *program;
 
         do 
         {
-            status = sat_iterator_open (&iterator, (sat_iterator_base_t *)object->programs);
+            status = sat_set_get_object_ref_by_parameter (object->programs,
+                                                          name,
+                                                          sat_opengl_program_compare_by_name,
+                                                          (void**)&program);
             sat_status_break_on_error (status);
 
-            sat_opengl_program_t *program = (sat_opengl_program_t *) sat_iterator_next (&iterator);
+            sat_opengl_shader_t shader;
+            status = sat_opengl_shader_create_from_file (&shader, type, filename);
+            sat_status_break_on_error (status);
 
-            while (program != NULL)
-            {
-                if (strcmp (program->name, name) == 0)
-                {
-                    sat_opengl_shader_t shader;
-                    status = sat_opengl_shader_create_from_file (&shader, type, filename);
-                    sat_status_break_on_error (status);
-
-                    status = sat_opengl_program_shader_add (program, &shader);
-
-                    break;
-                }
-
-                program = (sat_opengl_program_t *) sat_iterator_next (&iterator);
-            }
+            status = sat_opengl_program_shader_add (program, &shader);
 
         } while (false);
     }
@@ -219,26 +213,34 @@ sat_status_t sat_opengl_compile_program (sat_opengl_t *object, const char *name)
 
     if (object != NULL && object->initialized == true && name != NULL && strlen (name) > 0)
     {
-        sat_iterator_t iterator;
+        // sat_iterator_t iterator;
+        sat_opengl_program_t *program;
 
         do 
         {
-            status = sat_iterator_open (&iterator, (sat_iterator_base_t *)object->programs);
+            status = sat_set_get_object_ref_by_parameter (object->programs,
+                                                          name,
+                                                          sat_opengl_program_compare_by_name,
+                                                          (void**)&program);
             sat_status_break_on_error (status);
 
-            sat_opengl_program_t *program = (sat_opengl_program_t *) sat_iterator_next (&iterator);
+            status = sat_opengl_program_link (program);
+            // status = sat_iterator_open (&iterator, (sat_iterator_base_t *)object->programs);
+            // sat_status_break_on_error (status);
 
-            while (program != NULL)
-            {
-                if (strcmp (program->name, name) == 0)
-                {
-                    status = sat_opengl_program_link (program);
+            // sat_opengl_program_t *program = (sat_opengl_program_t *) sat_iterator_next (&iterator);
 
-                    break;
-                }
+            // while (program != NULL)
+            // {
+            //     if (strcmp (program->name, name) == 0)
+            //     {
+            //         status = sat_opengl_program_link (program);
 
-                program = (sat_opengl_program_t *) sat_iterator_next (&iterator);
-            }
+            //         break;
+            //     }
+
+            //     program = (sat_opengl_program_t *) sat_iterator_next (&iterator);
+            // }
 
         } while (false);
     }
@@ -304,26 +306,34 @@ sat_status_t sat_opengl_enable_vao (sat_opengl_t *object, const char *name)
 
     if (object != NULL && object->initialized == true && name != NULL && strlen (name) > 0)
     {
-        sat_iterator_t iterator;
+        // sat_iterator_t iterator;
+        sat_opengl_vao_t *vao;
 
         do 
         {
-            status = sat_iterator_open (&iterator, (sat_iterator_base_t *)object->vaos);
+            status = sat_set_get_object_ref_by_parameter (object->vaos,
+                                                          name,
+                                                          sat_opengl_vao_compare_by_name,
+                                                          (void**)&vao);
             sat_status_break_on_error (status);
 
-            sat_opengl_vao_t *vao = (sat_opengl_vao_t *) sat_iterator_next (&iterator);
+            sat_opengl_vao_enable (vao);
+            // status = sat_iterator_open (&iterator, (sat_iterator_base_t *)object->vaos);
+            // sat_status_break_on_error (status);
 
-            while (vao != NULL)
-            {
-                if (strcmp (vao->name, name) == 0)
-                {
-                    sat_opengl_vao_enable (vao);
+            // sat_opengl_vao_t *vao = (sat_opengl_vao_t *) sat_iterator_next (&iterator);
 
-                    break;
-                }
+            // while (vao != NULL)
+            // {
+            //     if (strcmp (vao->name, name) == 0)
+            //     {
+            //         sat_opengl_vao_enable (vao);
 
-                vao = (sat_opengl_vao_t *) sat_iterator_next (&iterator);
-            }
+            //         break;
+            //     }
+
+            //     vao = (sat_opengl_vao_t *) sat_iterator_next (&iterator);
+            // }
 
         } while (false);
     }
@@ -337,26 +347,34 @@ sat_status_t sat_opengl_enable_program (sat_opengl_t *object, const char *name)
 
     if (object != NULL && object->initialized == true && name != NULL && strlen (name) > 0)
     {
-        sat_iterator_t iterator;
+        // sat_iterator_t iterator;
+        sat_opengl_program_t *program;
 
         do 
         {
-            status = sat_iterator_open (&iterator, (sat_iterator_base_t *)object->programs);
+            status = sat_set_get_object_ref_by_parameter (object->programs,
+                                                          name,
+                                                          sat_opengl_program_compare_by_name,
+                                                          (void**)&program);
             sat_status_break_on_error (status);
 
-            sat_opengl_program_t *program = (sat_opengl_program_t *) sat_iterator_next (&iterator);
+            sat_opengl_program_enable (program);
+            // status = sat_iterator_open (&iterator, (sat_iterator_base_t *)object->programs);
+            // sat_status_break_on_error (status);
 
-            while (program != NULL)
-            {
-                if (strcmp (program->name, name) == 0)
-                {
-                    sat_opengl_program_enable (program);
+            // sat_opengl_program_t *program = (sat_opengl_program_t *) sat_iterator_next (&iterator);
 
-                    break;
-                }
+            // while (program != NULL)
+            // {
+            //     if (strcmp (program->name, name) == 0)
+            //     {
+            //         sat_opengl_program_enable (program);
 
-                program = (sat_opengl_program_t *) sat_iterator_next (&iterator);
-            }
+            //         break;
+            //     }
+
+            //     program = (sat_opengl_program_t *) sat_iterator_next (&iterator);
+            // }
 
         } while (false);
     }
@@ -416,48 +434,77 @@ sat_status_t sat_opengl_add_vbo_to_vao (sat_opengl_t *object, const char *name, 
 
     if (object != NULL && object->initialized == true && name != NULL && strlen (name) > 0 && args != NULL)
     {
-        sat_iterator_t iterator;
+        // sat_iterator_t iterator;
+        sat_opengl_vao_t *vao;
 
         do 
         {
-            status = sat_iterator_open (&iterator, (sat_iterator_base_t *)object->vaos);
+            status = sat_set_get_object_ref_by_parameter (object->vaos,
+                                                          name,
+                                                          sat_opengl_vao_compare_by_name,
+                                                          (void**)&vao);
             sat_status_break_on_error (status);
 
-            sat_opengl_vao_t *vao = (sat_opengl_vao_t *) sat_iterator_next (&iterator);
+            sat_opengl_vao_enable (vao);
 
-            while (vao != NULL)
+            sat_opengl_vbo_t vbo;
+            sat_opengl_vbo_create (&vbo, args->name);
+            sat_opengl_vbo_enable (&vbo);
+
+            sat_opengl_vbo_set_vertices (&vbo, &args->vertices);
+            sat_opengl_vbo_set_attributes (&vbo, &args->attributes);
+
+            if (args->indexes.list != NULL && args->indexes.size > 0)
             {
-                if (strcmp (vao->name, name) == 0)
-                {
-                    sat_opengl_vao_enable (vao);
+                sat_opengl_ebo_t ebo;
 
-                    sat_opengl_vbo_t vbo;
+                sat_opengl_ebo_create (&ebo);
+                sat_opengl_ebo_enable (&ebo);
 
-                    sat_opengl_vbo_create (&vbo, args->name);
-                    sat_opengl_vbo_enable (&vbo);
-
-                    sat_opengl_vbo_set_vertices (&vbo, &args->vertices);
-
-                    sat_opengl_vbo_set_attributes (&vbo, &args->attributes);
-
-                    if (args->indexes.list != NULL && args->indexes.size > 0)
-                    {
-                        sat_opengl_ebo_t ebo;
-
-                        sat_opengl_ebo_create (&ebo);
-                        sat_opengl_ebo_enable (&ebo);
-
-                        sat_opengl_ebo_set_indexes (&ebo, &args->indexes);
-                    }
-
-                    sat_opengl_vbo_disable (&vbo);
-                    sat_opengl_vao_disable (vao);
-
-                    break;
-                }
-
-                vao = (sat_opengl_vao_t *) sat_iterator_next (&iterator);
+                sat_opengl_ebo_set_indexes (&ebo, &args->indexes);
             }
+
+            sat_opengl_vbo_disable (&vbo);
+            sat_opengl_vao_disable (vao);
+
+            // status = sat_iterator_open (&iterator, (sat_iterator_base_t *)object->vaos);
+            // sat_status_break_on_error (status);
+
+            // sat_opengl_vao_t *vao = (sat_opengl_vao_t *) sat_iterator_next (&iterator);
+
+            // while (vao != NULL)
+            // {
+            //     if (strcmp (vao->name, name) == 0)
+            //     {
+            //         sat_opengl_vao_enable (vao);
+
+            //         sat_opengl_vbo_t vbo;
+
+            //         sat_opengl_vbo_create (&vbo, args->name);
+            //         sat_opengl_vbo_enable (&vbo);
+
+            //         sat_opengl_vbo_set_vertices (&vbo, &args->vertices);
+
+            //         sat_opengl_vbo_set_attributes (&vbo, &args->attributes);
+
+            //         if (args->indexes.list != NULL && args->indexes.size > 0)
+            //         {
+            //             sat_opengl_ebo_t ebo;
+
+            //             sat_opengl_ebo_create (&ebo);
+            //             sat_opengl_ebo_enable (&ebo);
+
+            //             sat_opengl_ebo_set_indexes (&ebo, &args->indexes);
+            //         }
+
+            //         sat_opengl_vbo_disable (&vbo);
+            //         sat_opengl_vao_disable (vao);
+
+            //         break;
+            //     }
+
+            //     vao = (sat_opengl_vao_t *) sat_iterator_next (&iterator);
+            // }
 
         } while (false);
     }
@@ -488,33 +535,45 @@ sat_status_t sat_opengl_texture_container_add (sat_opengl_t *object, const char 
 
     if (object != NULL && object->initialized == true && name != NULL && strlen (name) > 0 && args != NULL)
     {
-        sat_iterator_t iterator;
+        // sat_iterator_t iterator;
+        sat_opengl_container_texture_t *container;
 
         do 
         {
-            status = sat_iterator_open (&iterator, (sat_iterator_base_t *)object->textures);
+            status = sat_set_get_object_ref_by_parameter (object->textures,
+                                                          name,
+                                                          sat_opengl_texture_compare_by_name,
+                                                          (void**)&container);
             sat_status_break_on_error (status);
 
-            sat_opengl_container_texture_t *container = (sat_opengl_container_texture_t *) sat_iterator_next (&iterator);
+            sat_opengl_texture_t texture;
+            status = sat_opengl_texture_open (&texture, args);
+            sat_status_break_on_error (status);
 
-            while (container != NULL)
-            {
-                if (strcmp (container->name, name) == 0)
-                {
-                    sat_opengl_texture_t texture;
+            status = sat_opengl_container_texture_add (container, &texture);
+            // status = sat_iterator_open (&iterator, (sat_iterator_base_t *)object->textures);
+            // sat_status_break_on_error (status);
 
-                    status = sat_opengl_texture_open (&texture, args);
+            // sat_opengl_container_texture_t *container = (sat_opengl_container_texture_t *) sat_iterator_next (&iterator);
 
-                    if (sat_status_get_result (&status) == true)
-                    {
-                        status = sat_opengl_container_texture_add (container, &texture);
-                    }
+            // while (container != NULL)
+            // {
+            //     if (strcmp (container->name, name) == 0)
+            //     {
+            //         sat_opengl_texture_t texture;
 
-                    break;
-                }
+            //         status = sat_opengl_texture_open (&texture, args);
 
-                container = (sat_opengl_container_texture_t *) sat_iterator_next (&iterator);
-            }
+            //         if (sat_status_get_result (&status) == true)
+            //         {
+            //             status = sat_opengl_container_texture_add (container, &texture);
+            //         }
+
+            //         break;
+            //     }
+
+            //     container = (sat_opengl_container_texture_t *) sat_iterator_next (&iterator);
+            // }
 
         } while (false);
     }
@@ -528,27 +587,35 @@ sat_status_t sat_opengl_texture_container_enable (sat_opengl_t *object, const ch
 
     if (object != NULL && object->initialized == true && name != NULL && strlen (name) > 0)
     {
-        sat_iterator_t iterator;
+        // sat_iterator_t iterator;
+        sat_opengl_container_texture_t *container;
 
         do 
         {
-            status = sat_iterator_open (&iterator, (sat_iterator_base_t *)object->textures);
+            status = sat_set_get_object_ref_by_parameter (object->textures,
+                                                          name,
+                                                          sat_opengl_texture_compare_by_name,
+                                                          (void**)&container);
             sat_status_break_on_error (status);
 
-            sat_opengl_container_texture_t *container = (sat_opengl_container_texture_t *) sat_iterator_next (&iterator);
+            sat_opengl_container_texture_enable (container);
+            // status = sat_iterator_open (&iterator, (sat_iterator_base_t *)object->textures);
+            // sat_status_break_on_error (status);
 
-            while (container != NULL)
-            {
-                if (strcmp (container->name, name) == 0)
-                {
+            // sat_opengl_container_texture_t *container = (sat_opengl_container_texture_t *) sat_iterator_next (&iterator);
+
+            // while (container != NULL)
+            // {
+            //     if (strcmp (container->name, name) == 0)
+            //     {
                    
-                    sat_opengl_container_texture_enable (container);
+            //         sat_opengl_container_texture_enable (container);
 
-                    break;
-                }
+            //         break;
+            //     }
 
-                container = (sat_opengl_container_texture_t *) sat_iterator_next (&iterator);
-            }
+            //     container = (sat_opengl_container_texture_t *) sat_iterator_next (&iterator);
+            // }
 
         } while (false);
     }
@@ -562,38 +629,60 @@ sat_status_t sat_opengl_send_shader_value (sat_opengl_t *object, const char *nam
 
     if (object != NULL && object->initialized == true && name != NULL && strlen (name) > 0)
     {
-        sat_iterator_t iterator;
+        // sat_iterator_t iterator;
+        sat_opengl_program_t *program;
 
         do 
         {
-            status = sat_iterator_open (&iterator, (sat_iterator_base_t *)object->programs);
+            status = sat_set_get_object_ref_by_parameter (object->programs,
+                                                          name,
+                                                          sat_opengl_program_compare_by_name,
+                                                          (void**)&program);
             sat_status_break_on_error (status);
 
-            sat_opengl_program_t *program = (sat_opengl_program_t *) sat_iterator_next (&iterator);
-
-            while (program != NULL)
+            switch (value->type)
             {
-                if (strcmp (program->name, name) == 0)
-                {
-                    switch (value->type)
-                    {
-                        case sat_opengl_value_type_bool:
-                        status = sat_opengl_program_set_bool (program, param, value->send, &value->bools);
-                        break;
+                case sat_opengl_value_type_bool:
+                status = sat_opengl_program_set_bool (program, param, value->send, &value->bools);
+                break;
 
-                        case sat_opengl_value_type_int:
-                        status = sat_opengl_program_set_int (program, param, value->send, &value->ints);
-                        break;
+                case sat_opengl_value_type_int:
+                status = sat_opengl_program_set_int (program, param, value->send, &value->ints);
+                break;
 
-                        case sat_opengl_value_type_float:
-                        status = sat_opengl_program_set_float (program, param, value->send, &value->floats);
-                        break;
-                    }
-                    break;
-                }
-
-                program = (sat_opengl_program_t *) sat_iterator_next (&iterator);
+                case sat_opengl_value_type_float:
+                status = sat_opengl_program_set_float (program, param, value->send, &value->floats);
+                break;
             }
+                                                        
+            // status = sat_iterator_open (&iterator, (sat_iterator_base_t *)object->programs);
+            // sat_status_break_on_error (status);
+
+            // sat_opengl_program_t *program = (sat_opengl_program_t *) sat_iterator_next (&iterator);
+
+            // while (program != NULL)
+            // {
+            //     if (strcmp (program->name, name) == 0)
+            //     {
+            //         switch (value->type)
+            //         {
+            //             case sat_opengl_value_type_bool:
+            //             status = sat_opengl_program_set_bool (program, param, value->send, &value->bools);
+            //             break;
+
+            //             case sat_opengl_value_type_int:
+            //             status = sat_opengl_program_set_int (program, param, value->send, &value->ints);
+            //             break;
+
+            //             case sat_opengl_value_type_float:
+            //             status = sat_opengl_program_set_float (program, param, value->send, &value->floats);
+            //             break;
+            //         }
+            //         break;
+            //     }
+
+            //     program = (sat_opengl_program_t *) sat_iterator_next (&iterator);
+            // }
 
         } while (false);
     }
@@ -607,26 +696,35 @@ sat_status_t sat_opengl_send_shader_matrix (sat_opengl_t *object, const char *na
 
     if (object != NULL && object->initialized == true && name != NULL && strlen (name) > 0)
     {
-        sat_iterator_t iterator;
+        // sat_iterator_t iterator;
+        sat_opengl_program_t *program;
 
         do 
         {
-            status = sat_iterator_open (&iterator, (sat_iterator_base_t *)object->programs);
+            // status = sat_iterator_open (&iterator, (sat_iterator_base_t *)object->programs);
+            // sat_status_break_on_error (status);
+
+            // sat_opengl_program_t *program = (sat_opengl_program_t *) sat_iterator_next (&iterator);
+
+            // while (program != NULL)
+            // {
+            //     if (strcmp (program->name, name) == 0)
+            //     {
+            //         status = sat_opengl_program_set_matrix (program, param, matrix);
+
+            //         break;
+            //     }
+
+            //     program = (sat_opengl_program_t *) sat_iterator_next (&iterator);
+            // }
+
+            status = sat_set_get_object_ref_by_parameter (object->programs,
+                                                          name,
+                                                          sat_opengl_program_compare_by_name,
+                                                          (void**)&program);
             sat_status_break_on_error (status);
 
-            sat_opengl_program_t *program = (sat_opengl_program_t *) sat_iterator_next (&iterator);
-
-            while (program != NULL)
-            {
-                if (strcmp (program->name, name) == 0)
-                {
-                    status = sat_opengl_program_set_matrix (program, param, matrix);
-
-                    break;
-                }
-
-                program = (sat_opengl_program_t *) sat_iterator_next (&iterator);
-            }
+            status = sat_opengl_program_set_matrix (program, param, matrix);
 
         } while (false);
     }
@@ -695,9 +793,24 @@ static bool sat_opengl_is_program_equal (const void *element, const void *new_el
     bool status = false;
 
     const sat_opengl_program_t *program = (const sat_opengl_program_t *)element;
-    const sat_opengl_program_t *new_program= (const sat_opengl_program_t *)new_element;
+    const sat_opengl_program_t *new_program = (const sat_opengl_program_t *)new_element;
 
     if (strcmp (program->name, new_program->name) == 0)
+    {
+        status = true;
+    }
+
+    return status;
+}
+
+static bool sat_opengl_program_compare_by_name (const void *element, const void *name)
+{
+    bool status = false;
+
+    const sat_opengl_program_t *program = (const sat_opengl_program_t *)element;
+    const char *program_name = (const char *)name;
+
+    if (strcmp (program->name, program_name) == 0)
     {
         status = true;
     }
@@ -710,9 +823,24 @@ static bool sat_opengl_is_vao_equal (const void *element, const void *new_elemen
     bool status = false;
 
     const sat_opengl_vao_t *vao = (const sat_opengl_vao_t *)element;
-    const sat_opengl_vao_t *new_vao= (const sat_opengl_vao_t *)new_element;
+    const sat_opengl_vao_t *new_vao = (const sat_opengl_vao_t *)new_element;
 
     if (strcmp (vao->name, new_vao->name) == 0)
+    {
+        status = true;
+    }
+
+    return status;
+}
+
+static bool sat_opengl_vao_compare_by_name (const void *element, const void *name)
+{
+    bool status = false;
+
+    const sat_opengl_vao_t *vao = (const sat_opengl_vao_t *)element;
+    const char *vao_name = (const char *)name;
+
+    if (strcmp (vao->name, vao_name) == 0)
     {
         status = true;
     }
@@ -735,20 +863,44 @@ static bool sat_opengl_is_textures_equal (const void *element, const void *new_e
     return status;
 }
 
+static bool sat_opengl_texture_compare_by_name (const void *element, const void *name)
+{
+    bool status = false;
+
+    const sat_opengl_container_texture_t *container = (const sat_opengl_container_texture_t *)element;
+    const char *container_name = (const char *)name;
+
+    if (strcmp (container->name, container_name) == 0)
+    {
+        status = true;
+    }
+
+    return status;
+}
+
 static void sat_opengl_draw_by (sat_opengl_draw_type_t type, uint32_t vertices_amount)
 {
-    if (type == sat_opengl_draw_type_triangles)
+
+    switch (type)
     {
+    case sat_opengl_draw_type_triangles:
         glDrawArrays (GL_TRIANGLES, 0, vertices_amount);
-    }
+        break;
 
-    else if (type == sat_opengl_draw_type_lines)
-    {
-        glDrawArrays (GL_LINES, 0, vertices_amount);
-    }
-
-    else 
-    {
+    case sat_opengl_draw_type_elements:
         glDrawElements (GL_TRIANGLES, vertices_amount, GL_UNSIGNED_INT, 0);
+        break;
+
+    case sat_opengl_draw_type_lines:
+        glDrawArrays (GL_LINES, 0, vertices_amount);
+        break;
+
+    case sat_opengl_draw_type_points:
+        glDrawArrays (GL_POINTS, 0, vertices_amount);
+        break;
+        
+    
+    default:
+        break;
     }
 }

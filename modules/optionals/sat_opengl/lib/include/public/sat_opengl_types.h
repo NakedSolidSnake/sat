@@ -65,6 +65,7 @@ typedef enum
     sat_opengl_draw_type_triangles,
     sat_opengl_draw_type_elements,
     sat_opengl_draw_type_lines,
+    sat_opengl_draw_type_points,
     
 } sat_opengl_draw_type_t;
 
