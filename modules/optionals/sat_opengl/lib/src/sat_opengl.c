@@ -898,6 +898,10 @@ static void sat_opengl_draw_by (sat_opengl_draw_type_t type, uint32_t vertices_a
     case sat_opengl_draw_type_points:
         glDrawArrays (GL_POINTS, 0, vertices_amount);
         break;
+
+    case sat_opengl_draw_type_line_strip:
+        glDrawArrays (GL_LINE_STRIP, 0, vertices_amount);
+        break;
         
     
     default:
