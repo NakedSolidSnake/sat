@@ -6,8 +6,6 @@ int main (int argc, char *argv [])
 
     sat_opengl_t *opengl;
 
-    assert (argc == 3);
-
     sat_status_t status = sat_opengl_create (&opengl, &(sat_opengl_args_t)
                                                       {
                                                         .window = 
@@ -19,8 +17,8 @@ int main (int argc, char *argv [])
                                                       });
     assert (sat_status_get_result (&status) == true);
 
-    char *vertex = argv [1];
-    char *fragment = argv [2];
+    char *vertex = "./shaders/vertex.shader";
+    char *fragment = "./shaders/fragment.shader";
 
     status = sat_opengl_create_program (opengl, "test");
     assert (sat_status_get_result (&status) == true);
@@ -32,9 +30,6 @@ int main (int argc, char *argv [])
     assert (sat_status_get_result (&status) == true);
 
     status = sat_opengl_compile_program (opengl, "test");
-    assert (sat_status_get_result (&status) == true);
-
-    status = sat_opengl_run (opengl);
     assert (sat_status_get_result (&status) == true);
 
     status = sat_opengl_close (opengl);

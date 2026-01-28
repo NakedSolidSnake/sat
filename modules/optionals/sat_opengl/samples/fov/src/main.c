@@ -28,8 +28,6 @@ int main (int argc, char *argv [])
       {.location = 1, .amount = 2, .elements = 5, .offset = 3},
     };
 
-    assert (argc == 5);
-
     sat_status_t status = sat_opengl_create (&opengl, &(sat_opengl_args_t)
                                                       {
                                                         .window = 
@@ -41,10 +39,10 @@ int main (int argc, char *argv [])
                                                       });
     assert (sat_status_get_result (&status) == true);
 
-    char *vertex = argv [1];
-    char *fragment = argv [2];
-    char *texture = argv [3];
-    char *texture2 = argv [4];
+    char *vertex = "./shaders/vertex.shader";
+    char *fragment = "./shaders/fragment.shader";
+    char *texture = "./assets/container.jpg";
+    char *texture2 = "./assets/awesomeface.png";
 
     status = sat_opengl_create_program (opengl, "triangle");
     assert (sat_status_get_result (&status) == true);

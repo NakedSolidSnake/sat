@@ -143,9 +143,10 @@ sat_status_t sat_opengl_run (sat_opengl_t *object)
 
     if (object != NULL && object->initialized == true)
     {
-        sat_opengl_window_run (&object->window);
-
-        sat_status_set (&status, true, "");
+        if (sat_opengl_window_run (&object->window) == true)
+        {
+            sat_status_set (&status, true, "");
+        }
     }
 
     return status;

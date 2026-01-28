@@ -49,11 +49,47 @@ static sat_array_t *vertices_create (uint16_t lines, uint16_t step)
     return array;
 }
 
+typedef struct
+{
+    float x, y;
+    float vx, vy;  // Velocity
+} point_t;
+
+static void update_points (point_t *points, uint32_t count, float delta_time)
+{
+    for (uint32_t i = 0; i < count; i++)
+    {
+        points[i].x += points[i].vx * delta_time;
+        points[i].y += points[i].vy * delta_time;
+
+        // Bounce off edges
+        if (points[i].x > 1.0f || points[i].x < -1.0f)
+        {
+            points[i].vx = -points[i].vx;
+            points[i].x = (points[i].x > 1.0f) ? 1.0f : -1.0f;
+        }
+        if (points[i].y > 1.0f || points[i].y < -1.0f)
+        {
+            points[i].vy = -points[i].vy;
+            points[i].y = (points[i].y > 1.0f) ? 1.0f : -1.0f;
+        }
+    }
+}
+
 int main (int argc, char** argv)
 {
     sat_opengl_t *opengl;
 
     sat_array_t *vertices = vertices_create (10, 2);
+
+    point_t points [] =
+    {
+        {.x = 0.0f,  .y = 0.0f,  .vx = 0.3f,  .vy = 0.2f },
+        {.x = -0.5f, .y = 0.5f,  .vx = -0.2f, .vy = 0.4f},
+        {.x = 0.5f,  .y = -0.5f, .vx = 0.4f,  .vy = -0.3f}
+    };
+
+    uint32_t point_count = sizeof(points) / sizeof(point_t);
 
     sat_status_t status = sat_opengl_create (&opengl, &(sat_opengl_args_t)
                                                       {
@@ -81,6 +117,11 @@ int main (int argc, char** argv)
     status = sat_opengl_create_vao (opengl, "grid");
     assert (sat_status_get_result (&status) == true);
 
+    status = sat_opengl_create_vao (opengl, "points");
+    assert (sat_status_get_result (&status) == true);
+
+    float delta_time = 0.016f; // ~60 FPS
+
     sat_array_buffer_t buffer;
     sat_array_get_buffer (vertices, &buffer);
 
@@ -107,6 +148,21 @@ int main (int argc, char** argv)
                                                             });
     assert (sat_status_get_result (&status) == true);
 
+    status = sat_opengl_add_vbo_to_vao (opengl, "points", &(sat_opengl_vbo_args_t)
+                                                                {
+                                                                  .name = "vbo",
+                                                                  .vertices = 
+                                                                  {
+                                                                    .list = (float*)points,
+                                                                    .size = point_count * 2
+                                                                  },
+                                                                  .attributes = 
+                                                                  {
+                                                                    .list = attributes,
+                                                                    .amount = 1
+                                                                  }
+                                                                });
+
     while (true)
     {
         sat_opengl_set_color (opengl, (sat_opengl_color_t){.red = 0.2f, .green = 0.3f, .blue = 0.3f, .alpha = 1.0f});
@@ -120,6 +176,14 @@ int main (int argc, char** argv)
         printf("Desenhando %u vertices\n", buffer.size / 2);
 
         status = sat_opengl_draw_object (opengl, sat_opengl_draw_type_lines, buffer.size / 2);
+        assert (sat_status_get_result (&status) == true);
+
+        update_points (points, point_count, delta_time);
+
+        status = sat_opengl_enable_vao (opengl, "points");
+        assert (sat_status_get_result (&status) == true);
+        
+        status = sat_opengl_draw_object (opengl, sat_opengl_draw_type_points, point_count);
         assert (sat_status_get_result (&status) == true);
 
         status = sat_opengl_draw (opengl);
