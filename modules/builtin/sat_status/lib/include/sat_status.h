@@ -73,6 +73,35 @@
         break; \
     }
 
+
+#define sat_status_return_if_equals(status, value, expected, message) \
+    if (value == expected) \
+    { \
+        sat_status_failure (&status, "" message ""); \
+        return status; \
+    }
+
+#define sat_status_return_if_not_equals(status, value, expected, message) \
+    if (value != expected) \
+    { \
+        sat_status_failure (&status, "" message ""); \
+        return status; \
+    }
+
+#define sat_status_return_if_null(status, value, message) \
+    if (value == NULL) \
+    { \
+        sat_status_failure (&status, "" message ""); \
+        return status; \
+    }
+
+#define sat_status_return_if_false(status, value, message) \
+    if (value == false) \
+    { \
+        sat_status_failure (&status, "" message ""); \
+        return status; \
+    }
+
 /**
  * @brief Status structure with result and error message
  * 
