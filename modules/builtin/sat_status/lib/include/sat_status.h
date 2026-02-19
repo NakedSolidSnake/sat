@@ -30,6 +30,12 @@
         break; \
     }
 
+#define sat_status_return_on_error(status) \
+    if (sat_status_get_result (&status) == false) \
+    { \
+        return status; \
+    }
+
 /**
  * @brief Continue to next iteration on error status
  * 
