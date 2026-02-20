@@ -30,10 +30,13 @@
         break; \
     }
 
-#define sat_status_return_on_error(status) \
-    if (sat_status_get_result (&status) == false) \
-    { \
-        return status; \
+#define sat_status_return_on_error(value) \
+    {\
+        sat_status_t status = value; \
+        if (sat_status_get_result (&status) == false) \
+        { \
+            return status; \
+        }\
     }
 
 /**
