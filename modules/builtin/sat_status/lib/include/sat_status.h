@@ -80,33 +80,32 @@
     }
 
 
-#define sat_status_return_if_equals(status, value, expected, message) \
+#define sat_status_return_if_equals(value, expected, message) \
     if (value == expected) \
     { \
-        sat_status_failure (&status, "" message ""); \
-        return status; \
+        return sat_status_failure (&(sat_status_t){}, "" message ""); \
     }
 
-#define sat_status_return_if_not_equals(status, value, expected, message) \
+#define sat_status_return_if_not_equals(value, expected, message) \
     if (value != expected) \
     { \
-        sat_status_failure (&status, "" message ""); \
-        return status; \
+        return sat_status_failure (&(sat_status_t){}, "" message ""); \
     }
 
-#define sat_status_return_if_null(status, value, message) \
+#define sat_status_return_if_null(value, message) \
     if (value == NULL) \
     { \
-        sat_status_failure (&status, "" message ""); \
-        return status; \
+        return sat_status_failure (&(sat_status_t){}, "" message ""); \
     }
 
-#define sat_status_return_if_false(status, value, message) \
+#define sat_status_return_if_false(value, message) \
     if (value == false) \
     { \
-        sat_status_failure (&status, "" message ""); \
-        return status; \
+        return sat_status_failure (&(sat_status_t){}, "" message ""); \
     }
+
+#define sat_status_return_success() \
+    return sat_status_success (&(sat_status_t){})
 
 /**
  * @brief Status structure with result and error message
