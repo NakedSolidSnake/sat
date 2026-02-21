@@ -76,10 +76,21 @@ typedef struct
 
 } sat_array_args_t;
 
+/**
+ * @brief Buffer descriptor for direct access to the array's internal storage
+ *
+ * Holds a raw pointer to the contiguous memory block used by the array and
+ * the number of elements currently stored. The buffer becomes invalid if the
+ * array is resized or destroyed.
+ *
+ * @warning Do not use this structure after calling sat_array_destroy().
+ * @warning Do not use this structure after adding elements to a dynamic array,
+ *          as the internal buffer may have been reallocated.
+ */
 typedef struct
 {
-    void *data;
-    uint32_t size;
+    void *data;      /**< Pointer to the first element in the internal storage */
+    uint32_t size;   /**< Number of elements currently stored in the array */
 
 } sat_array_buffer_t;
 
@@ -301,6 +312,24 @@ sat_status_t sat_array_destroy (sat_array_t *const object);
  */
 void *sat_array_get_reference_by (const sat_array_t *const object, const uint32_t index);
 
+/**
+ * @brief Retrieves a descriptor for the array's internal contiguous buffer
+ *
+ * Fills @p buffer with a pointer to the array's internal memory block and the
+ * current element count. This gives direct access to all stored elements without
+ * copying and is useful for bulk operations or passing data to C APIs that expect
+ * a plain array.
+ *
+ * @param[in]  object  Pointer to the sat_array_t object
+ * @param[out] buffer  Pointer to a @ref sat_array_buffer_t to be filled
+ * @return sat_status_t indicating success or failure of the operation
+ *
+ * @warning The @p buffer.data pointer becomes invalid if the array is resized or destroyed.
+ * @warning Do not add elements to a dynamic array while holding the buffer pointer.
+ * @note Each element is @c object_size bytes; element @c i starts at
+ *       @c (uint8_t*)buffer.data + i * object_size.
+ * @see sat_array_get_reference_by()
+ */
 sat_status_t sat_array_get_buffer (const sat_array_t *const object, sat_array_buffer_t *const buffer);
 
 #endif/* SAT_ARRAY_H_ */

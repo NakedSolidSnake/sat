@@ -19,6 +19,7 @@ sat_array \- dynamic array data structure with configurable growth modes
 .BI "sat_status_t sat_array_clone(const sat_array_t *const " object ", sat_array_t **const " cloned );
 .BI "sat_status_t sat_array_destroy(sat_array_t *const " object );
 .BI "void *sat_array_get_reference_by(const sat_array_t *const " object ", const uint32_t " index );
+.BI "sat_status_t sat_array_get_buffer(const sat_array_t *const " object ", sat_array_buffer_t *const " buffer );
 .PP
 Link with \fI\-lsat\fP.
 .fi
@@ -85,6 +86,20 @@ Callback type for memory growth notifications:
 typedef void (*sat_array_memory_notify_t)(void *user,
                                           uint32_t new_size);
 .fi
+.RE
+.TP
+.B sat_array_buffer_t
+Buffer descriptor for direct access to the array's internal storage:
+.RS
+.nf
+typedef struct {
+    void     *data;  /* pointer to first element */
+    uint32_t  size;  /* number of stored elements */
+} sat_array_buffer_t;
+.fi
+The
+.I data
+pointer becomes invalid if the array is resized or destroyed.
 .RE
 .SS Initialization and Configuration
 .TP
@@ -175,6 +190,23 @@ Returns the maximum number of elements the array can hold without reallocation
 via the
 .I capacity
 output parameter.
+.TP
+.BR sat_array_get_buffer ()
+Fills
+.I buffer
+with a direct pointer to the array's internal contiguous storage and the current
+element count. Useful for bulk processing or passing data to C APIs that expect
+a plain array pointer. The
+.I buffer.data
+pointer becomes invalid if the array is resized or destroyed. Each element
+occupies
+.I object_size
+bytes; element
+.I i
+starts at
+.RI (uint8_t*)buffer.data
++
+.IR i\ *\ object_size .
 .PP
 .SS Cleanup Operations
 .TP
@@ -488,6 +520,46 @@ int main(void)
     sat_array_destroy(original);
     sat_array_destroy(cloned);
     
+    return 0;
+}
+.fi
+.SS Accessing the Raw Buffer
+.nf
+#include <sat_array.h>
+#include <stdio.h>
+#include <stdint.h>
+
+int main(void)
+{
+    sat_array_t *array;
+
+    sat_array_create(&array, &(sat_array_args_t){
+        .size = 5,
+        .object_size = sizeof(int),
+        .mode = sat_array_mode_static,
+        .notification = { NULL, NULL }
+    });
+
+    for (int i = 0; i < 5; i++) {
+        sat_array_add(array, &i);
+    }
+
+    /* Obtain a direct view of the internal storage */
+    sat_array_buffer_t buf;
+    sat_status_t status = sat_array_get_buffer(array, &buf);
+    if (!sat_status_get_result(&status)) {
+        fprintf(stderr, "get_buffer failed\\n");
+        sat_array_destroy(array);
+        return 1;
+    }
+
+    /* Iterate over all elements without copying */
+    int *elems = (int *)buf.data;
+    for (uint32_t i = 0; i < buf.size; i++) {
+        printf("[%u] = %d\\n", i, elems[i]);
+    }
+
+    sat_array_destroy(array);
     return 0;
 }
 .fi
