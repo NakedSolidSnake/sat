@@ -87,3 +87,29 @@ bool sat_uuid_compare_string (const sat_uuid_string_t uuid1, const sat_uuid_stri
 
     return status;
 }
+
+bool sat_uuid_string_from_string (const char *const input_string, sat_uuid_string_t uuid, sat_uuid_format_t format)
+{
+    uuid_t binuuid;
+
+    if (uuid_parse (input_string, binuuid) != 0)
+    {
+        return false;
+    }
+
+    return sat_uuid_bin_to_string (binuuid, uuid, format);
+}
+
+bool sat_uuid_binary_from_string (const char *const input_string, sat_uuid_binary_t uuid)
+{
+    uuid_t binuuid;
+
+    if (uuid_parse (input_string, binuuid) != 0)
+    {
+        return false;
+    }
+
+    memcpy (uuid, binuuid, SAT_UUID_BINARY_SIZE);
+    
+    return true;
+}

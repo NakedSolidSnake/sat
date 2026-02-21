@@ -11,6 +11,8 @@ sat_uuid \- UUID generation, conversion, and comparison utilities
 .BI "bool sat_uuid_bin_to_string(const sat_uuid_binary_t " uuid_bin ", sat_uuid_string_t " uuid_string ", sat_uuid_format_t " format );
 .BI "bool sat_uuid_compare_bin(const sat_uuid_binary_t " uuid1 ", const sat_uuid_binary_t " uuid2 );
 .BI "bool sat_uuid_compare_string(const sat_uuid_string_t " uuid1 ", const sat_uuid_string_t " uuid2 ", sat_uuid_format_t " format );
+.BI "bool sat_uuid_string_from_string(const char *const " input_string ", sat_uuid_string_t " uuid ", sat_uuid_format_t " format );
+.BI "bool sat_uuid_binary_from_string(const char *const " input_string ", sat_uuid_binary_t " uuid );
 .PP
 Link with \fI\-lsat\fP.
 .fi
@@ -93,6 +95,27 @@ to the specified
 .I format
 before comparison, making it effectively case-insensitive. Returns true if the
 UUIDs are equal, false otherwise.
+.SS Parsing Functions
+.TP
+.BR sat_uuid_string_from_string ()
+Parses a raw null-terminated C string
+.RI ( input_string )
+as a UUID and writes the validated, formatted result to the
+.I uuid
+buffer. The output case is controlled by
+.IR format .
+Returns true on success, false if
+.I input_string
+is not a valid UUID.
+.TP
+.BR sat_uuid_binary_from_string ()
+Parses a raw null-terminated C string
+.RI ( input_string )
+as a UUID and stores the 128-bit value in the 16-byte binary
+.I uuid
+buffer. Returns true on success, false if
+.I input_string
+is not a valid UUID.
 .SH RETURN VALUE
 All functions return a boolean value:
 .IP \(bu 2
@@ -346,6 +369,39 @@ int main(void)
     printf("%s: %s\\n", invalid2,
            is_valid_uuid(invalid2) ? "valid" : "invalid");
     
+    return 0;
+}
+.fi
+.SS Parsing from External Strings
+.nf
+#include <sat_uuid.h>
+#include <stdio.h>
+
+int main(void)
+{
+    const char *raw = "550e8400-e29b-41d4-a716-446655440000";
+    sat_uuid_string_t uuid_str;
+    sat_uuid_binary_t uuid_bin;
+
+    /* Parse raw string into a formatted UUID string */
+    if (!sat_uuid_string_from_string(raw, uuid_str,
+                                     sat_uuid_format_upper_case)) {
+        fprintf(stderr, "Invalid UUID string\\n");
+        return 1;
+    }
+    printf("Formatted: %s\\n", uuid_str);
+
+    /* Parse raw string directly into binary */
+    if (!sat_uuid_binary_from_string(raw, uuid_bin)) {
+        fprintf(stderr, "Invalid UUID string\\n");
+        return 1;
+    }
+
+    /* Convert binary back to string for display */
+    sat_uuid_bin_to_string(uuid_bin, uuid_str,
+                           sat_uuid_format_lower_case);
+    printf("From binary: %s\\n", uuid_str);
+
     return 0;
 }
 .fi

@@ -129,4 +129,42 @@ bool sat_uuid_compare_bin (const sat_uuid_binary_t uuid1, const sat_uuid_binary_
  */
 bool sat_uuid_compare_string (const sat_uuid_string_t uuid1, const sat_uuid_string_t uuid2, sat_uuid_format_t format);
 
+
+/**
+ * @brief Parses a raw C string as a UUID and stores it as a formatted UUID string
+ *
+ * Validates and parses the given null-terminated @p input_string, then converts
+ * the result to a @ref sat_uuid_string_t using the specified @p format.
+ * This function is useful when the source UUID comes from an external buffer
+ * that is not already typed as @ref sat_uuid_string_t.
+ *
+ * @param[in]  input_string Null-terminated string representing a UUID
+ *                          (format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)
+ * @param[out] uuid         Buffer to store the resulting UUID string (37 bytes)
+ * @param[in]  format       Case formatting for the output hexadecimal characters
+ * @return true on success, false if @p input_string is not a valid UUID
+ *
+ * @note The output buffer must be at least @ref SAT_UUID_STRING_SIZE bytes
+ * @note Both uppercase and lowercase hexadecimal input is accepted
+ */
+bool sat_uuid_string_from_string (const char *const input_string, sat_uuid_string_t uuid, sat_uuid_format_t format);
+
+/**
+ * @brief Parses a raw C string as a UUID and stores it in binary format
+ *
+ * Validates and parses the given null-terminated @p input_string, then stores
+ * the 128-bit UUID value in the @p uuid binary buffer.
+ * This function is useful when the source UUID comes from an external buffer
+ * that is not already typed as @ref sat_uuid_string_t.
+ *
+ * @param[in]  input_string Null-terminated string representing a UUID
+ *                          (format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)
+ * @param[out] uuid         Buffer to store the resulting binary UUID (16 bytes)
+ * @return true on success, false if @p input_string is not a valid UUID
+ *
+ * @note The output buffer must be at least @ref SAT_UUID_BINARY_SIZE bytes
+ * @note Both uppercase and lowercase hexadecimal input is accepted
+ */
+bool sat_uuid_binary_from_string (const char *const input_string, sat_uuid_binary_t uuid);
+
 #endif /* SAT_UUID_H */
