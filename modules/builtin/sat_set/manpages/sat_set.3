@@ -15,6 +15,7 @@ sat_set \- set data structure with uniqueness constraint
 .BI "sat_status_t sat_set_get_object_ref_by_parameter(sat_set_t *" object ", const void *" param ", sat_set_compare_t " compare ", void **" data );
 .BI "sat_status_t sat_set_get_size(const sat_set_t *" object ", uint32_t *" size );
 .BI "sat_status_t sat_set_destroy(sat_set_t *" object );
+.BI "sat_status_t sat_set_clone(const sat_set_t *" object ", sat_set_t **" cloned );
 .PP
 Link with \fI\-lsat\fP.
 .fi
@@ -149,6 +150,18 @@ output parameter.
 .BR sat_set_destroy ()
 Frees all memory associated with the set. After calling this function, the
 set must not be used.
+.TP
+.BR sat_set_clone ()
+Creates a deep copy of
+.IR object .
+Allocates a new set with the same configuration (capacity, object size,
+equality function and growth mode) and copies all elements into it. The clone
+is fully independent: modifications to the clone do not affect the original.
+If cloning fails,
+.I *cloned
+is set to NULL and all resources are freed. The caller must call
+.BR sat_set_destroy ()
+on the cloned set when it is no longer needed.
 .SH RETURN VALUE
 All functions return a
 .B sat_status_t
@@ -546,6 +559,64 @@ int main(void)
     }
     
     sat_set_destroy(set);
+    return 0;
+}
+.fi
+.SS Cloning a Set
+.nf
+#include <sat_set.h>
+#include <stdio.h>
+#include <string.h>
+
+typedef struct {
+    int id;
+    char name[100];
+} item_t;
+
+bool item_equal(const void *e1, const void *e2)
+{
+    const item_t *a = (const item_t *)e1;
+    const item_t *b = (const item_t *)e2;
+    return a->id == b->id;
+}
+
+int main(void)
+{
+    sat_set_t *original, *cloned;
+
+    sat_set_create(&original, &(sat_set_args_t){
+        .size = 5,
+        .object_size = sizeof(item_t),
+        .is_equal = item_equal,
+        .mode = sat_set_mode_static
+    });
+
+    item_t a = { 1, "Alpha" };
+    item_t b = { 2, "Beta" };
+    sat_set_add(original, &a);
+    sat_set_add(original, &b);
+
+    /* Clone the set */
+    sat_status_t status = sat_set_clone(original, &cloned);
+    if (!sat_status_get_result(&status)) {
+        fprintf(stderr, "Clone failed\\n");
+        sat_set_destroy(original);
+        return 1;
+    }
+
+    /* Verify clone is independent */
+    item_t modified = { 1, "Modified" };
+    sat_set_update_by(cloned, &modified, 0);
+
+    item_t check;
+    sat_set_get_object_by(original, 0, &check);
+    printf("Original[0]: %s\\n", check.name); /* Still "Alpha" */
+
+    sat_set_get_object_by(cloned, 0, &check);
+    printf("Cloned[0]:   %s\\n", check.name); /* "Modified" */
+
+    sat_set_destroy(original);
+    sat_set_destroy(cloned);
     return 0;
 }
 .fi

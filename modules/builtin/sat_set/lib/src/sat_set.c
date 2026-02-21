@@ -205,6 +205,44 @@ sat_status_t sat_set_destroy (sat_set_t *object)
     return status;
 }
 
+sat_status_t sat_set_clone (const sat_set_t *const object, sat_set_t **const cloned)
+{
+    sat_status_t status;
+
+    do
+    {
+        sat_status_break_if_null (status, object, "sat set clone error: object is NULL");
+        sat_status_break_if_null (status, cloned, "sat set clone error: cloned pointer is NULL");
+
+        // Use the creation method to properly initialize the cloned set
+        sat_set_args_t args =
+        {
+            .size        = object->size,
+            .object_size = object->object_size,
+            .is_equal    = object->is_equal,
+            .mode        = object->mode,
+        };
+
+        status = sat_set_create (cloned, &args);
+        sat_status_break_on_error (status);
+
+        // Replace the empty array created by sat_set_create with a full clone
+        sat_array_destroy ((*cloned)->array);
+        (*cloned)->array = NULL;
+
+        status = sat_array_clone (object->array, &(*cloned)->array);
+        if (sat_status_get_result (&status) == false)
+        {
+            sat_set_destroy (*cloned);
+            *cloned = NULL;
+            break;
+        }
+
+    } while (false);
+
+    return status;
+}
+
 static sat_status_t sat_set_is_args_valid (const sat_set_args_t *const args)
 {
     sat_status_t status = sat_status_set (&status, false, "sat set is args valid error");

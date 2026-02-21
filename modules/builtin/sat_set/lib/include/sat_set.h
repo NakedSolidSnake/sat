@@ -227,4 +227,23 @@ sat_status_t sat_set_get_size (const sat_set_t *const object, uint32_t *const si
  */
 sat_status_t sat_set_destroy (sat_set_t *const object);
 
+/**
+ * @brief Creates a deep copy of a set
+ *
+ * Allocates a new set with the same configuration (capacity, object size,
+ * equality function, and growth mode) as @p object, then copies all elements
+ * into it. The resulting set is fully independent: modifying the clone does
+ * not affect the original and vice-versa.
+ *
+ * @param[in]  object  Pointer to the source set to clone
+ * @param[out] cloned  Pointer to the pointer that will hold the new set
+ * @return sat_status_t indicating success or failure of the operation
+ *
+ * @note The caller is responsible for calling sat_set_destroy() on the cloned set
+ * @note If cloning fails, @p *cloned is set to NULL and resources are freed
+ * @see sat_set_create()
+ * @see sat_set_destroy()
+ */
+sat_status_t sat_set_clone (const sat_set_t *const object, sat_set_t **const cloned);
+
 #endif/* SAT_SET_H_ */
