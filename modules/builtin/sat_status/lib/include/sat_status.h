@@ -82,7 +82,6 @@
         break; \
     }
 
-
 #define sat_status_return_if_equals(value, expected, message) \
     if (value == expected) \
     { \
@@ -107,8 +106,39 @@
         return sat_status_failure (&(sat_status_t){}, "" message ""); \
     }
 
+#define sat_status_return_greater_than(value, expected, message) \
+    if (value > expected) \
+    { \
+        return sat_status_failure (&(sat_status_t){}, "" message ""); \
+    }
+
+#define sat_status_return_less_than(value, expected, message) \
+    if (value < expected) \
+    { \
+        return sat_status_failure (&(sat_status_t){}, "" message ""); \
+    }
+
+#define sat_status_return_greater_than_or_equal(value, expected, message) \
+    if (value >= expected) \
+    { \
+        return sat_status_failure (&(sat_status_t){}, "" message ""); \
+    }
+
+#define sat_status_return_less_than_or_equal(value, expected, message) \
+    if (value <= expected) \
+    { \
+        return sat_status_failure (&(sat_status_t){}, "" message ""); \
+    }
+
 #define sat_status_return_success() \
     return sat_status_success (&(sat_status_t){})
+
+#define sat_status_return_failure(message) \
+    return sat_status_failure (&(sat_status_t){}, "" message "")
+
+
+#define sat_status_abort_on_error(message) \
+    sat_status_abort (&(sat_status_t){}, "" message "")
 
 /**
  * @brief Status structure with result and error message
@@ -119,7 +149,7 @@
 typedef struct 
 {
     bool result;     /**< Success (true) or failure (false) */
-    char *motive;    /**< Error description or "No error" */
+    const char *motive;    /**< Error description or "No error" */
 } sat_status_t;
 
 /**
@@ -133,7 +163,7 @@ typedef struct
  * @param motive Error description string (can be NULL)
  * @return The configured status object by value
  */
-sat_status_t sat_status_set (sat_status_t *object, bool result, char *motive);
+sat_status_t sat_status_set (sat_status_t *const object, bool result, const char *const motive);
 
 /**
  * @brief Get the result from a status object
@@ -143,7 +173,7 @@ sat_status_t sat_status_set (sat_status_t *object, bool result, char *motive);
  * @param object Pointer to status object
  * @return true for success, false for failure
  */
-bool sat_status_get_result (sat_status_t *object);
+bool sat_status_get_result (const sat_status_t *const object);
 
 /**
  * @brief Get the error message from a status object
@@ -154,7 +184,7 @@ bool sat_status_get_result (sat_status_t *object);
  * @param object Pointer to status object
  * @return Pointer to error message string
  */
-char *sat_status_get_motive (sat_status_t *object);
+const char *sat_status_get_motive (const sat_status_t *const object);
 
 /**
  * @brief Create a success status
@@ -165,7 +195,7 @@ char *sat_status_get_motive (sat_status_t *object);
  * @param object Pointer to status object to initialize
  * @return Success status by value
  */
-sat_status_t sat_status_success (sat_status_t *object);
+sat_status_t sat_status_success (sat_status_t *const object);
 
 /**
  * @brief Create a failure status with error message
@@ -177,6 +207,9 @@ sat_status_t sat_status_success (sat_status_t *object);
  * @param motive Error description string
  * @return Failure status by value
  */
-sat_status_t sat_status_failure (sat_status_t *object, char *motive);
+sat_status_t sat_status_failure (sat_status_t *const object, const char *const motive);
+
+
+void sat_status_abort (sat_status_t *const object, const char *const message);
 
 #endif/* SAT_STATUS_H */
