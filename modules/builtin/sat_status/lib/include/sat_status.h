@@ -30,6 +30,15 @@
         break; \
     }
 
+/**
+ * @brief Return from function on error status
+ * 
+ * Convenience macro that evaluates a status-returning expression and returns
+ * from the current function if the result indicates failure. The error status
+ * is propagated to the caller.
+ * 
+ * @param value Expression that evaluates to sat_status_t
+ */
 #define sat_status_return_on_error(value) \
     {\
         sat_status_t status = value; \
@@ -54,6 +63,18 @@
         continue; \
     }
 
+/**
+ * @brief Break if value equals expected
+ * 
+ * Convenience macro that compares a value against an expected value,
+ * sets failure status with the given message, and breaks out of the loop
+ * if they are equal.
+ * 
+ * @param status Status object to set on failure
+ * @param value Value to check
+ * @param expected Expected value to compare against
+ * @param message Error message string literal
+ */
 #define sat_status_break_if_equals(status, value, expected, message) \
     if (value == expected) \
     { \
@@ -61,6 +82,18 @@
         break; \
     }
 
+/**
+ * @brief Break if value not equals expected
+ * 
+ * Convenience macro that compares a value against an expected value,
+ * sets failure status with the given message, and breaks out of the loop
+ * if they are not equal.
+ * 
+ * @param status Status object to set on failure
+ * @param value Value to check
+ * @param expected Expected value to compare against
+ * @param message Error message string literal
+ */
 #define sat_status_break_if_not_equals(status, value, expected, message) \
     if (value != expected) \
     { \
@@ -68,6 +101,16 @@
         break; \
     }
 
+/**
+ * @brief Break if value is NULL
+ * 
+ * Convenience macro that checks if a pointer is NULL, sets failure status
+ * with the given message, and breaks out of the loop if so.
+ * 
+ * @param status Status object to set on failure
+ * @param value Pointer to check
+ * @param message Error message string literal
+ */
 #define sat_status_break_if_null(status, value, message) \
     if (value == NULL) \
     { \
@@ -75,6 +118,16 @@
         break; \
     }
 
+/**
+ * @brief Break if value is false
+ * 
+ * Convenience macro that checks if a boolean value is false, sets failure
+ * status with the given message, and breaks out of the loop if so.
+ * 
+ * @param status Status object to set on failure
+ * @param value Boolean value to check
+ * @param message Error message string literal
+ */
 #define sat_status_break_if_false(status, value, message) \
     if (value == false) \
     { \
@@ -82,61 +135,160 @@
         break; \
     }
 
+/**
+ * @brief Return failure if value equals expected
+ * 
+ * Convenience macro that compares a value against an expected value and
+ * returns a failure status with the given message if they are equal.
+ * 
+ * @param value Value to check
+ * @param expected Expected value to compare against
+ * @param message Error message string literal
+ */
 #define sat_status_return_if_equals(value, expected, message) \
     if (value == expected) \
     { \
         return sat_status_failure (&(sat_status_t){}, "" message ""); \
     }
 
+/**
+ * @brief Return failure if value not equals expected
+ * 
+ * Convenience macro that compares a value against an expected value and
+ * returns a failure status with the given message if they are not equal.
+ * 
+ * @param value Value to check
+ * @param expected Expected value to compare against
+ * @param message Error message string literal
+ */
 #define sat_status_return_if_not_equals(value, expected, message) \
     if (value != expected) \
     { \
         return sat_status_failure (&(sat_status_t){}, "" message ""); \
     }
 
+/**
+ * @brief Return failure if value is NULL
+ * 
+ * Convenience macro that checks if a pointer is NULL and returns a failure
+ * status with the given message if so.
+ * 
+ * @param value Pointer to check
+ * @param message Error message string literal
+ */
 #define sat_status_return_if_null(value, message) \
     if (value == NULL) \
     { \
         return sat_status_failure (&(sat_status_t){}, "" message ""); \
     }
 
+/**
+ * @brief Return failure if value is false
+ * 
+ * Convenience macro that checks if a boolean value is false and returns
+ * a failure status with the given message if so.
+ * 
+ * @param value Boolean value to check
+ * @param message Error message string literal
+ */
 #define sat_status_return_if_false(value, message) \
     if (value == false) \
     { \
         return sat_status_failure (&(sat_status_t){}, "" message ""); \
     }
 
+/**
+ * @brief Return failure if value is greater than expected
+ * 
+ * Convenience macro that compares a value against an expected value and
+ * returns a failure status with the given message if value > expected.
+ * 
+ * @param value Value to check
+ * @param expected Expected value to compare against
+ * @param message Error message string literal
+ */
 #define sat_status_return_greater_than(value, expected, message) \
     if (value > expected) \
     { \
         return sat_status_failure (&(sat_status_t){}, "" message ""); \
     }
 
+/**
+ * @brief Return failure if value is less than expected
+ * 
+ * Convenience macro that compares a value against an expected value and
+ * returns a failure status with the given message if value < expected.
+ * 
+ * @param value Value to check
+ * @param expected Expected value to compare against
+ * @param message Error message string literal
+ */
 #define sat_status_return_less_than(value, expected, message) \
     if (value < expected) \
     { \
         return sat_status_failure (&(sat_status_t){}, "" message ""); \
     }
 
+/**
+ * @brief Return failure if value is greater than or equal to expected
+ * 
+ * Convenience macro that compares a value against an expected value and
+ * returns a failure status with the given message if value >= expected.
+ * 
+ * @param value Value to check
+ * @param expected Expected value to compare against
+ * @param message Error message string literal
+ */
 #define sat_status_return_greater_than_or_equal(value, expected, message) \
     if (value >= expected) \
     { \
         return sat_status_failure (&(sat_status_t){}, "" message ""); \
     }
 
+/**
+ * @brief Return failure if value is less than or equal to expected
+ * 
+ * Convenience macro that compares a value against an expected value and
+ * returns a failure status with the given message if value <= expected.
+ * 
+ * @param value Value to check
+ * @param expected Expected value to compare against
+ * @param message Error message string literal
+ */
 #define sat_status_return_less_than_or_equal(value, expected, message) \
     if (value <= expected) \
     { \
         return sat_status_failure (&(sat_status_t){}, "" message ""); \
     }
 
+/**
+ * @brief Return success status from current function
+ * 
+ * Convenience macro that creates and returns a success status in one step.
+ * Useful for simplifying return statements at the end of successful functions.
+ */
 #define sat_status_return_success() \
     return sat_status_success (&(sat_status_t){})
 
+/**
+ * @brief Return failure status with message from current function
+ * 
+ * Convenience macro that creates and returns a failure status with the given
+ * error message in one step.
+ * 
+ * @param message Error message string literal
+ */
 #define sat_status_return_failure(message) \
     return sat_status_failure (&(sat_status_t){}, "" message "")
 
-
+/**
+ * @brief Terminate program with error message
+ * 
+ * Convenience macro that calls sat_status_abort() to terminate the program
+ * immediately with an error message.
+ * 
+ * @param message Error message string literal
+ */
 #define sat_status_abort_on_error(message) \
     sat_status_abort (&(sat_status_t){}, "" message "")
 
@@ -209,7 +361,19 @@ sat_status_t sat_status_success (sat_status_t *const object);
  */
 sat_status_t sat_status_failure (sat_status_t *const object, const char *const motive);
 
-
+/**
+ * @brief Terminate program execution with error message
+ * 
+ * Prints an error message to stderr and immediately terminates the program
+ * using abort(). This function is intended for irrecoverable errors where
+ * the program cannot continue safely.
+ * 
+ * @param object Pointer to status object (for consistency with other functions)
+ * @param message Error message to display before terminating
+ * 
+ * @warning This function does not return - it terminates the program
+ * @note Use this only for critical errors where recovery is impossible
+ */
 void sat_status_abort (sat_status_t *const object, const char *const message);
 
 #endif/* SAT_STATUS_H */
