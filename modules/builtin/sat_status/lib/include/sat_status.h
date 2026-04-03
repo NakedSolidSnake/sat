@@ -31,24 +31,6 @@
     }
 
 /**
- * @brief Return from function on error status
- * 
- * Convenience macro that evaluates a status-returning expression and returns
- * from the current function if the result indicates failure. The error status
- * is propagated to the caller.
- * 
- * @param value Expression that evaluates to sat_status_t
- */
-#define sat_status_return_on_error(value) \
-    {\
-        sat_status_t status = value; \
-        if (sat_status_get_result (&status) == false) \
-        { \
-            return status; \
-        }\
-    }
-
-/**
  * @brief Continue to next iteration on error status
  * 
  * Convenience macro that checks if a status indicates failure and continues
@@ -136,6 +118,24 @@
     }
 
 /**
+ * @brief Return from function on error status
+ * 
+ * Convenience macro that evaluates a status-returning expression and returns
+ * from the current function if the result indicates failure. The error status
+ * is propagated to the caller.
+ * 
+ * @param value Expression that evaluates to sat_status_t
+ */
+#define sat_status_return_on_error(value) \
+    {\
+        sat_status_t status = value; \
+        if (sat_status_get_result (&status) == false) \
+        { \
+            return status; \
+        }\
+    }
+
+/**
  * @brief Return failure if value equals expected
  * 
  * Convenience macro that compares a value against an expected value and
@@ -145,7 +145,7 @@
  * @param expected Expected value to compare against
  * @param message Error message string literal
  */
-#define sat_status_return_if_equals(value, expected, message) \
+#define sat_status_return_on_equals(value, expected, message) \
     if (value == expected) \
     { \
         return sat_status_failure (&(sat_status_t){}, "" message ""); \
@@ -161,7 +161,7 @@
  * @param expected Expected value to compare against
  * @param message Error message string literal
  */
-#define sat_status_return_if_not_equals(value, expected, message) \
+#define sat_status_return_on_not_equals(value, expected, message) \
     if (value != expected) \
     { \
         return sat_status_failure (&(sat_status_t){}, "" message ""); \
@@ -176,7 +176,7 @@
  * @param value Pointer to check
  * @param message Error message string literal
  */
-#define sat_status_return_if_null(value, message) \
+#define sat_status_return_on_null(value, message) \
     if (value == NULL) \
     { \
         return sat_status_failure (&(sat_status_t){}, "" message ""); \
@@ -191,7 +191,7 @@
  * @param value Boolean value to check
  * @param message Error message string literal
  */
-#define sat_status_return_if_false(value, message) \
+#define sat_status_return_on_false(value, message) \
     if (value == false) \
     { \
         return sat_status_failure (&(sat_status_t){}, "" message ""); \
@@ -207,7 +207,7 @@
  * @param expected Expected value to compare against
  * @param message Error message string literal
  */
-#define sat_status_return_greater_than(value, expected, message) \
+#define sat_status_return_on_greater_than(value, expected, message) \
     if (value > expected) \
     { \
         return sat_status_failure (&(sat_status_t){}, "" message ""); \
@@ -223,7 +223,7 @@
  * @param expected Expected value to compare against
  * @param message Error message string literal
  */
-#define sat_status_return_less_than(value, expected, message) \
+#define sat_status_return_on_less_than(value, expected, message) \
     if (value < expected) \
     { \
         return sat_status_failure (&(sat_status_t){}, "" message ""); \
@@ -239,7 +239,7 @@
  * @param expected Expected value to compare against
  * @param message Error message string literal
  */
-#define sat_status_return_greater_than_or_equal(value, expected, message) \
+#define sat_status_return_on_greater_than_or_equal(value, expected, message) \
     if (value >= expected) \
     { \
         return sat_status_failure (&(sat_status_t){}, "" message ""); \
@@ -255,7 +255,7 @@
  * @param expected Expected value to compare against
  * @param message Error message string literal
  */
-#define sat_status_return_less_than_or_equal(value, expected, message) \
+#define sat_status_return_on_less_than_or_equal(value, expected, message) \
     if (value <= expected) \
     { \
         return sat_status_failure (&(sat_status_t){}, "" message ""); \
@@ -267,7 +267,7 @@
  * Convenience macro that creates and returns a success status in one step.
  * Useful for simplifying return statements at the end of successful functions.
  */
-#define sat_status_return_success() \
+#define sat_status_return_on_success() \
     return sat_status_success (&(sat_status_t){})
 
 /**
@@ -278,7 +278,7 @@
  * 
  * @param message Error message string literal
  */
-#define sat_status_return_failure(message) \
+#define sat_status_return_on_failure(message) \
     return sat_status_failure (&(sat_status_t){}, "" message "")
 
 /**

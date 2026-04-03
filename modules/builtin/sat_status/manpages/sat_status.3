@@ -23,17 +23,17 @@ sat_status \- status handling and error reporting system
 .BI "sat_status_break_if_null(" status ", " value ", " message );
 .BI "sat_status_break_if_false(" status ", " value ", " message );
 .PP
-.BI "sat_status_return_if_equals(" value ", " expected ", " message );
-.BI "sat_status_return_if_not_equals(" value ", " expected ", " message );
-.BI "sat_status_return_if_null(" value ", " message );
-.BI "sat_status_return_if_false(" value ", " message );
-.BI "sat_status_return_greater_than(" value ", " expected ", " message );
-.BI "sat_status_return_less_than(" value ", " expected ", " message );
-.BI "sat_status_return_greater_than_or_equal(" value ", " expected ", " message );
-.BI "sat_status_return_less_than_or_equal(" value ", " expected ", " message );
+.BI "sat_status_return_on_equals(" value ", " expected ", " message );
+.BI "sat_status_return_on_not_equals(" value ", " expected ", " message );
+.BI "sat_status_return_on_null(" value ", " message );
+.BI "sat_status_return_on_false(" value ", " message );
+.BI "sat_status_return_on_greater_than(" value ", " expected ", " message );
+.BI "sat_status_return_on_less_than(" value ", " expected ", " message );
+.BI "sat_status_return_on_greater_than_or_equal(" value ", " expected ", " message );
+.BI "sat_status_return_on_less_than_or_equal(" value ", " expected ", " message );
 .PP
-.BI "sat_status_return_success();
-.BI "sat_status_return_failure(" message );
+.BI "sat_status_return_on_success();
+.BI "sat_status_return_on_failure(" message );
 .BI "sat_status_abort_on_error(" message );
 .PP
 Link with \fI\-lsat_status\fP.
@@ -183,111 +183,111 @@ do {
 .fi
 .RE
 .TP
-.BR sat_status_return_if_equals ()
+.BR sat_status_return_on_equals ()
 Macro that compares a value against an expected value and returns a failure
 status with the given message if they are equal.
 .RS
 .PP
 .nf
 sat_status_t my_function(int fd) {
-    sat_status_return_if_equals(fd, -1, "Invalid file descriptor");
+    sat_status_return_on_equals(fd, -1, "Invalid file descriptor");
     // Continue processing...
 }
 .fi
 .RE
 .TP
-.BR sat_status_return_if_not_equals ()
+.BR sat_status_return_on_not_equals ()
 Macro that compares a value against an expected value and returns a failure
 status with the given message if they are not equal.
 .RS
 .PP
 .nf
 sat_status_t my_function(int type) {
-    sat_status_return_if_not_equals(type, EXPECTED, "Wrong type");
+    sat_status_return_on_not_equals(type, EXPECTED, "Wrong type");
     // Continue processing...
 }
 .fi
 .RE
 .TP
-.BR sat_status_return_if_null ()
+.BR sat_status_return_on_null ()
 Macro that checks if a pointer is NULL and returns a failure status with
 the given message if so.
 .RS
 .PP
 .nf
 sat_status_t my_function(void *ptr) {
-    sat_status_return_if_null(ptr, "Null pointer argument");
+    sat_status_return_on_null(ptr, "Null pointer argument");
     // Continue processing...
 }
 .fi
 .RE
 .TP
-.BR sat_status_return_if_false ()
+.BR sat_status_return_on_false ()
 Macro that checks if a boolean value is false and returns a failure status
 with the given message if so.
 .RS
 .PP
 .nf
 sat_status_t my_function(bool ready) {
-    sat_status_return_if_false(ready, "System not ready");
+    sat_status_return_on_false(ready, "System not ready");
     // Continue processing...
 }
 .fi
 .RE
 .TP
-.BR sat_status_return_greater_than ()
+.BR sat_status_return_on_greater_than ()
 Macro that compares a value against an expected value and returns a failure
 status with the given message if value > expected.
 .RS
 .PP
 .nf
 sat_status_t my_function(int count) {
-    sat_status_return_greater_than(count, MAX_COUNT, "Too many items");
+    sat_status_return_on_greater_than(count, MAX_COUNT, "Too many items");
     // Continue processing...
 }
 .fi
 .RE
 .TP
-.BR sat_status_return_less_than ()
+.BR sat_status_return_on_less_than ()
 Macro that compares a value against an expected value and returns a failure
 status with the given message if value < expected.
 .RS
 .PP
 .nf
 sat_status_t my_function(int count) {
-    sat_status_return_less_than(count, MIN_COUNT, "Too few items");
+    sat_status_return_on_less_than(count, MIN_COUNT, "Too few items");
     // Continue processing...
 }
 .fi
 .RE
 .TP
-.BR sat_status_return_greater_than_or_equal ()
+.BR sat_status_return_on_greater_than_or_equal ()
 Macro that compares a value against an expected value and returns a failure
 status with the given message if value >= expected.
 .RS
 .PP
 .nf
 sat_status_t my_function(int value) {
-    sat_status_return_greater_than_or_equal(value, LIMIT, "At or above limit");
+    sat_status_return_on_greater_than_or_equal(value, LIMIT, "At or above limit");
     // Continue processing...
 }
 .fi
 .RE
 .TP
-.BR sat_status_return_less_than_or_equal ()
+.BR sat_status_return_on_less_than_or_equal ()
 Macro that compares a value against an expected value and returns a failure
 status with the given message if value <= expected.
 .RS
 .PP
 .nf
 sat_status_t my_function(int value) {
-    sat_status_return_less_than_or_equal(value, LIMIT, "At or below limit");
+    sat_status_return_on_less_than_or_equal(value, LIMIT, "At or below limit");
     // Continue processing...
 }
 .fi
 .RE
 .TP
-.BR sat_status_return_success ()
+.BR sat_status_return_on_success ()
 Convenience macro that creates and returns a success status in one step.
 Useful for simplifying return statements at the end of successful functions.
 .RS
@@ -295,12 +295,12 @@ Useful for simplifying return statements at the end of successful functions.
 .nf
 sat_status_t my_function(void) {
     // ... processing ...
-    sat_status_return_success();
+    sat_status_return_on_success();
 }
 .fi
 .RE
 .TP
-.BR sat_status_return_failure ()
+.BR sat_status_return_on_failure ()
 Convenience macro that creates and returns a failure status with the given
 error message in one step.
 .RS
@@ -308,7 +308,7 @@ error message in one step.
 .nf
 sat_status_t my_function(void) {
     if (error_condition) {
-        sat_status_return_failure("Operation failed");
+        sat_status_return_on_failure("Operation failed");
     }
 }
 .fi
@@ -858,15 +858,15 @@ if you access the structure member directly, though using the accessor
 function is recommended for consistency.
 .IP \(bu 2
 The return macros
-.RB ( sat_status_return_if_* ,
-.BR sat_status_return_success ,
-.BR sat_status_return_failure )
+.RB ( sat_status_return_on_* ,
+.BR sat_status_return_on_success ,
+.BR sat_status_return_on_failure )
 use compound literals to create temporary status objects, making them
 convenient for inline error checking.
 .IP \(bu 2
 The comparison macros
-.RB ( sat_status_return_greater_than ,
-.BR sat_status_return_less_than ,
+.RB ( sat_status_return_on_greater_than ,
+.BR sat_status_return_on_less_than ,
 etc.) are useful for range validation and bounds checking.
 .SH SEE ALSO
 .BR assert (3),
