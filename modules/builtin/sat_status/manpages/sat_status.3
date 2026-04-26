@@ -6,13 +6,17 @@ sat_status \- status handling and error reporting system
 .B #include <sat_status.h>
 .PP
 .BI "sat_status_t sat_status_set(sat_status_t *" object ", "
-.BI "                            bool " result ", char *" motive );
-.BI "bool sat_status_get_result(sat_status_t *" object );
-.BI "char *sat_status_get_motive(sat_status_t *" object );
+.BI "                            bool " result ", const char *" where ", "
+.BI "                            const char *" motive );
+.BI "bool sat_status_get_result(const sat_status_t *" object );
+.BI "const char *sat_status_get_motive(const sat_status_t *" object );
+.BI "const char *sat_status_get_where(const sat_status_t *" object );
 .PP
 .BI "sat_status_t sat_status_success(sat_status_t *" object );
-.BI "sat_status_t sat_status_failure(sat_status_t *" object ", char *" motive );
-.BI "void sat_status_abort(sat_status_t *" object ", char *" message );
+.BI "sat_status_t sat_status_failure(sat_status_t *" object ", const char *" motive );
+.BI "sat_status_t sat_status_failure_where(sat_status_t *" object ", const char *" where ", "
+.BI "                                      const char *" motive );
+.BI "void sat_status_abort(sat_status_t *" object ", const char *" message );
 .PP
 .BI "sat_status_break_on_error(" status );
 .BI "sat_status_return_on_error(" value );
@@ -32,7 +36,7 @@ sat_status \- status handling and error reporting system
 .BI "sat_status_return_on_greater_than_or_equal(" value ", " expected ", " message );
 .BI "sat_status_return_on_less_than_or_equal(" value ", " expected ", " message );
 .PP
-.BI "sat_status_return_on_success();
+.BI "sat_status_return_on_success()"
 .BI "sat_status_return_on_failure(" message );
 .BI "sat_status_abort_on_error(" message );
 .PP
@@ -72,6 +76,9 @@ Structure representing an operation's outcome:
 .IP \(bu 2
 .B motive
 \- String pointer containing error description or "No error"
+.IP \(bu 2
+.B where
+\- String pointer containing the function or source context where the status was created
 .PP
 The structure is designed to be returned by value, allowing for convenient
 function chaining and inline initialization.
@@ -198,7 +205,11 @@ sat_status_t my_function(int fd) {
 .TP
 .BR sat_status_return_on_not_equals ()
 Macro that compares a value against an expected value and returns a failure
-status with the given message if they are not equal.
+status with the given message if they are not equal. The returned status
+automatically records the current function name in the
+.I where
+field using
+.BR __func__ .
 .RS
 .PP
 .nf
@@ -211,7 +222,11 @@ sat_status_t my_function(int type) {
 .TP
 .BR sat_status_return_on_null ()
 Macro that checks if a pointer is NULL and returns a failure status with
-the given message if so.
+the given message if so. The returned status automatically records the
+current function name in the
+.I where
+field using
+.BR __func__ .
 .RS
 .PP
 .nf
@@ -224,7 +239,11 @@ sat_status_t my_function(void *ptr) {
 .TP
 .BR sat_status_return_on_false ()
 Macro that checks if a boolean value is false and returns a failure status
-with the given message if so.
+with the given message if so. The returned status automatically records the
+current function name in the
+.I where
+field using
+.BR __func__ .
 .RS
 .PP
 .nf
@@ -237,7 +256,11 @@ sat_status_t my_function(bool ready) {
 .TP
 .BR sat_status_return_on_greater_than ()
 Macro that compares a value against an expected value and returns a failure
-status with the given message if value > expected.
+status with the given message if value > expected. The returned status
+automatically records the current function name in the
+.I where
+field using
+.BR __func__ .
 .RS
 .PP
 .nf
@@ -250,7 +273,11 @@ sat_status_t my_function(int count) {
 .TP
 .BR sat_status_return_on_less_than ()
 Macro that compares a value against an expected value and returns a failure
-status with the given message if value < expected.
+status with the given message if value < expected. The returned status
+automatically records the current function name in the
+.I where
+field using
+.BR __func__ .
 .RS
 .PP
 .nf
@@ -263,7 +290,11 @@ sat_status_t my_function(int count) {
 .TP
 .BR sat_status_return_on_greater_than_or_equal ()
 Macro that compares a value against an expected value and returns a failure
-status with the given message if value >= expected.
+status with the given message if value >= expected. The returned status
+automatically records the current function name in the
+.I where
+field using
+.BR __func__ .
 .RS
 .PP
 .nf
@@ -276,7 +307,11 @@ sat_status_t my_function(int value) {
 .TP
 .BR sat_status_return_on_less_than_or_equal ()
 Macro that compares a value against an expected value and returns a failure
-status with the given message if value <= expected.
+status with the given message if value <= expected. The returned status
+automatically records the current function name in the
+.I where
+field using
+.BR __func__ .
 .RS
 .PP
 .nf
@@ -302,7 +337,11 @@ sat_status_t my_function(void) {
 .TP
 .BR sat_status_return_on_failure ()
 Convenience macro that creates and returns a failure status with the given
-error message in one step.
+error message in one step. The returned status automatically records the
+current function name in the
+.I where
+field using
+.BR __func__ .
 .RS
 .PP
 .nf
@@ -330,9 +369,15 @@ void critical_initialization(void) {
 .SS Functions
 .TP
 .BR sat_status_set ()
-Configures a status object with the specified result and error message.
+Configures a status object with the specified result, source context, and
+error message.
 This is the fundamental function for creating status objects.
 .RS
+.PP
+If the
+.I where
+parameter is NULL or an empty string, the where field is automatically set
+to an empty string.
 .PP
 If the
 .I motive
@@ -344,7 +389,7 @@ The function returns the status by value, allowing for convenient inline
 usage:
 .PP
 .nf
-return sat_status_set(&status, false, "Connection timeout");
+return sat_status_set(&status, false, __func__, "Connection timeout");
 .fi
 .PP
 The function asserts that
@@ -392,6 +437,30 @@ The function asserts that
 is not NULL.
 .RE
 .TP
+.BR sat_status_get_where ()
+Retrieves the source context string from a status object. This is typically
+the function name passed through
+.BR __func__
+when the status was created.
+.RS
+.PP
+The returned pointer points to the internal where string and should not be
+freed by the caller. For statuses created without an explicit source, this
+function returns an empty string.
+.PP
+.nf
+if (!sat_status_get_result(&status)) {
+    fprintf(stderr, "[%s] %s\\n",
+            sat_status_get_where(&status),
+            sat_status_get_motive(&status));
+}
+.fi
+.PP
+The function asserts that
+.I object
+is not NULL.
+.RE
+.TP
 .BR sat_status_success ()
 Convenience function that creates a success status with result set to true
 and motive set to an empty string (which becomes "No error").
@@ -400,7 +469,7 @@ and motive set to an empty string (which becomes "No error").
 This is functionally equivalent to:
 .PP
 .nf
-sat_status_set(object, true, "");
+sat_status_set(object, true, "", "");
 .fi
 .PP
 Common usage pattern:
@@ -422,7 +491,7 @@ and the specified error message.
 This is functionally equivalent to:
 .PP
 .nf
-sat_status_set(object, false, motive);
+sat_status_set(object, false, "", motive);
 .fi
 .PP
 Common usage pattern:
@@ -435,6 +504,36 @@ sat_status_t my_function(int fd) {
         return sat_status_failure(&status, "Invalid file descriptor");
     }
     
+    return sat_status_success(&status);
+}
+.fi
+.RE
+.TP
+.BR sat_status_failure_where ()
+Convenience function that creates a failure status with result set to false,
+an explicit source context, and the specified error message.
+.RS
+.PP
+This is useful when the caller wants to preserve where the failure originated,
+for example by storing the current function name with
+.BR __func__ .
+.PP
+This is functionally equivalent to:
+.PP
+.nf
+sat_status_set(object, false, where, motive);
+.fi
+.PP
+Common usage pattern:
+.PP
+.nf
+sat_status_t open_connection(void) {
+    sat_status_t status;
+
+    if (!network_ready()) {
+        return sat_status_failure_where(&status, __func__, "Network not ready");
+    }
+
     return sat_status_success(&status);
 }
 .fi
@@ -479,7 +578,8 @@ immediately due to an unrecoverable error condition.
 .TP
 .BR sat_status_set (),
 .BR sat_status_success (),
-.BR sat_status_failure ()
+.BR sat_status_failure (),
+.BR sat_status_failure_where ()
 Return the configured
 .B sat_status_t
 structure by value.
@@ -493,6 +593,9 @@ if it indicates failure.
 .TP
 .BR sat_status_get_motive ()
 Returns a pointer to the error description string. Never returns NULL.
+.TP
+.BR sat_status_get_where ()
+Returns a pointer to the source context string. Never returns NULL.
 .SH EXAMPLES
 .SS Basic Success and Failure
 .nf
@@ -721,27 +824,31 @@ void demonstrate_api(void) {
     sat_status_t status;
     
     // Method 1: Using sat_status_set directly
-    status = sat_status_set(&status, true, "");
-    printf("Status 1 - Result: %d, Motive: %s\\n",
+    status = sat_status_set(&status, true, __func__, "");
+    printf("Status 1 - Result: %d, Where: %s, Motive: %s\\n",
            sat_status_get_result(&status),
+           sat_status_get_where(&status),
            sat_status_get_motive(&status));
     
     // Method 2: Using sat_status_success
     status = sat_status_success(&status);
-    printf("Status 2 - Result: %d, Motive: %s\\n",
+    printf("Status 2 - Result: %d, Where: %s, Motive: %s\\n",
            sat_status_get_result(&status),
+           sat_status_get_where(&status),
            sat_status_get_motive(&status));
     
     // Method 3: Using sat_status_failure
     status = sat_status_failure(&status, "Custom error message");
-    printf("Status 3 - Result: %d, Motive: %s\\n",
+    printf("Status 3 - Result: %d, Where: %s, Motive: %s\\n",
            sat_status_get_result(&status),
+           sat_status_get_where(&status),
            sat_status_get_motive(&status));
     
     // Method 4: Using sat_status_set with NULL motive
-    status = sat_status_set(&status, false, NULL);
-    printf("Status 4 - Result: %d, Motive: %s\\n",
+    status = sat_status_set(&status, false, NULL, NULL);
+    printf("Status 4 - Result: %d, Where: %s, Motive: %s\\n",
            sat_status_get_result(&status),
+           sat_status_get_where(&status),
            sat_status_get_motive(&status));
 }
 
@@ -751,10 +858,10 @@ int main(void) {
 }
 
 /* Output:
-Status 1 - Result: 1, Motive: No error
-Status 2 - Result: 1, Motive: No error
-Status 3 - Result: 0, Motive: Custom error message
-Status 4 - Result: 0, Motive: No error
+Status 1 - Result: 1, Where: demonstrate_api, Motive: No error
+Status 2 - Result: 1, Where: , Motive: No error
+Status 3 - Result: 0, Where: , Motive: Custom error message
+Status 4 - Result: 0, Where: , Motive: No error
 */
 .fi
 .SS Nested Function Calls

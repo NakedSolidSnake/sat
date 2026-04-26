@@ -1,11 +1,11 @@
 /**
  * @file sat_status.h
  * @brief Status handling and error reporting system
- * 
+ *
  * This module provides a structured way to handle function return status
  * with boolean success indicators and descriptive error messages. It includes
  * convenience macros for control flow based on status results.
- * 
+ *
  * The status system is designed to be lightweight and easy to use, providing
  * clear success/failure indication with human-readable error descriptions.
  */
@@ -17,11 +17,11 @@
 
 /**
  * @brief Break out of loop on error status
- * 
+ *
  * Convenience macro that checks if a status indicates failure and breaks
  * out of the current loop if so. Useful in do-while(false) error handling
  * patterns.
- * 
+ *
  * @param status Status object to check
  */
 #define sat_status_break_on_error(status) \
@@ -32,11 +32,11 @@
 
 /**
  * @brief Continue to next iteration on error status
- * 
+ *
  * Convenience macro that checks if a status indicates failure and continues
  * to the next loop iteration if so. Useful for processing multiple items
  * where individual failures should not stop the entire operation.
- * 
+ *
  * @param status Status object to check
  */
 #define sat_status_continue_on_error(status) \
@@ -47,11 +47,11 @@
 
 /**
  * @brief Break if value equals expected
- * 
+ *
  * Convenience macro that compares a value against an expected value,
  * sets failure status with the given message, and breaks out of the loop
  * if they are equal.
- * 
+ *
  * @param status Status object to set on failure
  * @param value Value to check
  * @param expected Expected value to compare against
@@ -156,6 +156,7 @@
  * 
  * Convenience macro that compares a value against an expected value and
  * returns a failure status with the given message if they are not equal.
+ * The returned status stores the current function name in the where field.
  * 
  * @param value Value to check
  * @param expected Expected value to compare against
@@ -171,7 +172,8 @@
  * @brief Return failure if value is NULL
  * 
  * Convenience macro that checks if a pointer is NULL and returns a failure
- * status with the given message if so.
+ * status with the given message if so. The returned status stores the
+ * current function name in the where field.
  * 
  * @param value Pointer to check
  * @param message Error message string literal
@@ -186,7 +188,8 @@
  * @brief Return failure if value is false
  * 
  * Convenience macro that checks if a boolean value is false and returns
- * a failure status with the given message if so.
+ * a failure status with the given message if so. The returned status stores
+ * the current function name in the where field.
  * 
  * @param value Boolean value to check
  * @param message Error message string literal
@@ -202,6 +205,7 @@
  * 
  * Convenience macro that compares a value against an expected value and
  * returns a failure status with the given message if value > expected.
+ * The returned status stores the current function name in the where field.
  * 
  * @param value Value to check
  * @param expected Expected value to compare against
@@ -218,6 +222,7 @@
  * 
  * Convenience macro that compares a value against an expected value and
  * returns a failure status with the given message if value < expected.
+ * The returned status stores the current function name in the where field.
  * 
  * @param value Value to check
  * @param expected Expected value to compare against
@@ -234,6 +239,7 @@
  * 
  * Convenience macro that compares a value against an expected value and
  * returns a failure status with the given message if value >= expected.
+ * The returned status stores the current function name in the where field.
  * 
  * @param value Value to check
  * @param expected Expected value to compare against
@@ -250,6 +256,7 @@
  * 
  * Convenience macro that compares a value against an expected value and
  * returns a failure status with the given message if value <= expected.
+ * The returned status stores the current function name in the where field.
  * 
  * @param value Value to check
  * @param expected Expected value to compare against
@@ -274,7 +281,8 @@
  * @brief Return failure status with message from current function
  * 
  * Convenience macro that creates and returns a failure status with the given
- * error message in one step.
+ * error message in one step. The returned status stores the current
+ * function name in the where field.
  * 
  * @param message Error message string literal
  */
@@ -293,16 +301,16 @@
     sat_status_abort (&(sat_status_t){}, "" message "")
 
 /**
- * @brief Status structure with result and error message
+ * @brief Status structure with result, source, and error message
  * 
  * Represents the outcome of an operation with a boolean result
- * and an optional descriptive error message.
+ * and optional descriptive metadata about the error source and motive.
  */
 typedef struct 
 {
-    bool result;     /**< Success (true) or failure (false) */
+    bool result;           /**< Success (true) or failure (false) */
     const char *motive;    /**< Error description or "No error" */
-    const char *where;
+    const char *where;     /**< Source function or context where status was created */
 } sat_status_t;
 
 /**
@@ -341,6 +349,16 @@ bool sat_status_get_result (const sat_status_t *const object);
  */
 const char *sat_status_get_motive (const sat_status_t *const object);
 
+/**
+ * @brief Get the source location from a status object
+ * 
+ * Retrieves the source context stored in a status object. This is typically
+ * the current function name passed with __func__ when the status was created.
+ * For statuses created without an explicit source, this returns an empty string.
+ * 
+ * @param object Pointer to status object
+ * @return Pointer to source location string
+ */
 const char *sat_status_get_where (const sat_status_t *const object);
 
 /**
@@ -366,6 +384,17 @@ sat_status_t sat_status_success (sat_status_t *const object);
  */
 sat_status_t sat_status_failure (sat_status_t *const object, const char *const motive);
 
+/**
+ * @brief Create a failure status with source location and error message
+ * 
+ * Convenience function that creates a status indicating failed operation
+ * while preserving the source context where the error originated.
+ * 
+ * @param object Pointer to status object to initialize
+ * @param where Source location string, usually __func__
+ * @param motive Error description string
+ * @return Failure status by value
+ */
 sat_status_t sat_status_failure_where (sat_status_t *const object, const char *const where, const char *const motive);
 
 /**
