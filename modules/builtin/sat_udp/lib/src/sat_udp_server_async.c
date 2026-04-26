@@ -29,7 +29,7 @@ sat_udp_server_base_t *sat_udp_server_async_create (void)
 
 static sat_status_t sat_udp_server_async_run (void *const object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat udp server async error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat udp server async error");
 
     sat_udp_server_async_t *const async = (sat_udp_server_async_t *const) object;
 
@@ -46,12 +46,12 @@ static sat_status_t sat_udp_server_async_run (void *const object)
     if (__status < 0)
     {
         // failed
-        sat_status_set (&status, false, "Select returns a error");
+        sat_status_set (&status, false, __func__, "Select returns a error");
     }
     else if (__status == 0)
     {
         //timeout
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     if (FD_ISSET (async->abstract.socket, &async->read))
@@ -82,12 +82,12 @@ static sat_status_t sat_udp_server_async_run (void *const object)
         else if (poll_result == 0)
         {
             // Timeout occurred
-            sat_status_set (&status, false, "sat udp receive timeout");
+            sat_status_set (&status, false, __func__, "sat udp receive timeout");
         }
         else
         {
             // Error occurred
-            sat_status_set (&status, false, "sat udp receive poll error");
+            sat_status_set (&status, false, __func__, "sat udp receive poll error");
         }
 
         // size = recvfrom (async->abstract.socket,
@@ -116,7 +116,7 @@ static sat_status_t sat_udp_server_async_run (void *const object)
 
         memset (async->abstract.buffer, 0, async->abstract.size);
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;

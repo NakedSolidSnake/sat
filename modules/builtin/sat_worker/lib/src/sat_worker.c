@@ -16,7 +16,7 @@ sat_status_t sat_worker_init (sat_worker_t *const object)
     {
         if (object == NULL)
         {
-            sat_status_set (&status, false, "sat worker init error: null object");
+            sat_status_set (&status, false, __func__, "sat worker init error: null object");
             break;
         }
 
@@ -24,14 +24,14 @@ sat_status_t sat_worker_init (sat_worker_t *const object)
 
         if (pthread_mutex_init (&object->mutex, NULL) != 0)
         {
-            sat_status_set (&status, false, "sat worker init error: mutex initialization failed");
+            sat_status_set (&status, false, __func__, "sat worker init error: mutex initialization failed");
             break;
         }
 
         if (pthread_cond_init (&object->cond, NULL) != 0)
         {
             pthread_mutex_destroy (&object->mutex);
-            sat_status_set (&status, false, "sat worker init error: condition variable initialization failed");
+            sat_status_set (&status, false, __func__, "sat worker init error: condition variable initialization failed");
             break;
         }
 
@@ -48,13 +48,13 @@ sat_status_t sat_worker_open (sat_worker_t *const object, const sat_worker_args_
     {
         if (object == NULL)
         {
-            status = sat_status_set (&status, false, "sat worker open error: null object");
+            status = sat_status_set (&status, false, __func__, "sat worker open error: null object");
             break;
         }
 
         if (args == NULL)
         {
-            status = sat_status_set (&status, false, "sat worker open error: null args");
+            status = sat_status_set (&status, false, __func__, "sat worker open error: null args");
             break;
         }
 
@@ -90,13 +90,13 @@ sat_status_t sat_worker_feed (sat_worker_t *const object, const void *const data
     {
         if (object == NULL)
         {
-            status = sat_status_set (&status, false, "sat worker feed error: null object");
+            status = sat_status_set (&status, false, __func__, "sat worker feed error: null object");
             break;
         }
 
         if (data == NULL)
         {
-            status = sat_status_set (&status, false, "sat worker feed error: null data");
+            status = sat_status_set (&status, false, __func__, "sat worker feed error: null data");
             break;
         }
 
@@ -120,7 +120,7 @@ sat_status_t sat_worker_close (sat_worker_t *const object)
     {
         if (object == NULL)
         {
-            sat_status_set (&status, false, "sat worker close error: null object");
+            sat_status_set (&status, false, __func__, "sat worker close error: null object");
             break;
         }
 
@@ -164,25 +164,25 @@ static sat_status_t sat_worker_is_args_valid (const sat_worker_args_t *const arg
     {
         if (args == NULL)
         {
-            sat_status_set (&status, false, "sat worker args is null");
+            sat_status_set (&status, false, __func__, "sat worker args is null");
             break;
         }
 
         if (args->handler == NULL)
         {
-            sat_status_set (&status, false, "sat worker args handler is null");
+            sat_status_set (&status, false, __func__, "sat worker args handler is null");
             break;
         }
 
         if (args->object_size == 0)
         {
-            sat_status_set (&status, false, "sat worker args object size is zero");
+            sat_status_set (&status, false, __func__, "sat worker args object size is zero");
             break;
         }
 
         if (args->pool_amount == 0)
         {
-            sat_status_set (&status, false, "sat worker args pool amount is zero");
+            sat_status_set (&status, false, __func__, "sat worker args pool amount is zero");
             break;
         }
 

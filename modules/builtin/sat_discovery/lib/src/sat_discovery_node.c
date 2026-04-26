@@ -7,7 +7,7 @@
 
 sat_status_t sat_discovery_node_create (sat_discovery_node_t *object, sat_discovery_node_args_t *args)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat discovery node create error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat discovery node create error");
 
     if (object != NULL && args != NULL)
     {
@@ -29,7 +29,7 @@ sat_status_t sat_discovery_node_create (sat_discovery_node_t *object, sat_discov
 
 sat_status_t sat_discovery_node_update_last_seen (sat_discovery_node_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat discovery node update last seen error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat discovery node update last seen error");
 
     if (object != NULL)
     {

@@ -54,12 +54,12 @@ int main (int argc, char *argv[])
 
 sat_status_t criteria_customer_credit (const void *const object)
 {
-    sat_status_t status = sat_status_set (&status, false, "criteria customer credit error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "criteria customer credit error");
     const customer_t *customer = (const customer_t *)object;
 
     if (customer->credit > 300.0)
     {
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -67,12 +67,12 @@ sat_status_t criteria_customer_credit (const void *const object)
 
 sat_status_t criteria_customer_stars (const void *const object)
 {
-    sat_status_t status = sat_status_set (&status, false, "criteria customer stars error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "criteria customer stars error");
     const customer_t *customer = (const customer_t *)object;
 
     if (customer->stars > 3)
     {
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;

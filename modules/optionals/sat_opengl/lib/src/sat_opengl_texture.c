@@ -13,7 +13,7 @@ static uint16_t sat_opengl_texture_get_format (sat_opengl_texture_format_t forma
 
 sat_status_t sat_opengl_texture_open (sat_opengl_texture_t *object, sat_opengl_texture_args_t *args)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat opengl texture open error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat opengl texture open error");
 
     glGenTextures (1, &object->id);
 
@@ -67,7 +67,7 @@ static void sat_opengl_texture_configure_filtering (sat_opengl_texture_t *object
 
 static sat_status_t sat_opengl_texture_load (sat_opengl_texture_t *object, sat_opengl_texture_args_t *args)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat opengl texture load error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat opengl texture load error");
 
     struct 
     {
@@ -103,7 +103,7 @@ static sat_status_t sat_opengl_texture_load (sat_opengl_texture_t *object, sat_o
 
         stbi_image_free (data);
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;

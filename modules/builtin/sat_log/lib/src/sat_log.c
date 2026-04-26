@@ -9,12 +9,12 @@ static void  sat_log_logger_default (sat_log_level_t level, const char *format, 
 
 sat_status_t sat_log_init (sat_log_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat log init error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat log init error");
 
     if (object != NULL)
     {
         memset (object, 0, sizeof (sat_log_t));
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -22,7 +22,7 @@ sat_status_t sat_log_init (sat_log_t *object)
 
 sat_status_t sat_log_open (sat_log_t *object, sat_log_args_t *args)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat log open error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat log open error");
 
     if (object != NULL && args != NULL)
     {
@@ -36,7 +36,7 @@ sat_status_t sat_log_open (sat_log_t *object, sat_log_args_t *args)
 
 sat_status_t sat_log_registry (sat_log_t *object, sat_log_level_t level, const char *format, ...)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat log registry error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat log registry error");
 
     if (object != NULL && format != NULL)
     {
@@ -46,7 +46,7 @@ sat_status_t sat_log_registry (sat_log_t *object, sat_log_level_t level, const c
         object->logger (level, format, var_args);
         va_end (var_args);
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -54,12 +54,12 @@ sat_status_t sat_log_registry (sat_log_t *object, sat_log_level_t level, const c
 
 sat_status_t sat_log_close (sat_log_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat log close error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat log close error");
 
     if (object != NULL)
     {
         memset (object, 0, sizeof (sat_log_t));
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -69,7 +69,7 @@ int sat_log_enabled = 0;
 
 sat_status_t sat_log_init_by_env (const char *const fallback)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat log init by env error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat log init by env error");
 
     const char *env_value = getenv ("SAT_LOG");
 
@@ -102,7 +102,7 @@ sat_status_t sat_log_init_by_env (const char *const fallback)
 
 static sat_status_t  sat_log_set_logger_by (sat_log_t *object, sat_log_type_t type, sat_log_logger_t logger)
 {
-    sat_status_t status = sat_status_set (&status, true, "");
+    sat_status_t status = sat_status_set (&status, true, __func__, "");
 
     switch (type)
     {
@@ -119,7 +119,7 @@ static sat_status_t  sat_log_set_logger_by (sat_log_t *object, sat_log_type_t ty
         break;
 
     default:
-        status = sat_status_set (&status, false, "sat log type error");
+        status = sat_status_set (&status, false, __func__, "sat log type error");
         break;
     }
 

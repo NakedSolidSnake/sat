@@ -8,7 +8,7 @@ sat_status_t sat_sdl_animate_load (sat_sdl_animate_t *object, sat_sdl_render_t *
 
 sat_status_t sat_sdl_animate_add_state (sat_sdl_animate_t *object, char *state, sat_sdl_frame_position_t *positions, uint8_t size)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat sdl animate add error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat sdl animate add error");
 
     if (object->frames.amount < SAT_SDL_ANIMATE_FRAME_AMOUNT)
     {
@@ -32,7 +32,7 @@ sat_status_t sat_sdl_animate_add_state (sat_sdl_animate_t *object, char *state, 
 
             object->frames.amount ++;
 
-            sat_status_set (&status, true, "");
+            sat_status_set (&status, true, __func__, "");
         }
     }
 

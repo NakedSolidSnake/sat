@@ -6,7 +6,7 @@ sat_status_t sat_opengl_vbo_create (sat_opengl_vbo_t *object, const char *name)
     glGenBuffers (1, &object->id);
     object->name = name;
 
-    sat_status_t status = sat_status_set (&status, true, "");
+    sat_status_t status = sat_status_set (&status, true, __func__, "");
     return status;
 }
 
@@ -14,7 +14,7 @@ sat_status_t sat_opengl_vbo_destroy (sat_opengl_vbo_t *object)
 {
     glDeleteBuffers (1, &object->id);
 
-    sat_status_t status = sat_status_set (&status, true, "");
+    sat_status_t status = sat_status_set (&status, true, __func__, "");
     return status;
 }
 
@@ -22,7 +22,7 @@ sat_status_t sat_opengl_vbo_set_vertices (sat_opengl_vbo_t *object, sat_opengl_v
 {
     glBufferData (GL_ARRAY_BUFFER, vertices->size, vertices->list, GL_STATIC_DRAW);
 
-    sat_status_t status = sat_status_set (&status, true, "");
+    sat_status_t status = sat_status_set (&status, true, __func__, "");
     return status;
 }
 
@@ -43,7 +43,7 @@ sat_status_t sat_opengl_vbo_set_attributes (sat_opengl_vbo_t *object, sat_opengl
         glEnableVertexAttribArray (attribute->location);
     }
 
-    sat_status_t status = sat_status_set (&status, true, "");
+    sat_status_t status = sat_status_set (&status, true, __func__, "");
 
     return status;
 }
@@ -52,7 +52,7 @@ sat_status_t sat_opengl_vbo_enable (sat_opengl_vbo_t *object)
 {
     glBindBuffer (GL_ARRAY_BUFFER, object->id);
 
-    sat_status_t status = sat_status_set (&status, true, "");
+    sat_status_t status = sat_status_set (&status, true, __func__, "");
     return status;
 }
 
@@ -60,6 +60,6 @@ sat_status_t sat_opengl_vbo_disable (sat_opengl_vbo_t *object)
 {
     glBindBuffer (GL_ARRAY_BUFFER, 0);
 
-    sat_status_t status = sat_status_set (&status, true, "");
+    sat_status_t status = sat_status_set (&status, true, __func__, "");
     return status;
 }

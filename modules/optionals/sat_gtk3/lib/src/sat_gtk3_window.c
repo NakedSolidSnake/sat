@@ -5,7 +5,7 @@ static void sat_gtk3_window_close_event (GtkWidget *widget, void *data);
 
 sat_status_t sat_gtk3_window_open (sat_gtk3_window_t *object, sat_gtk3_window_args_t *args)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat gtk3 window open error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat gtk3 window open error");
 
     object->window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
 
@@ -19,7 +19,7 @@ sat_status_t sat_gtk3_window_open (sat_gtk3_window_t *object, sat_gtk3_window_ar
 
         g_signal_connect (object->window, "destroy", G_CALLBACK (sat_gtk3_window_close_event), object);
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
 

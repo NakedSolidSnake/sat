@@ -28,7 +28,7 @@ sat_udp_server_base_t *sat_udp_server_interactive_create (void)
 
 static sat_status_t sat_udp_server_interactive_run (void *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat udp server interactive error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat udp server interactive error");
 
     sat_udp_server_interactive_t *interactive = (sat_udp_server_interactive_t *) object;
 
@@ -59,12 +59,12 @@ static sat_status_t sat_udp_server_interactive_run (void *object)
                 size,
                 0,
                 (struct sockaddr *)&source,
-                sizeof (source));                    
+                sizeof (source));
     }
 
     memset (interactive->abstract.buffer, 0, interactive->abstract.size);
 
-    sat_status_set (&status, true, "");
+    sat_status_set (&status, true, __func__, "");
 
     return status;
 }

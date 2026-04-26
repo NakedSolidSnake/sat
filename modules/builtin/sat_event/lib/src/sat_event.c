@@ -3,12 +3,12 @@
 
 sat_status_t sat_event_init (sat_event_dispatcher_t *const object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat event init error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat event init error");
 
     if (object != NULL)
     {
         memset (object, 0, sizeof (sat_event_dispatcher_t));
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -16,7 +16,7 @@ sat_status_t sat_event_init (sat_event_dispatcher_t *const object)
 
 sat_status_t sat_event_observer_add (sat_event_dispatcher_t *const object, sat_event_t event, const sat_event_observer_t *const observer)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat event observer add error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat event observer add error");
 
     if (object != NULL && observer != NULL && object->amount < SAT_EVENT_OBSERVER_AMOUNT)
     {
@@ -26,7 +26,7 @@ sat_status_t sat_event_observer_add (sat_event_dispatcher_t *const object, sat_e
 
         object->amount ++;
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -34,7 +34,7 @@ sat_status_t sat_event_observer_add (sat_event_dispatcher_t *const object, sat_e
 
 sat_status_t sat_event_fire (const sat_event_dispatcher_t *const object, sat_event_t event, const void *const data)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat event fire error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat event fire error");
 
     if (object != NULL)
     {
@@ -46,7 +46,7 @@ sat_status_t sat_event_fire (const sat_event_dispatcher_t *const object, sat_eve
             if (event == map->event)
             {
                 map->observer->base.handler (map->context, data);
-                sat_status_set (&status, true, "");
+                sat_status_set (&status, true, __func__, "");
             }
         }        
     }

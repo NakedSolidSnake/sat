@@ -4,13 +4,13 @@ static SDL_RendererFlip sat_sdl_render_get_flip (sat_sdl_flip_t flip);
 
 sat_status_t sat_sdl_render_create (sat_sdl_render_t *object, sat_sdl_window_t *window)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat sdl render create error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat sdl render create error");
 
     object->render = SDL_CreateRenderer (window->window, -1, SDL_RENDERER_ACCELERATED);
 
     if (object->render != NULL)
     {
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;

@@ -4,7 +4,7 @@
 
 sat_status_t sat_kafka_configuration_load (sat_kafka_configuration_t *object, const char *file, sat_kafka_groups_t *groups)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat kafka configuration load error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat kafka configuration load error");
 
     g_autoptr (GError) error = NULL;
     g_autoptr (GKeyFile) key_file = g_key_file_new ();
@@ -18,7 +18,7 @@ sat_status_t sat_kafka_configuration_load (sat_kafka_configuration_t *object, co
             sat_kafka_load_group (object->configuration, key_file, groups->list[i]);
         }
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -26,13 +26,13 @@ sat_status_t sat_kafka_configuration_load (sat_kafka_configuration_t *object, co
 
 sat_status_t sat_kafka_configuration_unload (sat_kafka_configuration_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat kafka configuration unload error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat kafka configuration unload error");
 
     if (object->configuration != NULL)
     {
         object->configuration = NULL;
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;

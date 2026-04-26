@@ -16,13 +16,13 @@ static void sat_kafka_publisher_on_error (rd_kafka_t *handle, const rd_kafka_mes
 
 sat_status_t sat_kafka_init (sat_kafka_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat kafka init error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat kafka init error");
     
     if (object != NULL)
     {
         memset (object, 0, sizeof (sat_kafka_t));
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -30,7 +30,7 @@ sat_status_t sat_kafka_init (sat_kafka_t *object)
 
 sat_status_t sat_kafka_open (sat_kafka_t *object, sat_kafka_args_t *args)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat kafka open error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat kafka open error");
     
     if (object != NULL && args != NULL)
     {
@@ -59,7 +59,7 @@ sat_status_t sat_kafka_open (sat_kafka_t *object, sat_kafka_args_t *args)
 
 sat_status_t sat_kafka_send (sat_kafka_t *object, const char *topic, sat_kafka_message_t *message, int timeout)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat kafka send error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat kafka send error");
     
     if (object != NULL && object->type == sat_kafka_type_publisher && topic != NULL && message != NULL)
     {
@@ -78,7 +78,7 @@ sat_status_t sat_kafka_send (sat_kafka_t *object, const char *topic, sat_kafka_m
             rd_kafka_poll (object->instance, 0);
             rd_kafka_flush (object->instance, timeout);
 
-            sat_status_set (&status, true, "");
+            sat_status_set (&status, true, __func__, "");
         }
     }
 
@@ -87,7 +87,7 @@ sat_status_t sat_kafka_send (sat_kafka_t *object, const char *topic, sat_kafka_m
 
 sat_status_t sat_kafka_poll (sat_kafka_t *object, int timeout)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat kafka poll error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat kafka poll error");
 
     rd_kafka_message_t *message;
     
@@ -100,7 +100,7 @@ sat_status_t sat_kafka_poll (sat_kafka_t *object, int timeout)
             if (sat_kafka_is_message_error (object, message) == false)
             {
                 sat_kafka_process_message (object, message);
-                sat_status_set (&status, true, "");
+                sat_status_set (&status, true, __func__, "");
             }
 
             rd_kafka_message_destroy (message);
@@ -112,7 +112,7 @@ sat_status_t sat_kafka_poll (sat_kafka_t *object, int timeout)
 
 sat_status_t sat_kafka_close (sat_kafka_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat kafka close error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat kafka close error");
     
     if (object != NULL)
     {
@@ -123,7 +123,7 @@ sat_status_t sat_kafka_close (sat_kafka_t *object)
 
         memset (object, 0, sizeof (sat_kafka_t));
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -131,33 +131,33 @@ sat_status_t sat_kafka_close (sat_kafka_t *object)
 
 static sat_status_t sat_kafka_instance_create (sat_kafka_t *object, sat_kafka_configuration_t *configuration)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat kafka instance create error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat kafka instance create error");
 
     enum rd_kafka_type_t type = sat_kafka_get_type (object);
 
     object->instance = rd_kafka_new (type, configuration->configuration, object->error, sizeof (object->error));
 
     if (object->instance != NULL)
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
 
     return status;
 }
 
 static sat_status_t sat_kafka_configure_by_type (sat_kafka_t *object, sat_kafka_configuration_t *configuration, sat_kafka_args_t *args)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat kafka configure by type error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat kafka configure by type error");
 
     switch (object->type)
     {
     case sat_kafka_type_publisher:
         rd_kafka_conf_set_dr_msg_cb (configuration->configuration, sat_kafka_publisher_on_error);
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
         break;
 
     case sat_kafka_type_subscriber:
         sat_kafka_topics_subscription (object, &args->topics);
         sat_kafka_set_records_handler (object, args);
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
         break;
     
     default:

@@ -24,7 +24,7 @@ static sat_status_t sat_tcp_client_connect (sat_tcp_client_t *object, struct add
 
 sat_status_t sat_tcp_client_open (sat_tcp_client_t **object, sat_tcp_client_args_t *args)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat tcp client open error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat tcp client open error");
 
     if (args->hostname != NULL && args->service != NULL)
     {
@@ -76,12 +76,12 @@ static struct addrinfo *sat_tcp_client_get_info_list (sat_tcp_client_args_t *arg
 
 static sat_status_t sat_tcp_client_set_socket (sat_tcp_client_t *object, struct addrinfo *info)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat tcp client set socket error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat tcp client set socket error");
 
     object->socket = socket (info->ai_family, info->ai_socktype, info->ai_protocol);
     if (object->socket >= 0)
     {
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -89,7 +89,7 @@ static sat_status_t sat_tcp_client_set_socket (sat_tcp_client_t *object, struct 
 
 static sat_status_t sat_tcp_client_connect (sat_tcp_client_t *object, struct addrinfo *info)
 {
-    sat_status_t status = sat_status_set (&status, true, "");
+    sat_status_t status = sat_status_set (&status, true, __func__, "");
 
     int status_connect = connect (object->socket, info->ai_addr, info->ai_addrlen);
 
@@ -97,7 +97,7 @@ static sat_status_t sat_tcp_client_connect (sat_tcp_client_t *object, struct add
     {
         close (object->socket);
 
-        sat_status_set (&status, false, "sat tcp client connect error");
+        sat_status_set (&status, false, __func__, "sat tcp client connect error");
     }
 
     return status;
@@ -105,7 +105,7 @@ static sat_status_t sat_tcp_client_connect (sat_tcp_client_t *object, struct add
 
 static sat_status_t sat_tcp_client_configure (sat_tcp_client_t *object, struct addrinfo *info_list)
 {
-    sat_status_t status = sat_status_set (&status, true, "");
+    sat_status_t status = sat_status_set (&status, true, __func__, "");
 
     struct addrinfo *info = NULL;
 

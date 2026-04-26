@@ -149,7 +149,7 @@ sat_status_t sat_cache_is_cached (const sat_cache_t *const object)
 
         if (object->is_cached == false)
         {
-            sat_status_set (&status, false, "data is not cached");
+            sat_status_set (&status, false, __func__, "data is not cached");
             break;
         }
 
@@ -174,7 +174,7 @@ sat_status_t sat_cache_clear (sat_cache_t *const object)
 
         if (object->is_cached == false)
         {
-            sat_status_set (&status, true, "data is already not cached");
+            sat_status_set (&status, true, __func__, "data is already not cached");
             break;
         }
 
@@ -203,7 +203,7 @@ sat_status_t sat_cache_close (sat_cache_t *const object)
 
         if (object->data.buffer == NULL)
         {
-            sat_status_set (&status, true, "buffer is already closed");
+            sat_status_set (&status, true, __func__, "buffer is already closed");
             break;
         }
 

@@ -29,13 +29,13 @@ void sat_tcp_server_abstract_copy_to_context (sat_tcp_server_abstract_t *object,
 
 sat_status_t sat_tcp_server_abstract_is_args_valid (sat_tcp_server_args_t *args)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat tcp server args error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat tcp server args error");
 
     if (args->buffer != NULL &&
         args->size > 0 && 
         args->service != NULL)
     {
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -75,57 +75,57 @@ sat_status_t sat_tcp_server_abstract_configure (sat_tcp_server_abstract_t *objec
 
 static sat_status_t sat_tcp_server_abstract_set_socket (sat_tcp_server_abstract_t *object, struct addrinfo *info)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat tcp server set socket error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat tcp server set socket error");
 
     object->socket = socket (info->ai_family, info->ai_socktype, info->ai_protocol);
 
     if (object->socket >= 0)
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
 
     return status;
 }
 
 static sat_status_t sat_tcp_server_abstract_set_reuse_address (sat_tcp_server_abstract_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat tcp server set reuse address error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat tcp server set reuse address error");
     int yes = 1;
 
     if (setsockopt (object->socket, SOL_SOCKET, SO_REUSEADDR, (void *)&yes, sizeof (yes)) == 0)
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
 
     return status;
 }
 
 static sat_status_t sat_tcp_server_abstract_set_bind (sat_tcp_server_abstract_t *object, struct addrinfo *info)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat tcp server set bind error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat tcp server set bind error");
 
     if (bind (object->socket, info->ai_addr, info->ai_addrlen) == 0)
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
 
     return status;
 }
 
 static sat_status_t sat_tcp_server_abstract_listen (sat_tcp_server_abstract_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat tcp server listen error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat tcp server listen error");
     
     if (listen (object->socket, 1) >= 0)
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
 
     return status;
 }
 
 static sat_status_t sat_tcp_server_abstract_select_type (sat_tcp_server_abstract_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat tcp server select type error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat tcp server select type error");
     
     if (object->type == sat_tcp_server_type_interactive)
     {
 
         object->base = sat_tcp_server_interactive_create ();
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;

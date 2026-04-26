@@ -37,7 +37,7 @@ static void sat_opengl_draw_by (sat_opengl_draw_type_t type, uint32_t vertices_a
 
 sat_status_t sat_opengl_create (sat_opengl_t **object, sat_opengl_args_t *args)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat opengl create error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat opengl create error");
 
     do 
     {
@@ -139,13 +139,13 @@ sat_status_t sat_opengl_create (sat_opengl_t **object, sat_opengl_args_t *args)
 
 sat_status_t sat_opengl_run (sat_opengl_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat opengl run error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat opengl run error");
 
     if (object != NULL && object->initialized == true)
     {
         if (sat_opengl_window_run (&object->window) == true)
         {
-            sat_status_set (&status, true, "");
+            sat_status_set (&status, true, __func__, "");
         }
     }
 
@@ -154,7 +154,7 @@ sat_status_t sat_opengl_run (sat_opengl_t *object)
 
 sat_status_t sat_opengl_create_program (sat_opengl_t *object, const char *name)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat opengl create program error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat opengl create program error");
 
     if (object != NULL && object->initialized == true && name != NULL && strlen (name) > 0)
     {
@@ -172,7 +172,7 @@ sat_status_t sat_opengl_create_program (sat_opengl_t *object, const char *name)
                 break;
             }
 
-            sat_status_set (&status, true, "");
+            sat_status_set (&status, true, __func__, "");
 
         } while (false);
     }
@@ -182,7 +182,7 @@ sat_status_t sat_opengl_create_program (sat_opengl_t *object, const char *name)
 
 sat_status_t sat_opengl_add_shader_to_program (sat_opengl_t *object, const char *name, sat_opengl_shader_type_t type, const char *filename)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat opengl create program error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat opengl create program error");
 
     if (object != NULL && object->initialized == true && name != NULL && strlen (name) > 0 && filename != NULL)
     {
@@ -210,7 +210,7 @@ sat_status_t sat_opengl_add_shader_to_program (sat_opengl_t *object, const char 
 
 sat_status_t sat_opengl_compile_program (sat_opengl_t *object, const char *name)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat opengl create program error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat opengl create program error");
 
     if (object != NULL && object->initialized == true && name != NULL && strlen (name) > 0)
     {
@@ -251,7 +251,7 @@ sat_status_t sat_opengl_compile_program (sat_opengl_t *object, const char *name)
 
 sat_status_t sat_opengl_close (sat_opengl_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat opengl close error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat opengl close error");
 
     if (object != NULL && object->initialized == true)
     {
@@ -267,7 +267,7 @@ sat_status_t sat_opengl_close (sat_opengl_t *object)
 
         glfwTerminate ();
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -275,7 +275,7 @@ sat_status_t sat_opengl_close (sat_opengl_t *object)
 
 sat_status_t sat_opengl_create_vao (sat_opengl_t *object, const char *name)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat opengl create vao error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat opengl create vao error");
 
     if (object != NULL && object->initialized == true && name != NULL && strlen (name) > 0)
     {
@@ -293,7 +293,7 @@ sat_status_t sat_opengl_create_vao (sat_opengl_t *object, const char *name)
                 break;
             }
 
-            sat_status_set (&status, true, "");
+            sat_status_set (&status, true, __func__, "");
 
         } while (false);
     }
@@ -303,7 +303,7 @@ sat_status_t sat_opengl_create_vao (sat_opengl_t *object, const char *name)
 
 sat_status_t sat_opengl_enable_vao (sat_opengl_t *object, const char *name)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat opengl enable vao error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat opengl enable vao error");
 
     if (object != NULL && object->initialized == true && name != NULL && strlen (name) > 0)
     {
@@ -344,7 +344,7 @@ sat_status_t sat_opengl_enable_vao (sat_opengl_t *object, const char *name)
 
 sat_status_t sat_opengl_enable_program (sat_opengl_t *object, const char *name)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat opengl create program error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat opengl create program error");
 
     if (object != NULL && object->initialized == true && name != NULL && strlen (name) > 0)
     {
@@ -385,7 +385,7 @@ sat_status_t sat_opengl_enable_program (sat_opengl_t *object, const char *name)
 
 sat_status_t sat_opengl_draw_object (sat_opengl_t *object, sat_opengl_draw_type_t type, uint32_t vertices_amount)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat opengl draw error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat opengl draw error");
 
     if (object != NULL && object->initialized == true)
     {
@@ -393,7 +393,7 @@ sat_status_t sat_opengl_draw_object (sat_opengl_t *object, sat_opengl_draw_type_
 
         if (sat_opengl_window_run (&object->window) == true)
         {
-            sat_status_set (&status, true, "");
+            sat_status_set (&status, true, __func__, "");
         }
     }
 
@@ -402,13 +402,13 @@ sat_status_t sat_opengl_draw_object (sat_opengl_t *object, sat_opengl_draw_type_
 
 sat_status_t sat_opengl_draw (sat_opengl_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat opengl draw error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat opengl draw error");
 
     if (object != NULL && object->initialized == true)
     {
         sat_opengl_window_draw (&object->window);
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -416,14 +416,14 @@ sat_status_t sat_opengl_draw (sat_opengl_t *object)
 
 sat_status_t sat_opengl_set_color (sat_opengl_t *object, sat_opengl_color_t color)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat opengl set color error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat opengl set color error");
 
     if (object != NULL && object->initialized == true)
     {
         glClearColor (color.red, color.green, color.blue, color.alpha);
         glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -431,7 +431,7 @@ sat_status_t sat_opengl_set_color (sat_opengl_t *object, sat_opengl_color_t colo
 
 sat_status_t sat_opengl_add_vbo_to_vao (sat_opengl_t *object, const char *name, sat_opengl_vbo_args_t *args)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat opengl add vbo to vao error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat opengl add vbo to vao error");
 
     if (object != NULL && object->initialized == true && name != NULL && strlen (name) > 0 && args != NULL)
     {
@@ -516,7 +516,7 @@ sat_status_t sat_opengl_add_vbo_to_vao (sat_opengl_t *object, const char *name, 
 
 sat_status_t sat_opengl_texture_container_create (sat_opengl_t *object, const char *name)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat opengl texture container create error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat opengl texture container create error");
 
     if (object != NULL && object->initialized == true && name != NULL && strlen (name) > 0)
     {
@@ -532,7 +532,7 @@ sat_status_t sat_opengl_texture_container_create (sat_opengl_t *object, const ch
 
 sat_status_t sat_opengl_texture_container_add (sat_opengl_t *object, const char *name, sat_opengl_texture_args_t *args)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat opengl texture container add error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat opengl texture container add error");
 
     if (object != NULL && object->initialized == true && name != NULL && strlen (name) > 0 && args != NULL)
     {
@@ -584,7 +584,7 @@ sat_status_t sat_opengl_texture_container_add (sat_opengl_t *object, const char 
 
 sat_status_t sat_opengl_texture_container_enable (sat_opengl_t *object, const char *name)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat opengl texture container enable error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat opengl texture container enable error");
 
     if (object != NULL && object->initialized == true && name != NULL && strlen (name) > 0)
     {
@@ -626,7 +626,7 @@ sat_status_t sat_opengl_texture_container_enable (sat_opengl_t *object, const ch
 
 sat_status_t sat_opengl_send_shader_value (sat_opengl_t *object, const char *name, const char *param, const sat_opengl_value_t *value)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat opengl send shader value error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat opengl send shader value error");
 
     if (object != NULL && object->initialized == true && name != NULL && strlen (name) > 0)
     {
@@ -693,7 +693,7 @@ sat_status_t sat_opengl_send_shader_value (sat_opengl_t *object, const char *nam
 
 sat_status_t sat_opengl_send_shader_matrix (sat_opengl_t *object, const char *name, const char *param, const sat_opengl_matrix_t *matrix)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat opengl send shader value error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat opengl send shader value error");
 
     if (object != NULL && object->initialized == true && name != NULL && strlen (name) > 0)
     {
@@ -735,13 +735,13 @@ sat_status_t sat_opengl_send_shader_matrix (sat_opengl_t *object, const char *na
 
 sat_status_t sat_opengl_get_time (sat_opengl_t *object, float *value)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat opengl get time error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat opengl get time error");
 
     if (object != NULL && object->initialized == true && value != NULL)
     {
         *value = glfwGetTime ();
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -749,14 +749,14 @@ sat_status_t sat_opengl_get_time (sat_opengl_t *object, float *value)
 
 sat_status_t sat_opengl_get_window_dimension (sat_opengl_t *object, sat_opengl_dimension_t *dimension)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat opengl get window dimension error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat opengl get window dimension error");
 
     if (object != NULL && object->initialized == true && dimension != NULL)
     {
         dimension->width = object->window.width;
         dimension->height = object->window.height;
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -764,14 +764,14 @@ sat_status_t sat_opengl_get_window_dimension (sat_opengl_t *object, sat_opengl_d
 
 static sat_status_t sat_opengl_check_args (sat_opengl_args_t *args)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat opengl check args error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat opengl check args error");
 
     if (args->window.height > 0 &&
         args->window.width > 0 &&
         args->window.title != NULL && 
         strlen (args->window.title) > 0)
     {
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -779,11 +779,11 @@ static sat_status_t sat_opengl_check_args (sat_opengl_args_t *args)
 
 static sat_status_t sat_opengl_init (void)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat opengl init error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat opengl init error");
 
     if (glfwInit () == GL_TRUE)
     {
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;

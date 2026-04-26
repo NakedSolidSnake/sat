@@ -23,7 +23,7 @@ sat_status_t sat_queue_ipc_open (sat_queue_ipc_t *const object, const sat_queue_
     {
         if (object == NULL)
         {
-            sat_status_set (&status, false, "sat queue ipc open error: null object");
+            sat_status_set (&status, false, __func__, "null object");
             break;
         }
 
@@ -35,6 +35,7 @@ sat_status_t sat_queue_ipc_open (sat_queue_ipc_t *const object, const sat_queue_
         object->id = msgget ((key_t)args->key, args->flags | IPC_CREAT);
         if (object->id == -1)
         {
+            sat_status_set (&status, false, __func__, "msgget failed");
             break;
         }
 
@@ -48,19 +49,19 @@ sat_status_t sat_queue_ipc_open (sat_queue_ipc_t *const object, const sat_queue_
 
 sat_status_t sat_queue_ipc_send (sat_queue_ipc_t *const object, const sat_queue_data_t *const data)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat queue ipc send error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat queue ipc send error");
 
     do
     {
         if (object == NULL)
         {
-            sat_status_set (&status, false, "sat queue ipc send error: null object");
+            sat_status_set (&status, false, __func__, "null object");
             break;
         }
 
         if (object->initialized == false)
         {
-            sat_status_set (&status, false, "sat queue ipc send error: not initialized");
+            sat_status_set (&status, false, __func__, "not initialized");
             break;
         }
 
@@ -74,7 +75,7 @@ sat_status_t sat_queue_ipc_send (sat_queue_ipc_t *const object, const sat_queue_
 
         if (msgsnd (object->id, (void *)&__data, data->size, 0) == -1)
         {
-            sat_status_set (&status, false, "sat queue ipc send error: msgsnd failed");
+            sat_status_set (&status, false, __func__, "msgsnd failed");
         }
             
     } while (false);
@@ -90,13 +91,13 @@ sat_status_t sat_queue_ipc_receive (sat_queue_ipc_t *const object, sat_queue_dat
     {
         if (object == NULL)
         {
-            sat_status_set (&status, false, "sat queue ipc receive error: null object");
+            sat_status_set (&status, false, __func__, "null object");
             break;
         }
 
         if (object->initialized == false)
         {
-            sat_status_set (&status, false, "sat queue ipc receive error: not initialized");
+            sat_status_set (&status, false, __func__, "not initialized");
             break;
         }
 
@@ -109,7 +110,7 @@ sat_status_t sat_queue_ipc_receive (sat_queue_ipc_t *const object, sat_queue_dat
 
         if (msgrcv (object->id, (void *)&__data, data->size, data->type, 0) == -1)
         {
-            sat_status_set (&status, false, "sat queue ipc receive error: msgrcv failed");
+            sat_status_set (&status, false, __func__, "msgrcv failed");
             break;
         }
 
@@ -128,19 +129,19 @@ sat_status_t sat_queue_ipc_destroy (sat_queue_ipc_t *const object)
     {
         if (object == NULL)
         {
-            sat_status_set (&status, false, "sat queue ipc destroy error: null object");
+            sat_status_set (&status, false, __func__, "null object");
             break;
         }
 
         if (object->initialized == false)
         {
-            sat_status_set (&status, false, "sat queue ipc destroy error: not initialized");
+            sat_status_set (&status, false, __func__, "not initialized");
             break;
         }
 
         if (msgctl (object->id, IPC_RMID, 0) != 0)
         {
-            sat_status_set (&status, false, "sat queue ipc destroy error: msgctl failed");
+            sat_status_set (&status, false, __func__, "msgctl failed");
         }
 
     } while (false);
@@ -156,13 +157,13 @@ static sat_status_t sat_queue_ipc_args_is_valid (const sat_queue_ipc_args_t *con
     {
         if (args == NULL)
         {
-            sat_status_set (&status, false, "sat queue ipc args is valid error: null args");
+            sat_status_set (&status, false, __func__, "null args");
             break;
         }
 
         if (args->key <= 0)
         {
-            sat_status_set (&status, false, "sat queue ipc args is valid error: invalid key");
+            sat_status_set (&status, false, __func__, "invalid key");
             break;
         }
     } while (false);
@@ -178,26 +179,26 @@ static sat_status_t sat_queue_ipc_data_is_valid (const sat_queue_data_t *const d
     {
         if (data == NULL)
         {
-            sat_status_set (&status, false, "sat queue ipc data is valid error: null data");
+            sat_status_set (&status, false, __func__, "null data");
             break;
         }
 
         if (data->type <= 0)
         {
-            sat_status_set (&status, false, "sat queue ipc data is valid error: invalid type");
+            sat_status_set (&status, false, __func__, "invalid type");
             break;
         }
 
         if (data->buffer == NULL)
         {
-            sat_status_set (&status, false, "sat queue ipc data is valid error: null buffer");
+            sat_status_set (&status, false, __func__, "null buffer");
             break;
         }
 
         if (data->size == 0 ||
             data->size >= SAT_QUEUE_DATA_BUFFER_SIZE)
         {
-            sat_status_set (&status, false, "sat queue ipc data is valid error: invalid size");
+            sat_status_set (&status, false, __func__, "invalid size");
         }
 
     } while (false);

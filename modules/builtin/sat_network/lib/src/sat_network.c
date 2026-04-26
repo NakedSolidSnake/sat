@@ -187,11 +187,11 @@ sat_status_t sat_network_get_ip_class (const char *const ip_address, sat_network
         }
         else
         {
-            sat_status_set (&status, false, "Invalid IP address format");
+            sat_status_set (&status, false, __func__, "Invalid IP address format");
             break;
         }
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
 
     } while (false);
 
@@ -252,27 +252,27 @@ sat_status_t sat_network_get_public_ip (const char *const dns_address, uint16_t 
 
         if (__socket < 0)
         {
-            sat_status_set (&status, false, "Failed to create socket");
+            sat_status_set (&status, false, __func__, "Failed to create socket");
             break;
         }
 
         if (connect (__socket, (struct sockaddr*)&address, addr_len) < 0)
         {
             close (__socket);
-            sat_status_set (&status, false, "Failed to connect");
+            sat_status_set (&status, false, __func__, "Failed to connect");
             break;
         }
 
         if (sat_network_get_connected_address (__socket, ip_address, SAT_NETWORK_IP_MAX_LEN) == false)
         {
             close (__socket);
-            sat_status_set (&status, false, "Failed to get connected address");
+            sat_status_set (&status, false, __func__, "Failed to get connected address");
             break;
         }
 
         close (__socket);
         
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
 
     } while (false);
 
@@ -287,7 +287,7 @@ sat_status_t sat_network_get_socket_info (int socket, sat_network_socket_info_t 
     {
         if (socket_info == NULL)
         {
-            sat_status_set (&status, false, "socket_info is NULL");
+            sat_status_set (&status, false, __func__, "socket_info is NULL");
             break;
         }
 
@@ -296,7 +296,7 @@ sat_status_t sat_network_get_socket_info (int socket, sat_network_socket_info_t 
 
         if (getsockname (socket, (struct sockaddr*)&address, &address_len) < 0)
         {
-            sat_status_set (&status, false, "Failed to get socket name");
+            sat_status_set (&status, false, __func__, "Failed to get socket name");
             break;
         }
 
@@ -314,11 +314,11 @@ sat_status_t sat_network_get_socket_info (int socket, sat_network_socket_info_t 
         }
         else
         {
-            sat_status_set (&status, false, "Unknown address family");
+            sat_status_set (&status, false, __func__, "Unknown address family");
             break;
         }
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
 
     } while (false);
 

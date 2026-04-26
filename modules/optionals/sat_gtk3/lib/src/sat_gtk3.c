@@ -4,7 +4,7 @@
 
 sat_status_t sat_gtk3_init (sat_gtk3_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat gtk3 init error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat gtk3 init error");
 
     if (object != NULL)
     {
@@ -12,7 +12,7 @@ sat_status_t sat_gtk3_init (sat_gtk3_t *object)
 
         object->initialized = true;
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -20,7 +20,7 @@ sat_status_t sat_gtk3_init (sat_gtk3_t *object)
 
 sat_status_t sat_gtk3_open (sat_gtk3_t *object, sat_gtk3_args_t *args)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat gtk3 open error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat gtk3 open error");
 
     if (object != NULL && object->initialized == true && args != NULL && args->argc >= 1)
     {
@@ -40,7 +40,7 @@ sat_status_t sat_gtk3_open (sat_gtk3_t *object, sat_gtk3_args_t *args)
 
 sat_status_t sat_gtk3_run (sat_gtk3_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat gtk3 run error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat gtk3 run error");
 
     if (object != NULL && object->initialized == true)
     {
@@ -48,7 +48,7 @@ sat_status_t sat_gtk3_run (sat_gtk3_t *object)
 
         gtk_main ();
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -56,13 +56,13 @@ sat_status_t sat_gtk3_run (sat_gtk3_t *object)
 
 sat_status_t sat_gtk3_close (sat_gtk3_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat gtk3 close error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat gtk3 close error");
 
     if (object != NULL && object->initialized == true)
     {
         gtk_main_quit ();
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -70,13 +70,13 @@ sat_status_t sat_gtk3_close (sat_gtk3_t *object)
 
 sat_status_t sat_gtk3_add_widget (sat_gtk3_t *object, sat_gtk3_widget_t *widget)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat gtk3 close error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat gtk3 close error");
 
     if (object != NULL && object->initialized == true && widget != NULL && widget->widget != NULL)
     {
         sat_gtk3_window_add_widget (&object->window, widget);
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;

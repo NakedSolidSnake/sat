@@ -125,7 +125,7 @@ sat_status_t sat_queue_dequeue (sat_queue_t *const object, void *const data)
 
         if (object->amount == 0)
         {
-            sat_status_set (&status, false, "sat queue dequeue error: queue is empty");
+            sat_status_set (&status, false, __func__, "sat queue dequeue error: queue is empty");
             break;
         }
 

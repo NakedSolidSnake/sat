@@ -164,7 +164,7 @@
 #define sat_status_return_on_not_equals(value, expected, message) \
     if (value != expected) \
     { \
-        return sat_status_failure (&(sat_status_t){}, "" message ""); \
+        return sat_status_failure_where (&(sat_status_t){}, __func__, "" message ""); \
     }
 
 /**
@@ -179,7 +179,7 @@
 #define sat_status_return_on_null(value, message) \
     if (value == NULL) \
     { \
-        return sat_status_failure (&(sat_status_t){}, "" message ""); \
+        return sat_status_failure_where (&(sat_status_t){}, __func__, "" message ""); \
     }
 
 /**
@@ -194,7 +194,7 @@
 #define sat_status_return_on_false(value, message) \
     if (value == false) \
     { \
-        return sat_status_failure (&(sat_status_t){}, "" message ""); \
+        return sat_status_failure_where (&(sat_status_t){}, __func__, "" message ""); \
     }
 
 /**
@@ -210,7 +210,7 @@
 #define sat_status_return_on_greater_than(value, expected, message) \
     if (value > expected) \
     { \
-        return sat_status_failure (&(sat_status_t){}, "" message ""); \
+        return sat_status_failure_where (&(sat_status_t){}, __func__, "" message ""); \
     }
 
 /**
@@ -226,7 +226,7 @@
 #define sat_status_return_on_less_than(value, expected, message) \
     if (value < expected) \
     { \
-        return sat_status_failure (&(sat_status_t){}, "" message ""); \
+        return sat_status_failure_where (&(sat_status_t){}, __func__, "" message ""); \
     }
 
 /**
@@ -242,7 +242,7 @@
 #define sat_status_return_on_greater_than_or_equal(value, expected, message) \
     if (value >= expected) \
     { \
-        return sat_status_failure (&(sat_status_t){}, "" message ""); \
+        return sat_status_failure_where (&(sat_status_t){}, __func__, "" message ""); \
     }
 
 /**
@@ -258,7 +258,7 @@
 #define sat_status_return_on_less_than_or_equal(value, expected, message) \
     if (value <= expected) \
     { \
-        return sat_status_failure (&(sat_status_t){}, "" message ""); \
+        return sat_status_failure_where (&(sat_status_t){}, __func__, "" message ""); \
     }
 
 /**
@@ -279,7 +279,7 @@
  * @param message Error message string literal
  */
 #define sat_status_return_on_failure(message) \
-    return sat_status_failure (&(sat_status_t){}, "" message "")
+    return sat_status_failure_where (&(sat_status_t){}, __func__, "" message "")
 
 /**
  * @brief Terminate program with error message
@@ -302,20 +302,23 @@ typedef struct
 {
     bool result;     /**< Success (true) or failure (false) */
     const char *motive;    /**< Error description or "No error" */
+    const char *where;
 } sat_status_t;
 
 /**
  * @brief Set status result and error message
  * 
- * Configures a status object with the specified result and error message.
- * If the motive is NULL or empty, it defaults to "No error".
+ * Configures a status object with the specified result, source location,
+ * and error message. If where is NULL or empty, it defaults to an empty
+ * string. If the motive is NULL or empty, it defaults to "No error".
  * 
  * @param object Pointer to status object to configure
  * @param result Success (true) or failure (false)
+ * @param where Source location string (can be NULL)
  * @param motive Error description string (can be NULL)
  * @return The configured status object by value
  */
-sat_status_t sat_status_set (sat_status_t *const object, bool result, const char *const motive);
+sat_status_t sat_status_set (sat_status_t *const object, bool result, const char *const where, const char *const motive);
 
 /**
  * @brief Get the result from a status object
@@ -337,6 +340,8 @@ bool sat_status_get_result (const sat_status_t *const object);
  * @return Pointer to error message string
  */
 const char *sat_status_get_motive (const sat_status_t *const object);
+
+const char *sat_status_get_where (const sat_status_t *const object);
 
 /**
  * @brief Create a success status
@@ -360,6 +365,8 @@ sat_status_t sat_status_success (sat_status_t *const object);
  * @return Failure status by value
  */
 sat_status_t sat_status_failure (sat_status_t *const object, const char *const motive);
+
+sat_status_t sat_status_failure_where (sat_status_t *const object, const char *const where, const char *const motive);
 
 /**
  * @brief Terminate program execution with error message

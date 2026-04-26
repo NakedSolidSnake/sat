@@ -3,12 +3,12 @@
 
 sat_status_t sat_validation_init (sat_validation_t *const object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat validation init error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat validation init error");
 
     if (object != NULL)
     {
         memset (object, 0, sizeof (sat_validation_t));
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -16,14 +16,14 @@ sat_status_t sat_validation_init (sat_validation_t *const object)
 
 sat_status_t sat_validation_add (sat_validation_t *const object, sat_criteria_t criteria)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat validation add error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat validation add error");
 
     if (object != NULL && criteria != NULL && object->amount < SAT_VALIDATION_CRITERIA_AMOUNT)
     {
         object->criterias [object->amount] = criteria;
         object->amount++;
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -31,7 +31,7 @@ sat_status_t sat_validation_add (sat_validation_t *const object, sat_criteria_t 
 
 sat_status_t sat_validation_verify (const sat_validation_t *const object, const void *const data)
 {
-    sat_status_t status = sat_status_set (&status, true, "");
+    sat_status_t status = sat_status_set (&status, true, __func__, "");
 
     if (object != NULL && data != NULL)
     {

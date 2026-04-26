@@ -2,7 +2,7 @@
 
 sat_status_t sat_sdl_window_create (sat_sdl_window_t *object, const char *title, uint16_t width, uint16_t height)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat sdl window create error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat sdl window create error");
 
     object->window = SDL_CreateWindow (title, 
                                        SDL_WINDOWPOS_CENTERED,
@@ -12,7 +12,7 @@ sat_status_t sat_sdl_window_create (sat_sdl_window_t *object, const char *title,
                                        SDL_WINDOW_SHOWN);
 
     if (object->window != NULL)
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     
     return status;
 }

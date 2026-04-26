@@ -50,13 +50,13 @@ int sat_udp_client_get_socket (const sat_udp_client_t *const object)
 
 sat_status_t sat_udp_client_get_port (const sat_udp_client_t *const object, uint16_t *const port)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat udp client get port error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat udp client get port error");
 
     do 
     {
         if (object == NULL || port == NULL)
         {
-            sat_status_set (&status, false, "Invalid parameters");
+            sat_status_set (&status, false, __func__, "Invalid parameters");
             break;
         }
 
@@ -65,7 +65,7 @@ sat_status_t sat_udp_client_get_port (const sat_udp_client_t *const object, uint
 
         if (getsockname (object->socket, (struct sockaddr*)&address, &address_len) < 0)
         {
-            sat_status_set (&status, false, "Failed to get socket name");
+            sat_status_set (&status, false, __func__, "Failed to get socket name");
             break;
         }
 

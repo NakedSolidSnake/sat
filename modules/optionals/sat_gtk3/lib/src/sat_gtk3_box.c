@@ -4,7 +4,7 @@
 
 sat_status_t sat_gtk3_box_create (sat_gtk3_box_t *object, sat_gtk3_box_args_t *args)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat gtk3 box create error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat gtk3 box create error");
 
     if (object != NULL && args != NULL)
     {
@@ -14,7 +14,7 @@ sat_status_t sat_gtk3_box_create (sat_gtk3_box_t *object, sat_gtk3_box_args_t *a
         {
             object->initialized = true;
 
-            sat_status_set (&status, true, "");
+            sat_status_set (&status, true, __func__, "");
         }
     }
 
@@ -23,7 +23,7 @@ sat_status_t sat_gtk3_box_create (sat_gtk3_box_t *object, sat_gtk3_box_args_t *a
 
 sat_status_t sat_gtk3_box_add_widget (sat_gtk3_box_t *object, sat_gtk3_widget_t *widget, sat_gtk3_box_add_properties_t properties)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat gtk3 box add widget error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat gtk3 box add widget error");
 
     if (object != NULL && object->initialized == true && widget != NULL)
     {
@@ -47,7 +47,7 @@ sat_status_t sat_gtk3_box_add_widget (sat_gtk3_box_t *object, sat_gtk3_widget_t 
 
         }
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;

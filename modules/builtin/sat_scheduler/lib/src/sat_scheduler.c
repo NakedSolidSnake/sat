@@ -15,7 +15,7 @@ sat_status_t sat_scheduler_init (sat_scheduler_t *const object)
     {
         if (object == NULL)
         {
-            sat_status_set (&status, false, "sat scheduler init error: null object");
+            sat_status_set (&status, false, __func__, "sat scheduler init error: null object");
             break;
         }
 
@@ -34,19 +34,19 @@ sat_status_t sat_scheduler_open (sat_scheduler_t *const object, const sat_schedu
     {
         if (object == NULL)
         {
-            status = sat_status_set (&status, false, "sat scheduler open error: null object");
+            status = sat_status_set (&status, false, __func__, "sat scheduler open error: null object");
             break;
         }
 
         if (args == NULL)
         {
-            status = sat_status_set (&status, false, "sat scheduler open error: null args");
+            status = sat_status_set (&status, false, __func__, "sat scheduler open error: null args");
             break;
         }
 
         if (args->event_amount == 0)
         {
-            status = sat_status_set (&status, false, "sat scheduler open error: zero event amount");
+            status = sat_status_set (&status, false, __func__, "sat scheduler open error: zero event amount");
             break;
         }
 
@@ -74,13 +74,13 @@ sat_status_t sat_scheduler_add_event (sat_scheduler_t *const object, const sat_s
     {
         if (object == NULL)
         {
-            status = sat_status_set (&status, false, "sat scheduler add event error: null object");
+            status = sat_status_set (&status, false, __func__, "sat scheduler add event error: null object");
             break;
         }
 
         if (sat_scheduler_is_event_valid (event) == false)
         {
-            status = sat_status_set (&status, false, "sat scheduler add event error: null event");
+            status = sat_status_set (&status, false, __func__, "sat scheduler add event error: null event");
             break;
         }
 
@@ -97,7 +97,7 @@ sat_status_t sat_scheduler_start (sat_scheduler_t *const object)
 
     if (object == NULL)
     {
-        status = sat_status_set (&status, false, "sat scheduler start error: null object");
+        status = sat_status_set (&status, false, __func__, "sat scheduler start error: null object");
         return status;
     }
    
@@ -114,7 +114,7 @@ sat_status_t sat_scheduler_stop (sat_scheduler_t *const object)
 
     if (object == NULL)
     {
-        status = sat_status_set (&status, false, "sat scheduler start error: null object");
+        status = sat_status_set (&status, false, __func__, "sat scheduler start error: null object");
         return status;
     }
 
@@ -133,13 +133,13 @@ sat_status_t sat_scheduler_is_running (sat_scheduler_t *object)
     {
         if (object == NULL)
         {
-            status = sat_status_set (&status, false, "sat scheduler is running error: null object");
+            status = sat_status_set (&status, false, __func__, "sat scheduler is running error: null object");
             break;
         }
 
         if (object->running == false)
         {
-            sat_status_set (&status, false, "sat scheduler is running error: not running");
+            sat_status_set (&status, false, __func__, "sat scheduler is running error: not running");
             break;
         }
 
@@ -156,13 +156,13 @@ sat_status_t sat_scheduler_get_amount (const sat_scheduler_t *const object, uint
     {
         if (object == NULL)
         {
-            status = sat_status_set (&status, false, "sat scheduler get amount error: null object");
+            status = sat_status_set (&status, false, __func__, "sat scheduler get amount error: null object");
             break;
         }
 
         if (amount == NULL)
         {
-            status = sat_status_set (&status, false, "sat scheduler get amount error: null amount");
+            status = sat_status_set (&status, false, __func__, "sat scheduler get amount error: null amount");
             break;
         }
 
@@ -179,7 +179,7 @@ sat_status_t sat_scheduler_close (sat_scheduler_t *object)
 
     if (object == NULL)
     {
-        status = sat_status_set (&status, false, "sat scheduler close error: null object");
+        status = sat_status_set (&status, false, __func__, "sat scheduler close error: null object");
         return status;
     }
 

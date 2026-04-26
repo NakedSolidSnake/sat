@@ -9,7 +9,7 @@ static sat_status_t sat_opengl_shader_check_compile_status (sat_opengl_shader_t 
 
 sat_status_t sat_opengl_shader_create_from_file (sat_opengl_shader_t *object, sat_opengl_shader_type_t type, const char *path)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat opengl shader create from file error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat opengl shader create from file error");
 
     char *buffer = NULL;
 
@@ -17,7 +17,7 @@ sat_status_t sat_opengl_shader_create_from_file (sat_opengl_shader_t *object, sa
     {
         if (sat_file_exists (path) == false)
         {
-            sat_status_set (&status, false, "sat opengl shader create from file error: file not found");
+            sat_status_set (&status, false, __func__, "sat opengl shader create from file error: file not found");
             break;
         }
 
@@ -29,7 +29,7 @@ sat_status_t sat_opengl_shader_create_from_file (sat_opengl_shader_t *object, sa
 
         if (sat_file_read_to_buffer (path, (void **)&buffer, 4092) == false)
         {
-            sat_status_set (&status, false, "sat opengl shader create from file error: cannot allocate shader");
+            sat_status_set (&status, false, __func__, "sat opengl shader create from file error: cannot allocate shader");
             break;
         }
 
@@ -48,13 +48,13 @@ sat_status_t sat_opengl_shader_create_from_file (sat_opengl_shader_t *object, sa
 
 sat_status_t sat_opengl_shader_free (sat_opengl_shader_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat opengl shader create from file error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat opengl shader create from file error");
 
     if (glIsShader (object->id) == GL_TRUE)
     {
         glDeleteShader (object->id);
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -67,7 +67,7 @@ static int sat_opengl_shader_get_type (sat_opengl_shader_type_t type)
 
 static sat_status_t sat_opengl_shader_check_compile_status (sat_opengl_shader_t *object)
 {
-    sat_status_t status = sat_status_set (&status, true, "");
+    sat_status_t status = sat_status_set (&status, true, __func__, "");
     int success;
 
     glGetShaderiv (object->id, GL_COMPILE_STATUS, &success);
@@ -80,7 +80,7 @@ static sat_status_t sat_opengl_shader_check_compile_status (sat_opengl_shader_t 
 
         // log this error
 
-        sat_status_set (&status, false, "sat opengl shader compile error");
+        sat_status_set (&status, false, __func__, "sat opengl shader compile error");
     }
 
     return status;    

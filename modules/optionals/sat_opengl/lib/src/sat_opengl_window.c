@@ -9,7 +9,7 @@ static void sat_opengl_window_copy_to_context (sat_opengl_window_t *object, sat_
 
 sat_status_t sat_opengl_window_create (sat_opengl_window_t *object, sat_opengl_window_args_t *args)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat opengl window create error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat opengl window create error");
 
     sat_opengl_window_set_version ();
 
@@ -27,7 +27,7 @@ sat_status_t sat_opengl_window_create (sat_opengl_window_t *object, sat_opengl_w
 
         glEnable (GL_DEPTH_TEST);
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;

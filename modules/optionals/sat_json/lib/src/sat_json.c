@@ -15,13 +15,13 @@ static sat_status_t sat_json_deserialize_primitives (cJSON *json, sat_json_mappe
 
 sat_status_t sat_json_init (sat_json_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat json init error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat json init error");
 
     if (object != NULL)
     {
         memset (object, 0, sizeof (sat_json_t));
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -29,14 +29,14 @@ sat_status_t sat_json_init (sat_json_t *object)
 
 sat_status_t sat_json_open (sat_json_t *object, sat_json_args_t *args)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat json open error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat json open error");
 
     if (object != NULL && args != NULL)
     {
         object->buffer = args->buffer;
         object->size = args->size;
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -44,14 +44,14 @@ sat_status_t sat_json_open (sat_json_t *object, sat_json_args_t *args)
 
 sat_status_t sat_json_serialize_create_object (sat_json_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat json serialize create object error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat json serialize create object error");
 
     if (object != NULL)
     {
         object->json = cJSON_CreateObject ();
         object->type = sat_json_type_object;
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -59,14 +59,14 @@ sat_status_t sat_json_serialize_create_object (sat_json_t *object)
 
 sat_status_t sat_json_serialize_create_array (sat_json_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat json serialize create array error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat json serialize create array error");
 
     if (object != NULL)
     {
         object->json = cJSON_CreateArray ();
         object->type = sat_json_type_array;
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -74,7 +74,7 @@ sat_status_t sat_json_serialize_create_array (sat_json_t *object)
 
 sat_status_t sat_json_serialize_add (sat_json_t *object, sat_json_type_t type, const char *token, const void *const data)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat json serialize add error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat json serialize add error");
 
     if (object != NULL && sat_json_is_type_valid (type) == true)    
     {
@@ -98,7 +98,7 @@ sat_status_t sat_json_serialize_add (sat_json_t *object, sat_json_type_t type, c
 
 sat_status_t sat_json_deserialize (sat_json_t *object, const char *json, sat_json_mapper_t *mapper, uint16_t fields)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat json deserialize error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat json deserialize error");
 
     if (object != NULL && json != NULL && mapper != NULL && fields > 0)
     {
@@ -110,7 +110,7 @@ sat_status_t sat_json_deserialize (sat_json_t *object, const char *json, sat_jso
 
             cJSON_Delete (json_root);
 
-            sat_status_set (&status, true, "");
+            sat_status_set (&status, true, __func__, "");
         }
     }
 
@@ -125,26 +125,26 @@ sat_status_t sat_json_to_string (sat_json_t *object, char **json)
     {
         if (object == NULL)
         {
-            sat_status_set (&status, false, "sat json error: [object is NULL]");
+            sat_status_set (&status, false, __func__, "sat json error: [object is NULL]");
             break;
         }
 
         if (json == NULL)
         {
-            sat_status_set (&status, false, "sat json error: [json is NULL]");
+            sat_status_set (&status, false, __func__, "sat json error: [json is NULL]");
             break;
         }
 
         char *string = cJSON_PrintUnformatted (object->json);
         if  (string == NULL)
         {
-            sat_status_set (&status, false, "sat json error: [string is NULL]");
+            sat_status_set (&status, false, __func__, "sat json error: [string is NULL]");
             break;
         }
 
         if (strlen (string) > object->size)
         {
-            sat_status_set (&status, false, "sat json error: [string is too large]");
+            sat_status_set (&status, false, __func__, "sat json error: [string is too large]");
             cJSON_free (string);
             break;
         }
@@ -156,7 +156,7 @@ sat_status_t sat_json_to_string (sat_json_t *object, char **json)
 
         cJSON_free (string);
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
 
     } while (false);
 
@@ -172,19 +172,19 @@ sat_status_t sat_json_string_to_buffer (sat_json_t *object, char *buffer, uint32
     {
         if (object == NULL)
         {
-            sat_status_set (&status, false, "sat json error: [object is NULL]");
+            sat_status_set (&status, false, __func__, "sat json error: [object is NULL]");
             break;
         }
 
         if (buffer == NULL)
         {
-            sat_status_set (&status, false, "sat json error: [buffer is NULL]");
+            sat_status_set (&status, false, __func__, "sat json error: [buffer is NULL]");
             break;
         }
 
         if (size == 0)
         {
-            sat_status_set (&status, false, "sat json error: [size cannot be 0]");
+            sat_status_set (&status, false, __func__, "sat json error: [size cannot be 0]");
             break;
         }
 
@@ -193,14 +193,14 @@ sat_status_t sat_json_string_to_buffer (sat_json_t *object, char *buffer, uint32
 
         if (strlen (string) > size)
         {
-            sat_status_set (&status, false, "sat json error: [buffer is too small]");
+            sat_status_set (&status, false, __func__, "sat json error: [buffer is too small]");
             break;
         }
 
         memset (buffer, 0, size);
         strncpy (buffer, string, size - 1);
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
 
     } while (false);
 
@@ -209,13 +209,13 @@ sat_status_t sat_json_string_to_buffer (sat_json_t *object, char *buffer, uint32
 
 sat_status_t sat_json_buffer_clear (sat_json_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat json buffer clear error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat json buffer clear error");
 
     if (object != NULL)
     {
         memset (object->buffer, 0, object->size);
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -223,13 +223,13 @@ sat_status_t sat_json_buffer_clear (sat_json_t *object)
 
 sat_status_t sat_json_close (sat_json_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat json close error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat json close error");
 
     if (object != NULL)
     {
         cJSON_Delete (object->json);
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -249,7 +249,7 @@ static bool sat_json_is_type_valid (sat_json_type_t type)
 
 static sat_status_t sat_json_add_to_object (sat_json_t *object, sat_json_type_t type, const char *token, const void *const data)
 {
-    sat_status_t status = sat_status_set (&status, true, "");
+    sat_status_t status = sat_status_set (&status, true, __func__, "");
 
     cJSON *value;
 
@@ -281,7 +281,7 @@ static sat_status_t sat_json_add_to_object (sat_json_t *object, sat_json_type_t 
         break;
     
     default:
-        sat_status_set (&status, false, "sat json add to object error");
+        sat_status_set (&status, false, __func__, "sat json add to object error");
         break;
     }
 
@@ -290,7 +290,7 @@ static sat_status_t sat_json_add_to_object (sat_json_t *object, sat_json_type_t 
 
 static sat_status_t sat_json_add_to_array (sat_json_t *object, sat_json_type_t type, const char *token, const void *const data)
 {
-    sat_status_t status = sat_status_set (&status, true, "");
+    sat_status_t status = sat_status_set (&status, true, __func__, "");
 
     switch (type)
     {
@@ -307,7 +307,7 @@ static sat_status_t sat_json_add_to_array (sat_json_t *object, sat_json_type_t t
         break;
     
     default:
-        sat_status_set (&status, false, "sat json add to array error");
+        sat_status_set (&status, false, __func__, "sat json add to array error");
         break;
     }
 
@@ -316,7 +316,7 @@ static sat_status_t sat_json_add_to_array (sat_json_t *object, sat_json_type_t t
 
 static sat_status_t sat_json_deserialize_items (cJSON *json, sat_json_mapper_t *mapper, uint16_t fields)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat json deserialize items error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat json deserialize items error");
 
     for (uint16_t i = 0; i < fields; i++)
     {
@@ -350,7 +350,7 @@ static sat_status_t sat_json_deserialize_items (cJSON *json, sat_json_mapper_t *
 
 static sat_status_t sat_json_deserialize_array (cJSON *json, sat_json_mapper_t *mapper)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat json deserialize array error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat json deserialize array error");
 
     uint16_t i = 0;
     cJSON *data = cJSON_GetArrayItem (json, i);
@@ -377,32 +377,32 @@ static sat_status_t sat_json_deserialize_array (cJSON *json, sat_json_mapper_t *
     }
 
     if (i > 0)
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
 
     return status;
 }
 
 static sat_status_t sat_json_deserialize_primitives (cJSON *json, sat_json_mapper_t *mapper)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat json deserialize primitives error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat json deserialize primitives error");
 
     if (mapper->type == sat_json_type_int)
     {
         memcpy (mapper->data, &json->valueint, mapper->size);
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     else if (mapper->type == sat_json_type_double)
     {
         memcpy (mapper->data, &json->valuedouble, mapper->size);
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     else if (mapper->type == sat_json_type_string)
     {
         memset (mapper->data, 0, mapper->size);
         strncpy (mapper->data, json->valuestring, fmin (strlen (json->valuestring), mapper->size));
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;

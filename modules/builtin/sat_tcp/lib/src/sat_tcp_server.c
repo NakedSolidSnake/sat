@@ -60,7 +60,7 @@ sat_status_t sat_tcp_server_open (sat_tcp_server_t **object, sat_tcp_server_args
 
 sat_status_t sat_tcp_server_run (sat_tcp_server_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat tcp server run error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat tcp server run error");
 
     struct sockaddr_in address_in;
     socklen_t length = sizeof (address_in);

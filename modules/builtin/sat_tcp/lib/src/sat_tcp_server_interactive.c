@@ -21,7 +21,7 @@ sat_tcp_server_base_t sat_tcp_server_interactive_create (void)
 
 static sat_status_t sat_tcp_server_interactive_handle_client (void *object, int client)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat tcp server handle client error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat tcp server handle client error");
     
     sat_tcp_server_abstract_t *abstract = (sat_tcp_server_abstract_t *) object;
 
@@ -50,7 +50,7 @@ static sat_status_t sat_tcp_server_interactive_handle_client (void *object, int 
             }
         }
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
     
     return status;

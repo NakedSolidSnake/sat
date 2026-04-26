@@ -4,7 +4,7 @@
 
 sat_status_t sat_sdl_sound_load (sat_sdl_sound_t *object, const char *filename, char *name, sat_sdl_audio_type_t type)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat sdl sound load error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat sdl sound load error");
 
     if (object != NULL && filename != NULL)
     {
@@ -23,7 +23,7 @@ sat_status_t sat_sdl_sound_load (sat_sdl_sound_t *object, const char *filename, 
             object->name = name;
             object->type = type;
 
-            sat_status_set (&status, true, "");
+            sat_status_set (&status, true, __func__, "");
         }
 
     }

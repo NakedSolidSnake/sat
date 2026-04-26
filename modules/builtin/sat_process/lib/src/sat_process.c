@@ -17,25 +17,25 @@ sat_status_t sat_process_create (sat_process_t *const object, const sat_process_
     {
         if (object == NULL)
         {
-            sat_status_set (&status, false, "sat process create error: null object");
+            sat_status_set (&status, false, __func__, "sat process create error: null object");
             break;
         }
 
         if (args == NULL)
         {
-            sat_status_set (&status, false, "sat process create error: null args");
+            sat_status_set (&status, false, __func__, "sat process create error: null args");
             break;
         }
 
         if (args->name == NULL)
         {
-            sat_status_set (&status, false, "sat process create error: null name");
+            sat_status_set (&status, false, __func__, "sat process create error: null name");
             break;
         }
 
         if (strlen (args->name) == 0)
         {
-            sat_status_set (&status, false, "sat process create error: name is zeroed");
+            sat_status_set (&status, false, __func__, "sat process create error: name is zeroed");
             break;
         }
 
@@ -59,19 +59,19 @@ sat_status_t sat_process_create (sat_process_t *const object, const sat_process_
 
 sat_status_t sat_process_spawn (sat_process_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat process spawn error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat process spawn error");
 
     do
     {
         if (object == NULL)
         {
-            sat_status_set (&status, false, "sat process spawn error: null object");
+            sat_status_set (&status, false, __func__, "sat process spawn error: null object");
             break;
         }
 
         if (object->initialized == false)
         {
-            sat_status_set (&status, false, "sat process spawn error: object not initialized");
+            sat_status_set (&status, false, __func__, "sat process spawn error: object not initialized");
             break;
         }
 

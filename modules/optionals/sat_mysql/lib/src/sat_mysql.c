@@ -6,13 +6,13 @@ static sat_status_t sat_mysql_connect (sat_mysql_t *object);
 
 sat_status_t sat_mysql_init (sat_mysql_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat mysql init error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat mysql init error");
 
     if (object != NULL)
     {
         memset (object, 0, sizeof (sat_mysql_t));
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -20,7 +20,7 @@ sat_status_t sat_mysql_init (sat_mysql_t *object)
 
 sat_status_t sat_mysql_open (sat_mysql_t *object, sat_mysql_args_t *args)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat mysql open error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat mysql open error");
 
     if (object != NULL && args != NULL)
     {
@@ -36,7 +36,7 @@ sat_status_t sat_mysql_open (sat_mysql_t *object, sat_mysql_args_t *args)
             status = sat_mysql_connect (object);
         }
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -44,11 +44,11 @@ sat_status_t sat_mysql_open (sat_mysql_t *object, sat_mysql_args_t *args)
 
 sat_status_t sat_mysql_execute (sat_mysql_t *object, const char *query)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat mysql execute error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat mysql execute error");
 
     if (object != NULL && query != NULL)
     {
-        mysql_query (&object->connection, query) ? status : sat_status_set (&status, true, "");
+        mysql_query (&object->connection, query) ? status : sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -56,7 +56,7 @@ sat_status_t sat_mysql_execute (sat_mysql_t *object, const char *query)
 
 sat_status_t sat_mysql_result_set (sat_mysql_t *object, sat_mysql_on_result_set_t on_result_set, void *user)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat mysql result set error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat mysql result set error");
 
     if (object != NULL && on_result_set != NULL && user != NULL)
     {
@@ -76,7 +76,7 @@ sat_status_t sat_mysql_result_set (sat_mysql_t *object, sat_mysql_on_result_set_
 
             mysql_free_result (result);
 
-            sat_status_set (&status, true, "");
+            sat_status_set (&status, true, __func__, "");
         }
 
     }
@@ -86,7 +86,7 @@ sat_status_t sat_mysql_result_set (sat_mysql_t *object, sat_mysql_on_result_set_
 
 sat_status_t sat_mysql_close (sat_mysql_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat mysql close error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat mysql close error");
 
     if (object != NULL)
     {
@@ -94,7 +94,7 @@ sat_status_t sat_mysql_close (sat_mysql_t *object)
 
         memset (object, 0, sizeof (sat_mysql_t));
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -102,7 +102,7 @@ sat_status_t sat_mysql_close (sat_mysql_t *object)
 
 static sat_status_t sat_mysql_is_args_valid (sat_mysql_args_t *args)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat mysql args error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat mysql args error");
 
     if (args->hostname != NULL &&
         args->user != NULL &&
@@ -111,7 +111,7 @@ static sat_status_t sat_mysql_is_args_valid (sat_mysql_args_t *args)
         args->port > 0
         )
     {
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -119,7 +119,7 @@ static sat_status_t sat_mysql_is_args_valid (sat_mysql_args_t *args)
 
 static sat_status_t sat_mysql_connect (sat_mysql_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat mysql connect error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat mysql connect error");
 
     MYSQL *result = NULL;
 
@@ -134,7 +134,7 @@ static sat_status_t sat_mysql_connect (sat_mysql_t *object)
                                  NULL,
                                  0);
 
-    (result == NULL) ? status : sat_status_set (&status, true, "");
+    (result == NULL) ? status : sat_status_set (&status, true, __func__, "");
 
     return status;
 }

@@ -13,7 +13,7 @@ sat_status_t sat_shared_memory_open (sat_shared_memory_t *const object, const sa
     {
         if (object == NULL)
         {
-            sat_status_set (&status, false, "sat shared memory open error: null object");
+            sat_status_set (&status, false, __func__, "sat shared memory open error: null object");
             break;
         }
 
@@ -25,14 +25,14 @@ sat_status_t sat_shared_memory_open (sat_shared_memory_t *const object, const sa
         object->id = shmget (args->key, args->size, args->flags | IPC_CREAT);
         if (object->id == -1)
         {
-            sat_status_set (&status, false, "sat shared memory create error");
+            sat_status_set (&status, false, __func__, "sat shared memory create error");
             break;
         }
 
         object->handle = shmat (object->id, (void *)0, 0);            
         if (object->handle == NULL)
         {
-            sat_status_set (&status, false, "sat shared memory attach error");
+            sat_status_set (&status, false, __func__, "sat shared memory attach error");
             break;
         }
 
@@ -54,19 +54,19 @@ sat_status_t sat_shared_memory_get (const sat_shared_memory_t *const object, voi
     {
         if (object == NULL)
         {
-            sat_status_set (&status, false, "sat shared memory get error: null object");
+            sat_status_set (&status, false, __func__, "sat shared memory get error: null object");
             break;
         }
 
         if (object->initialized == false)
         {
-            sat_status_set (&status, false, "sat shared memory get error: not initialized");
+            sat_status_set (&status, false, __func__, "sat shared memory get error: not initialized");
             break;
         }
 
         if (data == NULL)
         {
-            sat_status_set (&status, false, "sat shared memory get error: null data pointer");
+            sat_status_set (&status, false, __func__, "sat shared memory get error: null data pointer");
             break;
         }
 
@@ -85,19 +85,19 @@ sat_status_t sat_shared_memory_detach (const sat_shared_memory_t *const object)
     {
         if (object == NULL)
         {
-            sat_status_set (&status, false, "sat shared memory detach error: null object");
+            sat_status_set (&status, false, __func__, "sat shared memory detach error: null object");
             break;
         }
 
         if (object->initialized == false)
         {
-            sat_status_set (&status, false, "sat shared memory detach error: not initialized");
+            sat_status_set (&status, false, __func__, "sat shared memory detach error: not initialized");
             break;
         }
 
         if (shmdt (object->handle) != 0)
         {
-            sat_status_set (&status, false, "sat shared memory detach error: shmdt failed");
+            sat_status_set (&status, false, __func__, "sat shared memory detach error: shmdt failed");
             break;
         }
 
@@ -114,19 +114,19 @@ sat_status_t sat_shared_memory_destroy (sat_shared_memory_t *const object)
     {
         if (object == NULL)
         {
-            sat_status_set (&status, false, "sat shared memory destroy error: null object");
+            sat_status_set (&status, false, __func__, "sat shared memory destroy error: null object");
             break;
         }
 
         if (object->initialized == false)
         {
-            sat_status_set (&status, false, "sat shared memory destroy error: not initialized");
+            sat_status_set (&status, false, __func__, "sat shared memory destroy error: not initialized");
             break;
         }
 
         if (shmctl (object->id, IPC_RMID, 0) != 0)
         {
-            sat_status_set (&status, false, "sat shared memory destroy error: shmctl failed");
+            sat_status_set (&status, false, __func__, "sat shared memory destroy error: shmctl failed");
             break;
         }
 
@@ -145,13 +145,13 @@ static sat_status_t sat_shared_memory_is_args_valid (const sat_shared_memory_arg
     {
         if (args == NULL)
         {
-            sat_status_set (&status, false, "sat shared memory args validation error: null args");
+            sat_status_set (&status, false, __func__, "sat shared memory args validation error: null args");
             break;
         }
 
         if (args->size == 0)
         {
-            sat_status_set (&status, false, "sat shared memory args validation error: size is zero");
+            sat_status_set (&status, false, __func__, "sat shared memory args validation error: size is zero");
             break;
         }
 

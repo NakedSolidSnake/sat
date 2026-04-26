@@ -7,7 +7,7 @@ static sat_status_t sat_sdl_image_load_png (sat_sdl_image_t *object, const char 
 
 sat_status_t sat_sdl_image_load (sat_sdl_image_t *object, const char *file)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat sdl image load error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat sdl image load error");
 
     switch (object->type)
     {
@@ -28,13 +28,13 @@ sat_status_t sat_sdl_image_load (sat_sdl_image_t *object, const char *file)
 
 sat_status_t sat_sdl_image_unload (sat_sdl_image_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat sdl image unload error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat sdl image unload error");
 
     if (object->handle != NULL)
     {
         SDL_FreeSurface (object->handle);
         
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -42,13 +42,13 @@ sat_status_t sat_sdl_image_unload (sat_sdl_image_t *object)
 
 static sat_status_t sat_sdl_image_load_bmp (sat_sdl_image_t *object, const char *file)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat sdl image load bmp error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat sdl image load bmp error");
 
     object->handle = SDL_LoadBMP (file);
 
     if (object->handle != NULL)
     {
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -56,13 +56,13 @@ static sat_status_t sat_sdl_image_load_bmp (sat_sdl_image_t *object, const char 
 
 static sat_status_t sat_sdl_image_load_png (sat_sdl_image_t *object, const char *file)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat sdl image load png error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat sdl image load png error");
 
     object->handle = IMG_Load (file);
 
     if (object->handle != NULL)
     {
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;

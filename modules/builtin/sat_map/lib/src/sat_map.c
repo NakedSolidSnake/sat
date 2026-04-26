@@ -34,11 +34,11 @@ sat_status_t sat_map_create (sat_map_t **object, sat_map_args_t *args)
         sat_status_break_on_error (status);
         
 
-        sat_status_set (&status, false, "sat map create error");
+        sat_status_set (&status, false, __func__, "sat map create error");
         if (object == NULL)
             break;
 
-        sat_status_set (&status, false, "sat map allocation error");
+        sat_status_set (&status, false, __func__, "sat map allocation error");
 
         sat_map_t *__object = calloc (1, sizeof (sat_map_t));
         if (__object == NULL)
@@ -55,7 +55,7 @@ sat_status_t sat_map_create (sat_map_t **object, sat_map_args_t *args)
 
         *object = __object;
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
 
     } while (false);
 
@@ -64,7 +64,7 @@ sat_status_t sat_map_create (sat_map_t **object, sat_map_args_t *args)
 
 sat_status_t sat_map_add (sat_map_t *object, void *key, void *value)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat map add error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat map add error");
 
     if (object != NULL && key != NULL && value != NULL)
     {
@@ -89,7 +89,7 @@ sat_status_t sat_map_add (sat_map_t *object, void *key, void *value)
 
 sat_status_t sat_map_remove (sat_map_t *object, void *key, sat_map_compare_t compare)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat map remove error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat map remove error");
 
     if (object != NULL && key != NULL && compare != NULL)
     {
@@ -118,7 +118,7 @@ sat_status_t sat_map_remove (sat_map_t *object, void *key, sat_map_compare_t com
 
 sat_status_t sat_map_get_size (sat_map_t *object, uint32_t *size)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat map get size error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat map get size error");
 
     if (object != NULL && size != NULL)
     {
@@ -130,7 +130,7 @@ sat_status_t sat_map_get_size (sat_map_t *object, uint32_t *size)
 
 sat_status_t sat_map_get_value_by (sat_map_t *object, const void *key, void *value, sat_map_compare_t compare)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat map det value by error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat map get value by error");
 
     if (object != NULL && key != NULL && value != NULL && compare != NULL)
     {
@@ -146,7 +146,7 @@ sat_status_t sat_map_get_value_by (sat_map_t *object, const void *key, void *val
             if (compare (item.key, (void *)key) == true)
             {
                 memcpy (value, item.value, object->value_size);
-                sat_status_set (&status, true, "");
+                sat_status_set (&status, true, __func__, "");
                 break;
             }
         }
@@ -157,7 +157,7 @@ sat_status_t sat_map_get_value_by (sat_map_t *object, const void *key, void *val
 
 sat_status_t sat_map_debug (sat_map_t *object, sat_map_print_t print)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat map debug error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat map debug error");
 
     if (object != NULL && print != NULL)
     {
@@ -173,7 +173,7 @@ sat_status_t sat_map_debug (sat_map_t *object, sat_map_print_t print)
             print (item.key, item.value);
         }
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -181,7 +181,7 @@ sat_status_t sat_map_debug (sat_map_t *object, sat_map_print_t print)
 
 sat_status_t sat_map_destroy (sat_map_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat map destroy error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat map destroy error");
 
     if (object != NULL)
     {
@@ -206,14 +206,14 @@ sat_status_t sat_map_destroy (sat_map_t *object)
 
 static sat_status_t sat_map_is_args_valid (sat_map_args_t *args)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat map is args valid error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat map is args valid error");
 
     if (args != NULL &&
         args->key_size > 0 &&
         args->value_size > 0 &&
         args->list_size > 0)
     {
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -239,22 +239,22 @@ static sat_status_t sat_map_buffer_allocate (sat_map_t *object)
 
 static sat_status_t sat_map_alloc_item (sat_map_t *object, sat_map_item_t *item)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat map alloc item error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat map alloc item error");
 
     if (object != NULL && item != NULL)
     {
         item->key = calloc (1, object->key_size);
         if (item->key == NULL)
-            return sat_status_set (&status, false, "sat map key allocation error");
+            return sat_status_set (&status, false, __func__, "sat map key allocation error");
 
         item->value = calloc (1, object->value_size);
         if (item->value == NULL)
         {
             free(item->key);
-            return sat_status_set (&status, false, "sat map value allocation error");
+            return sat_status_set (&status, false, __func__, "sat map value allocation error");
         }
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -262,7 +262,7 @@ static sat_status_t sat_map_alloc_item (sat_map_t *object, sat_map_item_t *item)
 
 static sat_status_t sat_map_destroy_item (sat_map_item_t *item)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat map destroy item error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat map destroy item error");
 
     if (item != NULL && item->key != NULL && item->value != NULL)
     {
@@ -270,7 +270,7 @@ static sat_status_t sat_map_destroy_item (sat_map_item_t *item)
 
         free(item->value);
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;

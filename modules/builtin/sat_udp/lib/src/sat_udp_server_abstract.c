@@ -42,24 +42,24 @@ static sat_status_t sat_udp_server_abstract_is_args_valid (const sat_udp_server_
     {
         if (args == NULL)
         {
-            sat_status_set (&status, false, "sat udp server abstract args is null");
+            sat_status_set (&status, false, __func__, "sat udp server abstract args is null");
             break;
         }
 
         if (args->service == NULL)
         {
-            sat_status_set (&status, false, "sat udp server abstract args service is null");
+            sat_status_set (&status, false, __func__, "sat udp server abstract args service is null");
             break;
         }
         if (args->buffer == NULL)
         {
-            sat_status_set (&status, false, "sat udp server abstract args buffer is null");
+            sat_status_set (&status, false, __func__, "sat udp server abstract args buffer is null");
             break;
         }
 
         if (args->size == 0)
         {
-            sat_status_set (&status, false, "sat udp server abstract args size is zero");
+            sat_status_set (&status, false, __func__, "sat udp server abstract args size is zero");
             break;
         }
     } while (false);
@@ -79,7 +79,7 @@ sat_status_t sat_udp_server_abstract_open (sat_udp_server_abstract_t *const obje
         struct addrinfo *info_list = sat_udp_server_abstract_get_info_list (args);
         if (info_list == NULL)
         {
-            sat_status_set (&status, false, "sat udp server abstract open cannot get info list error");
+            sat_status_set (&status, false, __func__, "sat udp server abstract open cannot get info list error");
             break;
         }
 
@@ -135,7 +135,7 @@ static sat_status_t sat_udp_server_abstract_set_socket (sat_udp_server_abstract_
     object->socket = socket (info->ai_family, info->ai_socktype, info->ai_protocol);
     if (object->socket < 0)
     {
-        sat_status_set (&status, false, "sat udp server abstract set socket error: socket creation failed");
+        sat_status_set (&status, false, __func__, "sat udp server abstract set socket error: socket creation failed");
     }
 
     return status;
@@ -148,7 +148,7 @@ static sat_status_t sat_udp_server_abstract_set_reuse_address (sat_udp_server_ab
 
     if (setsockopt (object->socket, SOL_SOCKET, SO_REUSEADDR, (void *)&yes, sizeof (yes)) != 0)
     {
-        sat_status_set (&status, false, "sat udp server abstract set reuse address error");
+        sat_status_set (&status, false, __func__, "sat udp server abstract set reuse address error");
     }
 
     return status;
@@ -160,7 +160,7 @@ static sat_status_t sat_udp_server_abstract_set_bind (sat_udp_server_abstract_t 
 
     if (bind (object->socket, info->ai_addr, info->ai_addrlen) != 0)
     {
-        sat_status_set (&status, false, "sat udp server abstract set bind error");
+        sat_status_set (&status, false, __func__, "sat udp server abstract set bind error");
     }
 
     return status;
@@ -194,7 +194,7 @@ static sat_status_t sat_udp_server_abstract_multicast_enable (sat_udp_server_abs
         {
             if (args->multicast_group == NULL)
             {
-                sat_status_set (&status, false, "sat udp server abstract multicast enable error: null multicast group");
+                sat_status_set (&status, false, __func__, "sat udp server abstract multicast enable error: null multicast group");
                 break;
             }
 
@@ -211,7 +211,7 @@ static sat_status_t sat_udp_server_abstract_multicast_enable (sat_udp_server_abs
 
 static sat_status_t sat_udp_server_abstract_try_enable_multicast_ipv4 (sat_udp_server_abstract_t *object, const char *address)
 {
-    sat_status_t status = sat_status_set (&status, true, "sat udp server abstract is multicast ipv4 error");
+    sat_status_t status = sat_status_set (&status, true, __func__, "sat udp server abstract is multicast ipv4 error");
 
     struct in_addr addr4;
 
@@ -223,7 +223,7 @@ static sat_status_t sat_udp_server_abstract_try_enable_multicast_ipv4 (sat_udp_s
         {
             struct ip_mreq mreq;
 
-            sat_status_set (&status, false, "sat udp server abstract multicast enable error");
+            sat_status_set (&status, false, __func__, "sat udp server abstract multicast enable error");
 
             mreq.imr_multiaddr.s_addr = addr4.s_addr;
             mreq.imr_interface.s_addr = htonl (INADDR_ANY);
@@ -234,7 +234,7 @@ static sat_status_t sat_udp_server_abstract_try_enable_multicast_ipv4 (sat_udp_s
                 {
                     object->events.on_multicast_join (object->data);
                 }
-                sat_status_set (&status, true, "");
+                sat_status_set (&status, true, __func__, "");
             }
         }
     }
@@ -244,13 +244,13 @@ static sat_status_t sat_udp_server_abstract_try_enable_multicast_ipv4 (sat_udp_s
 
 static sat_status_t sat_udp_server_abstract_try_enable_multicast_ipv6 (sat_udp_server_abstract_t *object, const char *address)
 {
-    sat_status_t status = sat_status_set (&status, true, "sat udp server abstract is multicast ipv6 error");
+    sat_status_t status = sat_status_set (&status, true, __func__, "sat udp server abstract is multicast ipv6 error");
 
     struct in6_addr addr6;
 
     if (inet_pton (AF_INET6, address, &addr6) == true && addr6.s6_addr [0] == 0xFF) // IPv6 starts with FF
     {
-        sat_status_set (&status, false, "sat udp server abstract multicast enable error");
+        sat_status_set (&status, false, __func__, "sat udp server abstract multicast enable error");
 
         struct ipv6_mreq mreq;
 
@@ -265,7 +265,7 @@ static sat_status_t sat_udp_server_abstract_try_enable_multicast_ipv6 (sat_udp_s
                 object->events.on_multicast_join (object->data);
             }
 
-            sat_status_set (&status, true, "");
+            sat_status_set (&status, true, __func__, "");
         }
     }
 

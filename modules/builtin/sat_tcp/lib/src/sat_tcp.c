@@ -17,13 +17,13 @@ static sat_status_t sat_tcp_type_open (sat_tcp_t *object, sat_tcp_args_t *args);
 
 sat_status_t sat_tcp_init (sat_tcp_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat tcp init error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat tcp init error");
 
     if (object != NULL)
     {
         memset (object, 0, sizeof (sat_tcp_t));
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -31,7 +31,7 @@ sat_status_t sat_tcp_init (sat_tcp_t *object)
 
 sat_status_t sat_tcp_open (sat_tcp_t *object, sat_tcp_args_t *args)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat tcp open error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat tcp open error");
 
     if (object != NULL && args != NULL)
     {
@@ -43,7 +43,7 @@ sat_status_t sat_tcp_open (sat_tcp_t *object, sat_tcp_args_t *args)
 
 sat_status_t sat_tcp_run (sat_tcp_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat tcp run error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat tcp run error");
 
     if (object != NULL && object->type == sat_tcp_type_server)
     {
@@ -56,7 +56,7 @@ sat_status_t sat_tcp_run (sat_tcp_t *object)
 
 sat_status_t sat_tcp_send (sat_tcp_t *object, const char *data, uint32_t size)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat tcp send error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat tcp send error");
     uint32_t _size;
 
     if (object != NULL && data != NULL && size > 0)
@@ -66,7 +66,7 @@ sat_status_t sat_tcp_send (sat_tcp_t *object, const char *data, uint32_t size)
         _size = send (socket, data, size, 0);
 
         if (_size == size)
-            sat_status_set (&status, true, "");
+            sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -74,7 +74,7 @@ sat_status_t sat_tcp_send (sat_tcp_t *object, const char *data, uint32_t size)
 
 sat_status_t sat_tcp_receive (sat_tcp_t *object, char *data, uint32_t *size)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat tcp receive error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat tcp receive error");
 
     size_t _size = 0;
 
@@ -86,7 +86,7 @@ sat_status_t sat_tcp_receive (sat_tcp_t *object, char *data, uint32_t *size)
 
         *size = _size;
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -94,7 +94,7 @@ sat_status_t sat_tcp_receive (sat_tcp_t *object, char *data, uint32_t *size)
 
 sat_status_t sat_tcp_close (sat_tcp_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat tcp close error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat tcp close error");
 
     if (object != NULL)
     {
@@ -104,7 +104,7 @@ sat_status_t sat_tcp_close (sat_tcp_t *object)
 
         sat_tcp_type_destroy (object);
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -112,7 +112,7 @@ sat_status_t sat_tcp_close (sat_tcp_t *object)
 
 static sat_status_t sat_tcp_type_open (sat_tcp_t *object, sat_tcp_args_t *args)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat tcp type open error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat tcp type open error");
 
     object->type = args->type;
 

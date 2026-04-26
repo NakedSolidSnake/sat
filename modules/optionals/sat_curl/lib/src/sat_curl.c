@@ -6,7 +6,7 @@ static size_t sat_curl_read_callback (char *data, size_t size, size_t nmemb, voi
 
 sat_status_t sat_curl_init (sat_curl_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat curl init error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat curl init error");
     CURLcode code;
 
     if (object != NULL)
@@ -15,7 +15,7 @@ sat_status_t sat_curl_init (sat_curl_t *object)
 
         code = curl_global_init (CURL_GLOBAL_DEFAULT);
 
-        code  == CURLE_OK ? sat_status_set (&status, true, "") : status;
+        code  == CURLE_OK ? sat_status_set (&status, true, __func__, "") : status;
     }
 
     return status;
@@ -23,7 +23,7 @@ sat_status_t sat_curl_init (sat_curl_t *object)
 
 sat_status_t sat_curl_open (sat_curl_t *object, sat_curl_args_t *args)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat curl open error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat curl open error");
 
     if (object != NULL && args != NULL && args->buffer != NULL && args->size > 0)
     {
@@ -34,7 +34,7 @@ sat_status_t sat_curl_open (sat_curl_t *object, sat_curl_args_t *args)
             object->response.buffer = args->buffer;
             object->response.size = args->size;
 
-            sat_status_set (&status, true, "");
+            sat_status_set (&status, true, __func__, "");
         }
     }
 
@@ -43,13 +43,13 @@ sat_status_t sat_curl_open (sat_curl_t *object, sat_curl_args_t *args)
 
 sat_status_t sat_curl_header_add (sat_curl_t *object, const char *header)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat curl header add error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat curl header add error");
 
     if (object != NULL && header != NULL)
     {
         object->headers = curl_slist_append (object->headers, header);
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -57,7 +57,7 @@ sat_status_t sat_curl_header_add (sat_curl_t *object, const char *header)
 
 sat_status_t sat_curl_request (sat_curl_t *object, sat_curl_method_t method, const char *url, const char *data)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat curl request error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat curl request error");
 
     if (object != NULL && url != NULL)
     {
@@ -76,7 +76,7 @@ sat_status_t sat_curl_request (sat_curl_t *object, sat_curl_method_t method, con
 
         code = curl_easy_perform (object->instance);
 
-        code == CURLE_OK ? sat_status_set (&status, true, "") : status;
+        code == CURLE_OK ? sat_status_set (&status, true, __func__, "") : status;
 
         curl_slist_free_all (object->headers);
         curl_easy_cleanup (object->instance);
@@ -87,12 +87,12 @@ sat_status_t sat_curl_request (sat_curl_t *object, sat_curl_method_t method, con
 
 sat_status_t sat_curl_close (sat_curl_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat curl close error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat curl close error");
 
     if (object != NULL)    
     {
         curl_global_cleanup ();
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;

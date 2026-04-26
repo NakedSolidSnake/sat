@@ -10,7 +10,7 @@ void sat_opengl_container_texture_init (sat_opengl_container_texture_t *object, 
 
 sat_status_t sat_opengl_container_texture_add (sat_opengl_container_texture_t *object, sat_opengl_texture_t *texture)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat opengl container texture add error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat opengl container texture add error");
 
     if (object->amount < SAT_OPENGL_CONTAINER_TEXTURE_AMOUNT)
     {
@@ -18,7 +18,7 @@ sat_status_t sat_opengl_container_texture_add (sat_opengl_container_texture_t *o
 
         object->amount ++;
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;

@@ -20,13 +20,13 @@ static int sat_mqtt_on_receive (void *context, char *topic, int size, MQTTClient
 
 sat_status_t sat_mqtt_init (sat_mqtt_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat mqtt init error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat mqtt init error");
 
     if (object != NULL)
     {
         memset (object, 0, sizeof (sat_mqtt_t));
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -34,7 +34,7 @@ sat_status_t sat_mqtt_init (sat_mqtt_t *object)
 
 sat_status_t sat_mqtt_open (sat_mqtt_t *object, sat_mqtt_args_t *args)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat mqtt open error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat mqtt open error");
 
     if (object != NULL && args != NULL)
     {
@@ -61,7 +61,7 @@ sat_status_t sat_mqtt_open (sat_mqtt_t *object, sat_mqtt_args_t *args)
 
 sat_status_t sat_mqtt_publish (sat_mqtt_t *object, sat_mqtt_message_t *message)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat mqtt publish error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat mqtt publish error");
 
     if (object != NULL && object->type == sat_mqtt_type_publisher)
     {
@@ -75,7 +75,7 @@ sat_status_t sat_mqtt_publish (sat_mqtt_t *object, sat_mqtt_message_t *message)
                                            &__message,
                                            NULL) == MQTTCLIENT_SUCCESS)
             {
-                sat_status_set (&status, true, "");
+                sat_status_set (&status, true, __func__, "");
             }
         }
     }
@@ -85,7 +85,7 @@ sat_status_t sat_mqtt_publish (sat_mqtt_t *object, sat_mqtt_message_t *message)
 
 sat_status_t sat_mqtt_subscribe (sat_mqtt_t *object, char *topic, sat_mqtt_qos_type_t qos)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat mqtt subscribe error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat mqtt subscribe error");
 
     if (object != NULL && object->handle != NULL && topic != NULL && object->type == sat_mqtt_type_subscriber)
     {
@@ -96,7 +96,7 @@ sat_status_t sat_mqtt_subscribe (sat_mqtt_t *object, char *topic, sat_mqtt_qos_t
             usleep (1);
         }
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -104,7 +104,7 @@ sat_status_t sat_mqtt_subscribe (sat_mqtt_t *object, char *topic, sat_mqtt_qos_t
 
 sat_status_t sat_mqtt_close (sat_mqtt_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat mqtt close error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat mqtt close error");
 
     if (object != NULL && object->handle != NULL)
     {
@@ -112,7 +112,7 @@ sat_status_t sat_mqtt_close (sat_mqtt_t *object)
         MQTTClient_destroy (&object->handle);
 
         memset (object, 0, sizeof (sat_mqtt_t));
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -120,12 +120,12 @@ sat_status_t sat_mqtt_close (sat_mqtt_t *object)
 
 static sat_status_t sat_mqtt_is_args_valid (sat_mqtt_args_t *args)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat mqtt is args valid error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat mqtt is args valid error");
 
     if (args->address != NULL && 
         args->id != NULL)
     {
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -133,7 +133,7 @@ static sat_status_t sat_mqtt_is_args_valid (sat_mqtt_args_t *args)
 
 static sat_status_t sat_mqtt_client_create (sat_mqtt_t *object, sat_mqtt_args_t *args)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat mqtt client create error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat mqtt client create error");
 
     if (MQTTClient_create (&object->handle,
                            args->address,
@@ -141,7 +141,7 @@ static sat_status_t sat_mqtt_client_create (sat_mqtt_t *object, sat_mqtt_args_t 
                            args->persistence,
                            NULL) == MQTTCLIENT_SUCCESS)
     {
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -167,13 +167,13 @@ static void sat_mqtt_callbacks_register (sat_mqtt_t *object)
 
 static sat_status_t sat_mqtt_client_connect (sat_mqtt_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat mqtt client connect error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat mqtt client connect error");
 
     MQTTClient_connectOptions options = MQTTClient_connectOptions_initializer;
 
     if (MQTTClient_connect (object->handle, &options) == MQTTCLIENT_SUCCESS)
     {
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -181,7 +181,7 @@ static sat_status_t sat_mqtt_client_connect (sat_mqtt_t *object)
 
 static sat_status_t sat_mqtt_is_message_valid (sat_mqtt_message_t *message)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat mqtt is message valid error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat mqtt is message valid error");
 
 
     if (message->payload != NULL &&
@@ -189,7 +189,7 @@ static sat_status_t sat_mqtt_is_message_valid (sat_mqtt_message_t *message)
         message->topic != NULL &&
         strlen (message->topic) > 0)
     {
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;

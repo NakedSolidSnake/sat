@@ -8,20 +8,20 @@ static void sat_gtk3_button_set_events (sat_gtk3_button_t *object);
 
 sat_status_t sat_gtk3_button_create (sat_gtk3_button_t *object, sat_gtk3_button_args_t *args)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat gtk3 bitton create error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat gtk3 bitton create error");
 
     if (args != NULL)
     {
         if (strlen (args->name) > 0)
         {
             object->button.widget = gtk_button_new_with_label (args->name);
-            sat_status_set (&status, true, "");    
+            sat_status_set (&status, true, __func__, "");
         }
 
         else 
         {
             object->button.widget = gtk_button_new ();
-            sat_status_set (&status, true, "");    
+            sat_status_set (&status, true, __func__, "");
         }
     }
 

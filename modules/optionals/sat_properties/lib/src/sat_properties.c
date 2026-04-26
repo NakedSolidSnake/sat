@@ -23,13 +23,13 @@ static void sat_properties_copy_value_string (sat_properties_item_t *item, const
 
 sat_status_t sat_properties_open (sat_properties_t *object, char *filename)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat properties open error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat properties open error");
 
     if (object != NULL && filename != NULL)
     {
         object->filename = filename;
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -37,12 +37,12 @@ sat_status_t sat_properties_open (sat_properties_t *object, char *filename)
 
 sat_status_t sat_properties_read (sat_properties_t *object, sat_properties_map_t *map)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat properties read error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat properties read error");
 
     if (object != NULL && map != NULL && map->amount > 0)
     {
         if (ini_parse (object->filename, sat_properties_handler, map) == 0)
-            sat_status_set (&status, true, "");
+            sat_status_set (&status, true, __func__, "");
     }
 
     return status;

@@ -56,7 +56,7 @@ sat_status_t sat_udp_server_open (sat_udp_server_t **const object, const sat_udp
 
 sat_status_t sat_udp_server_run (sat_udp_server_t *const object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat udp server run error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "run error");
 
     status = object->base->run (object->base);
 
@@ -70,7 +70,7 @@ int sat_udp_server_get_socket (sat_udp_server_t *object)
 
 sat_status_t sat_udp_server_get_port (sat_udp_server_t *object, uint16_t *port)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat udp server get port error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat udp server get port error");
 
     if (object != NULL && port != NULL)
     {
@@ -91,20 +91,20 @@ sat_status_t sat_udp_server_get_port (sat_udp_server_t *object, uint16_t *port)
 
 static sat_status_t sat_udp_server_select_type (sat_udp_server_t *object, sat_udp_server_type_t type)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat udp server select type error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat udp server select type error");
     
     if (type == sat_udp_server_type_interactive)
     {
         object->base = sat_udp_server_interactive_create ();
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     else if (type == sat_udp_server_type_async)
     {
         object->base = sat_udp_server_async_create ();
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;

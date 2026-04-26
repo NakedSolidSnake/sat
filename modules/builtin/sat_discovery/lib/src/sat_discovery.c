@@ -71,13 +71,13 @@ static void sat_discovery_on_receive (char *buffer, uint32_t *size, void *data)
 
 sat_status_t sat_discovery_init (sat_discovery_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat discovery init error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat discovery init error");
 
     if (object != NULL)
     {
         memset (object, 0, sizeof (sat_discovery_t));
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -133,13 +133,13 @@ sat_status_t sat_discovery_open (sat_discovery_t *object, sat_discovery_args_t *
 
 sat_status_t sat_discovery_add_interest (sat_discovery_t *object, const char *service_name)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat discovery add interest error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat discovery add interest error");
 
     do
     {
         if (object == NULL || service_name == NULL)
         {
-            sat_status_set (&status, false, "Invalid parameters");
+            sat_status_set (&status, false, __func__, "Invalid parameters");
             break;
         }
 
@@ -160,7 +160,7 @@ sat_status_t sat_discovery_add_interest (sat_discovery_t *object, const char *se
 
 sat_status_t sat_discovery_start (sat_discovery_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat discovery start error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat discovery start error");
 
     if (object != NULL )
     {
@@ -172,7 +172,7 @@ sat_status_t sat_discovery_start (sat_discovery_t *object)
 
 sat_status_t sat_discovery_stop (sat_discovery_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat discovery stop error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat discovery stop error");
 
     if (object != NULL )
     {
@@ -189,13 +189,13 @@ sat_status_t sat_discovery_stop (sat_discovery_t *object)
 
 sat_status_t sat_discovery_get_service_info (sat_discovery_t *object, const char *const service, sat_discovery_service_info_t *const info)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat discovery get service info error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat discovery get service info error");
 
     do
     {
         if (object == NULL || service == NULL || info == NULL)
         {
-            sat_status_set (&status, false, "Invalid parameters");
+            sat_status_set (&status, false, __func__, "Invalid parameters");
             break;
         }
 
@@ -214,14 +214,14 @@ sat_status_t sat_discovery_get_service_info (sat_discovery_t *object, const char
                 strncpy (info->address, node->address, SAT_DISCOVERY_ADDRESS_MAX_LENGTH);
                 strncpy (info->port, node->port, SAT_DISCOVERY_APP_PORT_SIZE);
 
-                sat_status_set (&status, true, "Service info retrieved");
+                sat_status_set (&status, true, __func__, "Service info retrieved");
                 return status;
             }
 
             node = sat_iterator_next (&iterator);
         }
 
-        sat_status_set (&status, false, "Service not found");
+        sat_status_set (&status, false, __func__, "Service not found");
 
     } while (false);
 
@@ -246,14 +246,14 @@ void sat_discovery_registered_services (sat_discovery_t *object)
 
 static sat_status_t sat_discovery_is_args_valid (sat_discovery_args_t *args)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat discovery args invalid");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat discovery args invalid");
 
     if (args != NULL &&
         args->channel.service != NULL &&
         args->channel.address != NULL)      /* TODO create a function to check address */
     {
         // Validate the arguments
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -261,7 +261,7 @@ static sat_status_t sat_discovery_is_args_valid (sat_discovery_args_t *args)
 
 static sat_status_t sat_discovery_server_setup (sat_discovery_t *object, sat_discovery_args_t *args)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat discovery server setup error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat discovery server setup error");
 
     if (object != NULL)
     {

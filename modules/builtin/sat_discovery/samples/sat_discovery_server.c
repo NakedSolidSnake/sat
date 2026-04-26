@@ -17,7 +17,7 @@ typedef struct
 
 static sat_status_t discovery_start (application_t *app)
 {
-    sat_status_t status = sat_status_set (&status, false, "discovery start error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "discovery start error");
 
     sat_discovery_args_t args = 
     {
@@ -42,7 +42,7 @@ static sat_status_t discovery_start (application_t *app)
     if (sat_status_get_result (&status) == false)
         return status;
 
-    return sat_status_set (&status, true, "discovery started");
+    return sat_status_set (&status, true, __func__, "discovery started");
 }
 
 void on_receive (char *buffer, uint32_t *size, void *data)

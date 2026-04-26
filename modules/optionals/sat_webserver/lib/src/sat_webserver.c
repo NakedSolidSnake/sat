@@ -38,7 +38,7 @@ static bool sat_webserver_is_extension_supported (const char *extension);
 
 sat_status_t sat_webserver_init (sat_webserver_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat webserver init error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat webserver init error");
 
     if (object != NULL)
     {
@@ -51,7 +51,7 @@ sat_status_t sat_webserver_init (sat_webserver_t *object)
         object->fallback.handler = sat_webserver_fallback_handler;
         object->fallback.data = NULL;
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -59,7 +59,7 @@ sat_status_t sat_webserver_init (sat_webserver_t *object)
 
 sat_status_t sat_webserver_open (sat_webserver_t *object, sat_webserver_args_t *args)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat webserver open error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat webserver open error");
 
     if (object != NULL && args != NULL && args->port != NULL && args->endpoint_amount > 0 && args->threads_amount != NULL)
     {
@@ -74,7 +74,7 @@ sat_status_t sat_webserver_open (sat_webserver_t *object, sat_webserver_args_t *
                                                         .mode = (sat_array_mode_t)args->mode,
                                                     });
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -82,7 +82,7 @@ sat_status_t sat_webserver_open (sat_webserver_t *object, sat_webserver_args_t *
 
 sat_status_t sat_webserver_add_endpoint (sat_webserver_t *object, const char *endpoint, const char *method, sat_webserver_handler_t handler, void *data)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat webserver add enpoint error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat webserver add enpoint error");
 
     if (object != NULL)
     {
@@ -107,7 +107,7 @@ sat_status_t sat_webserver_add_endpoint (sat_webserver_t *object, const char *en
 
 sat_status_t sat_webserver_remove_endpoint (sat_webserver_t *object, const char *endpoint, const char *method)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat webserver add enpoint error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat webserver add enpoint error");
 
     if (object != NULL)
     {
@@ -131,13 +131,13 @@ sat_status_t sat_webserver_fallback_register (sat_webserver_t *object, sat_webse
     {
         if (object == NULL)
         {
-            status = sat_status_set (&status, false, "sat webserver fallback register error: sat_webserver_t is NULL");
+            status = sat_status_set (&status, false, __func__, "sat webserver fallback register error: sat_webserver_t is NULL");
             break;
         }
 
         if (handler == NULL)
         {
-            status = sat_status_set (&status, false, "sat webserver fallback register error: handler is NULL");
+            status = sat_status_set (&status, false, __func__, "sat webserver fallback register error: handler is NULL");
             break;
         }
 
@@ -151,7 +151,7 @@ sat_status_t sat_webserver_fallback_register (sat_webserver_t *object, sat_webse
 
 sat_status_t sat_webserver_run (sat_webserver_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat webserver run error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat webserver run error");
 
     if (object != NULL && object->running == false)
     {
@@ -180,12 +180,12 @@ sat_status_t sat_webserver_run (sat_webserver_t *object)
 
             object->running = true;
 
-            sat_status_set (&status, true, "");
+            sat_status_set (&status, true, __func__, "");
         }
     }
     else if (object != NULL && object->running == true)
     {
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -193,13 +193,13 @@ sat_status_t sat_webserver_run (sat_webserver_t *object)
 
 sat_status_t sat_webserver_stop (sat_webserver_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat webserver stop error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat webserver stop error");
 
     if (object != NULL && object->running == true)
     {
         object->running = false;
         
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -207,14 +207,14 @@ sat_status_t sat_webserver_stop (sat_webserver_t *object)
 
 sat_status_t sat_webserver_response_set_payload (sat_webserver_response_t *object, char *payload, uint32_t size)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat webserver init error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat webserver init error");
 
     if (object != NULL && payload != NULL && size > 0)
     {
         object->payload.data = payload;
         object->payload.size = size;
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -222,13 +222,13 @@ sat_status_t sat_webserver_response_set_payload (sat_webserver_response_t *objec
 
 sat_status_t sat_webserver_response_set_status (sat_webserver_response_t *object, sat_webserver_http_status_t http_status)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat webserver init error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat webserver init error");
 
     if (object != NULL)
     {
         object->http_status = http_status;
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -236,7 +236,7 @@ sat_status_t sat_webserver_response_set_status (sat_webserver_response_t *object
 
 sat_status_t sat_webserver_response_header_add (sat_webserver_response_t *object, char *key, char *value)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat webserver init error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat webserver init error");
 
     if (object != NULL && object->headers.amount < SAT_WEBSERVER_HEADERS_AMOUNT && key != NULL && value != NULL)
     {
@@ -247,7 +247,7 @@ sat_status_t sat_webserver_response_header_add (sat_webserver_response_t *object
 
         object->headers.amount ++;
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -255,7 +255,7 @@ sat_status_t sat_webserver_response_header_add (sat_webserver_response_t *object
 
 sat_status_t sat_webserver_response_send (struct mg_connection *object, sat_webserver_response_t response)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat webserver init error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat webserver init error");
 
     if (object != NULL)
     {
@@ -282,7 +282,7 @@ sat_status_t sat_webserver_response_send (struct mg_connection *object, sat_webs
             mg_send_http_error (object, response.http_status, "%s", "");
         }
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -290,7 +290,7 @@ sat_status_t sat_webserver_response_send (struct mg_connection *object, sat_webs
 
 sat_status_t sat_webserver_close (sat_webserver_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat webserver init error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat webserver init error");
 
     if (object != NULL)
     {
@@ -300,7 +300,7 @@ sat_status_t sat_webserver_close (sat_webserver_t *object)
 
         memset (object, 0, sizeof (sat_webserver_t));
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -313,7 +313,7 @@ static int sat_webserver_log_message (const struct mg_connection *connection, co
 
 sat_status_t sat_webserver_is_endpoint_valid (sat_webserver_request_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat webserver enpoint error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat webserver enpoint error");
 
     if (object->endpoint != NULL && 
         strlen (object->endpoint) > 0 &&
@@ -321,7 +321,7 @@ sat_status_t sat_webserver_is_endpoint_valid (sat_webserver_request_t *object)
         strlen (object->method) > 0 &&
         object->handler != NULL)
     {
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     } 
 
     return status;

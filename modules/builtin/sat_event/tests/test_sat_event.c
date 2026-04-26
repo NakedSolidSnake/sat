@@ -69,13 +69,13 @@ int main (int argc, char *argv[])
 
 sat_status_t print_observer_init (print_observer_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "print init error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "print init error");
 
     if (object != NULL)
     {
         memset (object, 0, sizeof (print_observer_t));
         object->observer.base.handler = print_data;
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -90,13 +90,13 @@ static void print_data (void *object, const void *data)
 
 sat_status_t compare_observer_init (compare_observer_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "compare init error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "compare init error");
 
     if (object != NULL)
     {
         memset (object, 0, sizeof (compare_observer_t));
         object->observer.base.handler = compare_data;
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;

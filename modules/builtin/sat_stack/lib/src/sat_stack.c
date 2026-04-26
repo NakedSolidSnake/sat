@@ -67,19 +67,19 @@ sat_status_t sat_stack_push (sat_stack_t *const object, const void *const data)
     {
         if (object == NULL)
         {
-            sat_status_set (&status, false, "sat stack push null object");
+            sat_status_set (&status, false, __func__, "sat stack push null object");
             break;
         }
 
         if (data == NULL)
         {
-            sat_status_set (&status, false, "sat stack push null data");
+            sat_status_set (&status, false, __func__, "sat stack push null data");
             break;
         }
 
         if (object->amount >= object->size)
         {
-            sat_status_set (&status, false, "sat stack push stack overflow");
+            sat_status_set (&status, false, __func__, "sat stack push stack overflow");
             break;
         }
 
@@ -99,19 +99,19 @@ sat_status_t sat_stack_pop (sat_stack_t *const object, void *const data)
     {
         if (object == NULL)
         {
-            sat_status_set (&status, false, "sat stack pop null object");
+            sat_status_set (&status, false, __func__, "sat stack pop null object");
             break;
         }
 
         if (data == NULL)
         {
-            sat_status_set (&status, false, "sat stack pop null data");
+            sat_status_set (&status, false, __func__, "sat stack pop null data");
             break;
         }
 
         if (object->amount == 0)
         {
-            sat_status_set (&status, false, "sat stack pop stack underflow");
+            sat_status_set (&status, false, __func__, "sat stack pop stack underflow");
             break;
         }
 
@@ -132,13 +132,13 @@ sat_status_t sat_stack_get_size (const sat_stack_t *const object, uint32_t *cons
     {
         if (object == NULL)
         {
-            sat_status_set (&status, false, "sat stack get size null object");
+            sat_status_set (&status, false, __func__, "sat stack get size null object");
             break;
         }
 
         if (size == NULL)
         {
-            sat_status_set (&status, false, "sat stack get size null size pointer");
+            sat_status_set (&status, false, __func__, "sat stack get size null size pointer");
             break;
         }
 
@@ -157,7 +157,7 @@ sat_status_t sat_stack_destroy (sat_stack_t *const object)
     {
         if (object == NULL)
         {
-            sat_status_set (&status, false, "sat stack destroy null object");
+            sat_status_set (&status, false, __func__, "sat stack destroy null object");
             break;
         }
 

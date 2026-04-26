@@ -67,7 +67,7 @@ static void sat_sdl_close_api (void);
 
 sat_status_t sat_sdl_init (sat_sdl_t **object, const char *title, uint16_t width, uint16_t height)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat sdl init error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat sdl init error");
 
     if (object != NULL && title != NULL && width > 0 && height > 0)
     {
@@ -106,13 +106,13 @@ sat_status_t sat_sdl_init (sat_sdl_t **object, const char *title, uint16_t width
 
 sat_status_t sat_sdl_set_background (sat_sdl_t *object, sat_sdl_color_t color)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat sdl set background error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat sdl set background error");
 
     if (object != NULL && object->initialized == true)
     {
         sat_sdl_render_set_color_background (&object->render, color);
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status; 
@@ -120,7 +120,7 @@ sat_status_t sat_sdl_set_background (sat_sdl_t *object, sat_sdl_color_t color)
 
 sat_status_t sat_sdl_set_image (sat_sdl_t *object, const char *name, sat_sdl_rectangle_t rectangle)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat sdl set image error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat sdl set image error");
 
     if (object != NULL && object->initialized == true && name != NULL)
     {
@@ -130,7 +130,7 @@ sat_status_t sat_sdl_set_image (sat_sdl_t *object, const char *name, sat_sdl_rec
             {
                 sat_sdl_render_set_texture (&object->render, object->textures.list [i].handle, rectangle);
 
-                sat_status_set (&status, true, "");
+                sat_status_set (&status, true, __func__, "");
 
                 break;
             }
@@ -142,7 +142,7 @@ sat_status_t sat_sdl_set_image (sat_sdl_t *object, const char *name, sat_sdl_rec
 
 sat_status_t sat_sdl_get_image_rectangle_in_position (sat_sdl_t *object, const char *name, sat_sdl_coordinate_t coordinate, sat_sdl_rectangle_t *rectangle)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat sdl get image rectangle in position error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat sdl get image rectangle in position error");
 
     if (object != NULL && object->initialized == true && name != NULL && rectangle != NULL)
     {
@@ -156,7 +156,7 @@ sat_status_t sat_sdl_get_image_rectangle_in_position (sat_sdl_t *object, const c
 
                 // sat_sdl_render_set_texture (&object->render, object->textures.list [i].handle, rectangle);
 
-                sat_status_set (&status, true, "");
+                sat_status_set (&status, true, __func__, "");
 
                 break;
             }
@@ -168,7 +168,7 @@ sat_status_t sat_sdl_get_image_rectangle_in_position (sat_sdl_t *object, const c
 
 sat_status_t sat_sdl_image_add (sat_sdl_t *object, char *name, const char *file, sat_sdl_image_type_t type)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat sdl image add error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat sdl image add error");
 
     if (object != NULL && object->initialized == true && name != NULL && file != NULL && object->textures.amount < SAT_SDL_TEXTURES_SIZE)
     {
@@ -201,7 +201,7 @@ sat_status_t sat_sdl_image_add (sat_sdl_t *object, char *name, const char *file,
 
 sat_status_t sat_sdl_font_add (sat_sdl_t *object, char *name, const char *file, uint16_t size)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat sdl font add error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat sdl font add error");
 
     if (object != NULL && object->initialized == true && name != NULL && file != NULL && object->fonts.amount < SAT_SDL_FONTS_AMOUNT)
     {
@@ -227,7 +227,7 @@ sat_status_t sat_sdl_font_add (sat_sdl_t *object, char *name, const char *file, 
 
 sat_status_t sat_sdl_set_text (sat_sdl_t *object, char *font, char *text, sat_sdl_rectangle_t rectangle)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat sdl set text error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat sdl set text error");
 
     if (object != NULL && object->initialized == true && font != NULL && text != NULL)
     {
@@ -254,7 +254,7 @@ sat_status_t sat_sdl_set_text (sat_sdl_t *object, char *font, char *text, sat_sd
 
                 SDL_DestroyTexture (texture);
 
-                sat_status_set (&status, true, "");
+                sat_status_set (&status, true, __func__, "");
 
                 break;
             }
@@ -266,13 +266,13 @@ sat_status_t sat_sdl_set_text (sat_sdl_t *object, char *font, char *text, sat_sd
 
 sat_status_t sat_sdl_set_event_key_pressed (sat_sdl_t *object, sat_sdl_event_on_key_pressed_t on_key_pressed)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat sdl set event key error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat sdl set event key error");
 
     if (object != NULL && object->initialized == true && on_key_pressed != NULL)
     {
         object->events.on_key_pressed = on_key_pressed;
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -280,13 +280,13 @@ sat_status_t sat_sdl_set_event_key_pressed (sat_sdl_t *object, sat_sdl_event_on_
 
 sat_status_t sat_sdl_set_event_key_released (sat_sdl_t *object, sat_sdl_event_on_key_pressed_t on_key_released)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat sdl set event key error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat sdl set event key error");
 
     if (object != NULL && object->initialized == true && on_key_released != NULL)
     {
         object->events.on_key_released = on_key_released;
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -294,13 +294,13 @@ sat_status_t sat_sdl_set_event_key_released (sat_sdl_t *object, sat_sdl_event_on
 
 sat_status_t sat_sdl_set_event_mouse_event (sat_sdl_t *object, sat_sdl_event_on_mouse_event_t on_mouse_event)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat sdl set event key error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat sdl set event key error");
 
     if (object != NULL && object->initialized == true && on_mouse_event != NULL)
     {
         object->events.on_mouse_event = on_mouse_event;
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -308,7 +308,7 @@ sat_status_t sat_sdl_set_event_mouse_event (sat_sdl_t *object, sat_sdl_event_on_
 
 sat_status_t sat_sdl_wait_key_pressed (sat_sdl_t *object, sat_sdl_key_t *key)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat sdl set context error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat sdl set context error");
 
     if (object != NULL && object->initialized == true && key != NULL)
     {
@@ -327,7 +327,7 @@ sat_status_t sat_sdl_wait_key_pressed (sat_sdl_t *object, sat_sdl_key_t *key)
 
         *key = sat_sdl_key_get (event.key.keysym.sym);
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -335,13 +335,13 @@ sat_status_t sat_sdl_wait_key_pressed (sat_sdl_t *object, sat_sdl_key_t *key)
 
 sat_status_t sat_sdl_set_context (sat_sdl_t *object, void *context)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat sdl set context error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat sdl set context error");
 
     if (object != NULL && object->initialized == true && context != NULL)
     {
         object->context = context;
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -349,13 +349,13 @@ sat_status_t sat_sdl_set_context (sat_sdl_t *object, void *context)
 
 sat_status_t sat_sdl_set_viewport (sat_sdl_t *object, sat_sdl_rectangle_t rectangle)
 {
-   sat_status_t status = sat_status_set (&status, false, "sat sdl set viewport error");
+   sat_status_t status = sat_status_set (&status, false, __func__, "sat sdl set viewport error");
 
     if (object != NULL && object->initialized == true)
     {
         sat_sdl_render_set_viewport (&object->render, rectangle);
         
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status; 
@@ -363,13 +363,13 @@ sat_status_t sat_sdl_set_viewport (sat_sdl_t *object, sat_sdl_rectangle_t rectan
 
 sat_status_t sat_sdl_clear (sat_sdl_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat sdl clear error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat sdl clear error");
 
     if (object != NULL && object->initialized == true)
     {
         sat_sdl_render_clear (&object->render);
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -377,13 +377,13 @@ sat_status_t sat_sdl_clear (sat_sdl_t *object)
 
 sat_status_t sat_sdl_draw_point (sat_sdl_t *object, sat_sdl_point_t point)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat sdl draw point error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat sdl draw point error");
 
     if (object != NULL && object->initialized == true)
     {
         sat_sdl_geometry_draw_point (&object->render, point);
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;  
@@ -391,13 +391,13 @@ sat_status_t sat_sdl_draw_point (sat_sdl_t *object, sat_sdl_point_t point)
 
 sat_status_t sat_sdl_draw_line (sat_sdl_t *object, sat_sdl_line_t line)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat sdl draw line error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat sdl draw line error");
 
     if (object != NULL && object->initialized == true)
     {
         sat_sdl_geometry_draw_line (&object->render, line);
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status; 
@@ -405,13 +405,13 @@ sat_status_t sat_sdl_draw_line (sat_sdl_t *object, sat_sdl_line_t line)
 
 sat_status_t sat_sdl_draw_rectangle (sat_sdl_t *object, sat_sdl_rectangle_t rectangle)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat sdl draw rectangle error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat sdl draw rectangle error");
 
     if (object != NULL && object->initialized == true)
     {
         sat_sdl_geometry_draw_rectangle (&object->render, rectangle);
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status; 
@@ -419,13 +419,13 @@ sat_status_t sat_sdl_draw_rectangle (sat_sdl_t *object, sat_sdl_rectangle_t rect
 
 sat_status_t sat_sdl_draw_circle (sat_sdl_t *object, sat_sdl_circle_t circle)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat sdl draw circle error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat sdl draw circle error");
 
     if (object != NULL && object->initialized == true)
     {
         sat_sdl_geometry_draw_circle (&object->render, circle);
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status; 
@@ -433,13 +433,13 @@ sat_status_t sat_sdl_draw_circle (sat_sdl_t *object, sat_sdl_circle_t circle)
 
 sat_status_t sat_sdl_draw (sat_sdl_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat sdl draw error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat sdl draw error");
 
     if (object != NULL && object->initialized == true)
     {
         sat_sdl_render_draw (&object->render);
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;    
@@ -447,12 +447,12 @@ sat_status_t sat_sdl_draw (sat_sdl_t *object)
 
 sat_status_t sat_sdl_scan_events (sat_sdl_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat sdl scan events error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat sdl scan events error");
     SDL_Event event;
 
     if (object != NULL && object->initialized == true)
     {
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
 
         // const Uint8 *key_state = SDL_GetKeyboardState (NULL);
 
@@ -466,7 +466,7 @@ sat_status_t sat_sdl_scan_events (sat_sdl_t *object)
         {
             if (event.type == SDL_QUIT || object->running == false)
             {
-                sat_status_set (&status, false, "");
+                sat_status_set (&status, false, __func__, "");
                 break;
             }
 
@@ -502,13 +502,13 @@ sat_status_t sat_sdl_scan_events (sat_sdl_t *object)
 
 sat_status_t sat_sdl_stop (sat_sdl_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat sdl stop error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat sdl stop error");
 
     if (object != NULL && object->initialized == true)
     {
         object->running = false;
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status; 
@@ -516,7 +516,7 @@ sat_status_t sat_sdl_stop (sat_sdl_t *object)
 
 sat_status_t sat_sdl_close (sat_sdl_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat sdl close error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat sdl close error");
 
     if (object != NULL && object->initialized == true)
     {
@@ -537,7 +537,7 @@ sat_status_t sat_sdl_close (sat_sdl_t *object)
 
         sat_sdl_close_api ();
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -545,7 +545,7 @@ sat_status_t sat_sdl_close (sat_sdl_t *object)
 
 sat_status_t sat_sdl_audio_add (sat_sdl_t *object, char *filename, char *name, sat_sdl_audio_type_t type)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat sdl audio add error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat sdl audio add error");
 
     if (object != NULL && object->initialized == true && name != NULL && filename != NULL && object->sounds.amount < SAT_SDL_SOUND_AMOUNT)
     {
@@ -566,7 +566,7 @@ sat_status_t sat_sdl_audio_add (sat_sdl_t *object, char *filename, char *name, s
 
 sat_status_t sat_sdl_audio_control (sat_sdl_t *object, char *name, sat_sdl_audio_control_t control)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat sdl audio control error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat sdl audio control error");
 
     if (object != NULL && object->initialized == true && name != NULL)
     {
@@ -601,7 +601,7 @@ sat_status_t sat_sdl_audio_control (sat_sdl_t *object, char *name, sat_sdl_audio
                     break;
                 }
 
-                sat_status_set (&status, true, "");
+                sat_status_set (&status, true, __func__, "");
             }
         }
     }
@@ -611,13 +611,13 @@ sat_status_t sat_sdl_audio_control (sat_sdl_t *object, char *name, sat_sdl_audio
 
 sat_status_t sat_sdl_delay (sat_sdl_t *object, uint32_t delay)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat sdl delay error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat sdl delay error");
 
     if (object != NULL && object->initialized == true)
     {
         SDL_Delay (delay);
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -625,7 +625,7 @@ sat_status_t sat_sdl_delay (sat_sdl_t *object, uint32_t delay)
 
 sat_status_t sat_sdl_animate_add (sat_sdl_t *object, char *filename, char *name, sat_sdl_animate_properties_t properties)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat sdl animate add error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat sdl animate add error");
 
     if (object != NULL && object->initialized == true && name != NULL && filename != NULL && object->animates.amount < SAT_SDL_ANIMATE_AMOUNT)
     {
@@ -662,7 +662,7 @@ sat_status_t sat_sdl_animate_add (sat_sdl_t *object, char *filename, char *name,
 
 sat_status_t sat_sdl_animate_add_states (sat_sdl_t *object, char *name, char *state, sat_sdl_frame_position_t *positions, uint8_t size)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat sdl animate add states error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat sdl animate add states error");
 
     if (object != NULL && object->initialized == true && name != NULL && state != NULL && positions != NULL && size > 0)
     {
@@ -684,7 +684,7 @@ sat_status_t sat_sdl_animate_add_states (sat_sdl_t *object, char *name, char *st
 
 sat_status_t sat_sdl_animate_draw (sat_sdl_t *object, char *name, char *state, sat_sdl_coordinate_t coordinate, sat_sdl_flip_t flip)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat sdl animate draw error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat sdl animate draw error");
 
     if (object != NULL && object->initialized == true && name != NULL)
     {
@@ -746,7 +746,7 @@ sat_status_t sat_sdl_animate_draw (sat_sdl_t *object, char *name, char *state, s
                         animate->offset = 0;
                 }
 
-                sat_status_set (&status, true, "");
+                sat_status_set (&status, true, __func__, "");
 
                 break;
             }
@@ -758,7 +758,7 @@ sat_status_t sat_sdl_animate_draw (sat_sdl_t *object, char *name, char *state, s
 
 static sat_status_t sat_sdl_init_api (void)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat sdl init api error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat sdl init api error");
 
     int image_flag = IMG_INIT_PNG;
 
@@ -767,7 +767,7 @@ static sat_status_t sat_sdl_init_api (void)
         TTF_Init () >= 0 && 
         Mix_OpenAudio (44100, MIX_DEFAULT_FORMAT, 2, 2048) >= 0)
     {
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;

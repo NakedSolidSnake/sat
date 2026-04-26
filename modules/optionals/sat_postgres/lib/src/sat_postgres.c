@@ -10,13 +10,13 @@ static sat_status_t sat_postgres_connect (sat_postgres_t *object);
 
 sat_status_t sat_postgres_init (sat_postgres_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat postgres init error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat postgres init error");
 
     if (object != NULL)
     {
         memset (object, 0, sizeof (sat_postgres_t));
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -24,7 +24,7 @@ sat_status_t sat_postgres_init (sat_postgres_t *object)
 
 sat_status_t sat_postgres_open (sat_postgres_t *object, sat_postgres_args_t *args)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat postgres open error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat postgres open error");
 
     if (object != NULL && args != NULL)
     {
@@ -46,7 +46,7 @@ sat_status_t sat_postgres_open (sat_postgres_t *object, sat_postgres_args_t *arg
 
 sat_status_t sat_postgres_execute (sat_postgres_t *object, const char *query)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat postgres execute error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat postgres execute error");
 
     if (object != NULL && query != NULL)
     {
@@ -56,7 +56,7 @@ sat_status_t sat_postgres_execute (sat_postgres_t *object, const char *query)
         object->result = PQexec (object->connection, query);
 
         if (PQresultStatus (object->result) == PGRES_COMMAND_OK || PQresultStatus (object->result) == PGRES_TUPLES_OK)
-            sat_status_set (&status, true, "");
+            sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -64,7 +64,7 @@ sat_status_t sat_postgres_execute (sat_postgres_t *object, const char *query)
 
 sat_status_t sat_postgres_result_set (sat_postgres_t *object, sat_postgres_on_result_set_t on_result_set, void *user)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat postgres result set error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat postgres result set error");
 
     if (object != NULL && on_result_set != NULL && user != NULL)
     {
@@ -90,7 +90,7 @@ sat_status_t sat_postgres_result_set (sat_postgres_t *object, sat_postgres_on_re
             PQclear (object->result);
             object->result = NULL;
 
-            sat_status_set (&status, true, "");
+            sat_status_set (&status, true, __func__, "");
         }
 
     }
@@ -100,7 +100,7 @@ sat_status_t sat_postgres_result_set (sat_postgres_t *object, sat_postgres_on_re
 
 sat_status_t sat_postgres_close (sat_postgres_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat postgres close error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat postgres close error");
 
     if (object != NULL && object->connection != NULL)
     {
@@ -111,7 +111,7 @@ sat_status_t sat_postgres_close (sat_postgres_t *object)
 
         memset (object, 0, sizeof (sat_postgres_t));
 
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -119,7 +119,7 @@ sat_status_t sat_postgres_close (sat_postgres_t *object)
 
 static sat_status_t sat_postgres_is_args_valid (sat_postgres_args_t *args)
 {
-    sat_status_t status = sat_status_set (&status, false, "sat postgres args error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat postgres args error");
 
     if (args->hostname != NULL &&
         args->user != NULL &&
@@ -128,7 +128,7 @@ static sat_status_t sat_postgres_is_args_valid (sat_postgres_args_t *args)
         args->port > 0
         )
     {
-        sat_status_set (&status, true, "");
+        sat_status_set (&status, true, __func__, "");
     }
 
     return status;
@@ -138,7 +138,7 @@ static sat_status_t sat_postgres_connect (sat_postgres_t *object)
 {
     const char *format = "host=%s port=%d user=%s password=%s dbname=%s";
     char connection_string [SAT_POSTGRES_CONNECTION_STRING_SIZE] = {0};
-    sat_status_t status = sat_status_set (&status, false, "sat postgres connect error");
+    sat_status_t status = sat_status_set (&status, false, __func__, "sat postgres connect error");
 
     snprintf (connection_string, SAT_POSTGRES_CONNECTION_STRING_SIZE - 1, format, object->hostname,
                                                                                   object->port,
@@ -149,7 +149,7 @@ static sat_status_t sat_postgres_connect (sat_postgres_t *object)
 
     object->connection = PQconnectdb (connection_string);
 
-    PQstatus (object->connection) == CONNECTION_OK ? sat_status_set (&status, true, "") : status;
+    PQstatus (object->connection) == CONNECTION_OK ? sat_status_set (&status, true, __func__, "") : status;
 
     return status;
 }

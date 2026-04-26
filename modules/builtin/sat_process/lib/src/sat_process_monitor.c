@@ -18,7 +18,7 @@ sat_status_t sat_process_monitor_open (sat_process_monitor_t *const object)
     {
         if (object == NULL)
         {
-            sat_status_set (&status, false, "sat process monitor open error: null object");
+            sat_status_set (&status, false, __func__, "sat process monitor open error: null object");
             break;
         }
 
@@ -47,13 +47,13 @@ sat_status_t sat_process_monitor_add (sat_process_monitor_t *const object, sat_p
     {
         if (object == NULL)
         {
-            status = sat_status_set (&status, false, "sat process monitor add error: null object");
+            status = sat_status_set (&status, false, __func__, "sat process monitor add error: null object");
             break;
         }
 
         if (object->initialized == false)
         {
-            status = sat_status_set (&status, false, "sat process monitor add error: object not initialized");
+            status = sat_status_set (&status, false, __func__, "sat process monitor add error: object not initialized");
             break;
         }
 
@@ -72,13 +72,13 @@ sat_status_t sat_process_monitor_start (sat_process_monitor_t *const object)
     {
         if (object == NULL)
         {
-            sat_status_set (&status, false, "sat process monitor start error: null object");
+            sat_status_set (&status, false, __func__, "sat process monitor start error: null object");
             break;
         }
 
         if (object->initialized == false)
         {
-            sat_status_set (&status, false, "sat process monitor start error: object not initialized");
+            sat_status_set (&status, false, __func__, "sat process monitor start error: object not initialized");
             break;
         }
 
@@ -97,19 +97,19 @@ sat_status_t sat_process_monitor_scan (sat_process_monitor_t *const object)
     {
         if (object == NULL)
         {
-            status = sat_status_set (&status, false, "sat process monitor scan error: null object");
+            status = sat_status_set (&status, false, __func__, "sat process monitor scan error: null object");
             break;
         }
 
         if (object->initialized == false)
         {
-            status = sat_status_set (&status, false, "sat process monitor scan error: object not initialized");
+            status = sat_status_set (&status, false, __func__, "sat process monitor scan error: object not initialized");
             break;
         }
 
         if (object->start == false)
         {
-            status = sat_status_set (&status, false, "sat process monitor scan error: service not started");
+            status = sat_status_set (&status, false, __func__, "sat process monitor scan error: service not started");
             break;
         }
 
@@ -147,19 +147,19 @@ sat_status_t sat_process_monitor_stop (sat_process_monitor_t *const object)
     {
         if (object == NULL)
         {
-            sat_status_set (&status, false, "sat process monitor stop error: null object");
+            sat_status_set (&status, false, __func__, "sat process monitor stop error: null object");
             break;
         }
 
         if (object->initialized == false)
         {
-            sat_status_set (&status, false, "sat process monitor stop error: object not initialized");
+            sat_status_set (&status, false, __func__, "sat process monitor stop error: object not initialized");
             break;
         }
 
         if (object->start == false)
         {
-            sat_status_set (&status, false, "sat process monitor stop error: service not started");
+            sat_status_set (&status, false, __func__, "sat process monitor stop error: service not started");
             break;
         }
 
