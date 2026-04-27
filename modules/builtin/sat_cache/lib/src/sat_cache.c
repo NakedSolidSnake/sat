@@ -4,214 +4,79 @@
 
 sat_status_t sat_cache_init (sat_cache_t *const object)
 {
-    sat_status_t status;
+    sat_status_return_on_null (object, "null object");
 
-    do
-    {
-        if (object == NULL)
-        {
-            sat_status_failure (&status, "sat cache init error: null object");
-            break;
-        }
+    memset (object, 0, sizeof (sat_cache_t));
 
-        memset (object, 0, sizeof (sat_cache_t));
-
-        sat_status_success (&status);
-
-    } while (false);
-
-    return status;
+    sat_status_return_on_success ();
 }
 
 sat_status_t sat_cache_open (sat_cache_t *const object, const sat_cache_args_t *const args)
 {
-    sat_status_t status;
+    sat_status_return_on_null (object, "null object");
+    sat_status_return_on_null (args, "null args");
+    sat_status_return_on_equals (args->buffer_size, 0, "zero buffer size");
 
-    do
-    {
-        if (object == NULL)
-        {
-            sat_status_failure (&status, "sat cache open error: null object");
-            break;
-        }
+    object->data.size = args->buffer_size;
+    object->data.buffer = calloc (1, sizeof (char) * args->buffer_size);
+    sat_status_return_on_null (object->data.buffer, "buffer allocation failed");
 
-        if (args == NULL)
-        {
-            sat_status_failure (&status, "sat cache open error: null args");
-            break;
-        }
-
-        if (args->buffer_size == 0)
-        {
-            sat_status_failure (&status, "sat cache open error: zero buffer size");
-            break;
-        }
-
-        object->data.size = args->buffer_size;
-        object->data.buffer = calloc (1, sizeof (char) * args->buffer_size);
-
-        if (object->data.buffer == NULL)
-        {
-            sat_status_failure (&status, "sat cache open error: buffer allocation failed");
-            break;
-        }
-
-        sat_status_success (&status);
-
-    } while (false);
-
-    return status;
+    sat_status_return_on_success ();
 }
 
 sat_status_t sat_cache_store (sat_cache_t *const object, const void *const data, uint32_t size)
 {
-    sat_status_t status;
+    sat_status_return_on_null (object, "null object");
+    sat_status_return_on_null (data, "null data");
+    sat_status_return_on_greater_than (size, object->data.size, "size exceeds buffer size");
 
-    do
-    {
-        if (object == NULL)
-        {
-            sat_status_failure (&status, "sat cache store error: null object");
-            break;
-        }
+    memset (object->data.buffer, 0, object->data.size);
+    memcpy (object->data.buffer, data, size);
 
-        if (data == NULL)
-        {
-            sat_status_failure (&status, "sat cache store error: null data");
-            break;
-        }
+    object->is_cached = true;
 
-        if (size > object->data.size)
-        {
-            sat_status_failure (&status, "sat cache store error: size exceeds buffer size");
-            break;
-        }
-
-        memset (object->data.buffer, 0, object->data.size);
-
-        memcpy (object->data.buffer, data, size);
-
-        object->is_cached = true;
-
-        sat_status_success (&status);
-
-    } while (false);
-
-    return status;
+    sat_status_return_on_success ();
 }
 
 sat_status_t sat_cache_restore (const sat_cache_t *const object, void *const data, uint32_t size)
 {
-    sat_status_t status;
+    sat_status_return_on_null (object, "null object");
+    sat_status_return_on_null (data, "null data");
+    sat_status_return_on_greater_than (size, object->data.size, "size exceeds buffer size");
 
-    do
-    {
-        if (object == NULL)
-        {
-            sat_status_failure (&status, "sat cache restore error: null object");
-            break;
-        }
+    memset (data, 0, size);
+    memcpy (data, object->data.buffer, size);
 
-        if (data == NULL)
-        {
-            sat_status_failure (&status, "sat cache restore error: null data");
-            break;
-        }
-
-        if (size > object->data.size)
-        {
-            sat_status_failure (&status, "sat cache restore error: size exceeds buffer size");
-            break;
-        }
-
-        memset (data, 0, size);
-
-        memcpy (data, object->data.buffer, size);
-
-        sat_status_success (&status);
-
-    } while (false);
-
-    return status;
+    sat_status_return_on_success ();
 }
 
 sat_status_t sat_cache_is_cached (const sat_cache_t *const object)
 {
-    sat_status_t status;
+    sat_status_return_on_null (object, "null object");
+    sat_status_return_on_false (object->is_cached, "data is not cached");
 
-    do
-    {
-        if (object == NULL)
-        {
-            sat_status_failure (&status, "sat cache is cached error: null object");
-            break;
-        }
-
-        if (object->is_cached == false)
-        {
-            sat_status_set (&status, false, __func__, "data is not cached");
-            break;
-        }
-
-        sat_status_success (&status);
-
-    } while (false);
-
-    return status;
+    sat_status_return_on_success ();
 }
 
 sat_status_t sat_cache_clear (sat_cache_t *const object)
 {
-    sat_status_t status;
+    sat_status_return_on_null (object, "null object");
+    sat_status_return_on_false (object->is_cached, "data is not cached");
 
-    do
-    {
-        if (object == NULL)
-        {
-            sat_status_failure (&status, "sat cache clear error: null object");
-            break;
-        }
+    memset (object->data.buffer, 0, object->data.size);
 
-        if (object->is_cached == false)
-        {
-            sat_status_set (&status, true, __func__, "data is already not cached");
-            break;
-        }
+    object->is_cached = false;
 
-        memset (object->data.buffer, 0, object->data.size);
-
-        object->is_cached = false;
-
-        sat_status_success (&status);
-
-    } while (false);
-
-    return status;
+    sat_status_return_on_success ();
 }
 
 sat_status_t sat_cache_close (sat_cache_t *const object)
 {
-    sat_status_t status;
+    sat_status_return_on_null (object, "null object");
+    sat_status_return_on_null (object->data.buffer, "buffer is already closed");
 
-    do
-    {
-        if (object == NULL)
-        {
-            sat_status_failure (&status, "sat cache close error: null object");
-            break;
-        }
+    free (object->data.buffer);
+    object->data.buffer = NULL;
 
-        if (object->data.buffer == NULL)
-        {
-            sat_status_set (&status, true, __func__, "buffer is already closed");
-            break;
-        }
-
-        free (object->data.buffer);
-
-        sat_status_success (&status);
-
-    } while (false);
-
-    return status;
+    sat_status_return_on_success ();
 }
