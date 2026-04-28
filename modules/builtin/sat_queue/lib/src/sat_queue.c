@@ -20,216 +20,116 @@ struct sat_queue_t
 
 sat_status_t sat_queue_create (sat_queue_t **const object, uint32_t object_size)
 {
-    sat_status_t status = sat_status_success (&status);
+    sat_status_return_on_null (object, "null object");
+    sat_status_return_on_equals (object_size, 0, "zero object size");
+    
+    *object = (sat_queue_t *) calloc (1, sizeof (sat_queue_t));
+    sat_status_return_on_null (*object, "allocation failed");
 
-    do
-    {
-        if (object == NULL)
-        {
-            sat_status_failure (&status, "sat queue create error: null object");
-            break;
-        }
+    (*object)->object_size = object_size;
+    (*object)->start = NULL;
+    (*object)->end = NULL;
 
-        if (object_size == 0)
-        {
-            sat_status_failure (&status, "sat queue create error: zero object size");
-            break;
-        }
-
-        *object = (sat_queue_t *) calloc (1, sizeof (sat_queue_t));
-        if (*object == NULL)
-        {
-            sat_status_failure (&status, "sat queue create error: allocation failed");
-            break;
-        }
-
-        (*object)->object_size = object_size;
-        (*object)->start = NULL;
-        (*object)->end = NULL;
-
-    } while (false);
-
-    return status;
+    sat_status_return_on_success ();
 }
 
 sat_status_t sat_queue_enqueue (sat_queue_t *const object, const void *const data)
 {
-    sat_status_t status = sat_status_success (&status);
+    sat_status_return_on_null (object, "null object");
+    sat_status_return_on_null (data, "null data pointer");
+    sat_linked_list_internal_t *element = calloc (1, sizeof (sat_linked_list_internal_t));
+    sat_status_return_on_null (element, "element allocation failed");
 
-    do
+    element->data = calloc (1, object->object_size);
+    if (element->data == NULL)
     {
-        if (object == NULL)
-        {
-            sat_status_failure (&status, "sat queue enqueue error: null object");
-            break;
-        }
+        free (element);
+        sat_status_return_on_failure ("data allocation failed");
+    }
 
-        if (data == NULL)
-        {
-            sat_status_failure (&status, "sat queue enqueue error: null data");
-            break;
-        }
+    memcpy (element->data, data, object->object_size);
 
-        sat_linked_list_internal_t *element = calloc (1, sizeof (sat_linked_list_internal_t));
-        if (element == NULL)
-        {
-            sat_status_failure (&status, "sat queue enqueue error: element allocation failed");
-            break;
-        }
+    if (object->end != NULL)
+    {
+        object->end->next = element;
+    }
+    else
+    {
+        object->start = element;
+    }
 
-        element->data = calloc (1, object->object_size);
-        if (element->data == NULL)
-        {
-            free (element);
-            sat_status_failure (&status, "sat queue enqueue error: data allocation failed");
-            break;
-        }
+    object->end = element;
+    
+    object->amount ++;
 
-        memcpy (element->data, data, object->object_size);
-
-        if (object->end != NULL)
-        {
-            object->end->next = element;
-        }
-        else
-        {
-            object->start = element;
-        }
-
-        object->end = element;
-        
-        object->amount ++;
-
-    } while (false);
-
-    return status;
+    sat_status_return_on_success ();
 }
 
 sat_status_t sat_queue_dequeue (sat_queue_t *const object, void *const data)
 {
-    sat_status_t status = sat_status_success (&status);
+    sat_status_return_on_null (object, "null object");
+    sat_status_return_on_null (data, "null data pointer");
+    sat_status_return_on_equals (object->amount, 0, "queue is empty");
 
-    do
-    {
-        if (object == NULL)
-        {
-            sat_status_failure (&status, "sat queue dequeue error: null object");
-            break;
-        }
+    sat_linked_list_internal_t *element = object->start;
 
-        if (data == NULL)
-        {
-            sat_status_failure (&status, "sat queue dequeue error: null data");
-            break;
-        }
+    memcpy (data, element->data, object->object_size);
 
-        if (object->amount == 0)
-        {
-            sat_status_set (&status, false, __func__, "sat queue dequeue error: queue is empty");
-            break;
-        }
+    object->start = element->next;
 
-        sat_linked_list_internal_t *element = object->start;
+    if (object->start == NULL)
+        object->end = NULL;
 
-        memcpy (data, element->data, object->object_size);
+    object->amount --;
 
-        object->start = element->next;
+    free (element->data);
+    free (element);
 
-        if (object->start == NULL)
-            object->end = NULL;
-
-        object->amount --;
-
-        free (element->data);
-        free (element);
-
-    } while (false);
-
-    return status;
+    sat_status_return_on_success ();
 }
 
 sat_status_t sat_queue_get_size (const sat_queue_t *const object, uint32_t *const size)
 {
-    sat_status_t status = sat_status_success (&status);
+    sat_status_return_on_null (object, "null object");
+    sat_status_return_on_null (size, "null size pointer");
 
-    do
-    {
-        if (object == NULL)
-        {
-            sat_status_failure (&status, "sat queue get size error: null object");
-            break;
-        }
+    *size = object->amount;
 
-        if (size == NULL)
-        {
-            sat_status_failure (&status, "sat queue get size error: null size pointer");
-            break;
-        }
-
-        *size = object->amount;
-
-    } while (false);
-
-    return status;
+    sat_status_return_on_success ();
 }
 
 sat_status_t sat_queue_debug (const sat_queue_t *const object, sat_queue_print_t print)
 {   
-    sat_status_t status = sat_status_success (&status);
+    sat_status_return_on_null (object, "null object");
+    sat_status_return_on_null (print, "null print function");
 
-     do
+    sat_linked_list_internal_t *element = object->start;
+
+    while (element != NULL)
     {
-        if (object == NULL)
-        {
-            sat_status_failure (&status, "sat queue debug error: null object");
-            break;
-        }
+        print (element->data);
+        element = element->next;
+    }
 
-        if (print == NULL)
-        {
-            sat_status_failure (&status, "sat queue debug error: null print function");
-            break;
-        }
-
-        sat_linked_list_internal_t *element = object->start;
-
-        while (element != NULL)
-        {
-            print (element->data);
-            element = element->next;
-        }
-
-    } while (false);
-
-    return status;
+    sat_status_return_on_success ();
 }
 
 sat_status_t sat_queue_destroy (sat_queue_t *const object)
 {
-    sat_status_t status = sat_status_success (&status);
+    sat_status_return_on_null (object, "null object");
 
-    do
+    sat_linked_list_internal_t *element = object->start;
+
+    while (element != NULL)
     {
-        if (object == NULL)
-        {
-            sat_status_failure (&status, "sat queue destroy error: null object");
-            break;
-        }
+        sat_linked_list_internal_t *temp = element->next;
+        free (element->data);
+        free (element);
 
-        sat_linked_list_internal_t *element = object->start;
+        element = temp;
+    }
 
-        while (element != NULL)
-        {
-            sat_linked_list_internal_t *temp = element->next;
-            free (element->data);
-            free (element);
+    free (object);
 
-            element = temp;            
-        }
-
-        free (object);
-
-    } while (false);
-
-    return status;
+    sat_status_return_on_success ();
 }

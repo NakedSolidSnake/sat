@@ -12,7 +12,7 @@
 - [ ] add const to a functions
 
 ## sat_discovery
-- [ ] Use a return instead break
+- [x] Use a return instead break
 
 ## sat_event
 - [ ] Use a return instead break
@@ -43,7 +43,7 @@
 - [ ] Use a return instead break
 
 ## sat_queue
-- [ ] Use a return instead break
+- [x] Use a return instead break
 
 ## sat_queue_ipc
 - [ ] Use a return instead break

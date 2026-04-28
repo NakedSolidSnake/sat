@@ -17,191 +17,78 @@ static sat_status_t sat_queue_ipc_data_is_valid (const sat_queue_data_t *const d
 
 sat_status_t sat_queue_ipc_open (sat_queue_ipc_t *const object, const sat_queue_ipc_args_t *const args)
 {
-    sat_status_t status = sat_status_success (&status);
+    sat_status_return_on_null (object, "null object");
+    sat_status_return_on_error (sat_queue_ipc_args_is_valid (args));
 
-    do
-    {
-        if (object == NULL)
-        {
-            sat_status_set (&status, false, __func__, "null object");
-            break;
-        }
+    memset (object, 0, sizeof (sat_queue_ipc_t));
 
-        status = sat_queue_ipc_args_is_valid (args);
-        sat_status_break_on_error (status);
+    object->id = msgget ((key_t)args->key, args->flags | IPC_CREAT);
+    sat_status_return_on_equals (object->id, -1, "msgget failed");
 
-        memset (object, 0, sizeof (sat_queue_ipc_t));
+    object->initialized = true;
+    object->key = args->key;
 
-        object->id = msgget ((key_t)args->key, args->flags | IPC_CREAT);
-        if (object->id == -1)
-        {
-            sat_status_set (&status, false, __func__, "msgget failed");
-            break;
-        }
-
-        object->initialized = true;
-        object->key = args->key;
-
-    } while (false);
-
-    return status;
+    sat_status_return_on_success ();
 }
 
 sat_status_t sat_queue_ipc_send (sat_queue_ipc_t *const object, const sat_queue_data_t *const data)
 {
-    sat_status_t status = sat_status_set (&status, false, __func__, "sat queue ipc send error");
+    sat_status_return_on_null (object, "null object");
+    sat_status_return_on_false (object->initialized, "not initialized");
+    sat_status_return_on_error (sat_queue_ipc_data_is_valid (data));
 
-    do
-    {
-        if (object == NULL)
-        {
-            sat_status_set (&status, false, __func__, "null object");
-            break;
-        }
+    sat_queue_data_internal_t __data = {.type = data->type};
 
-        if (object->initialized == false)
-        {
-            sat_status_set (&status, false, __func__, "not initialized");
-            break;
-        }
+    memset (__data.buffer, 0, SAT_QUEUE_DATA_BUFFER_SIZE);
+    memcpy (__data.buffer, data->buffer, data->size);
 
-        status = sat_queue_ipc_data_is_valid (data);
-        sat_status_break_on_error (status);
+    sat_status_return_on_equals (msgsnd (object->id, (void *)&__data, data->size, 0), -1, "msgsnd failed");
 
-        sat_queue_data_internal_t __data = {.type = data->type};
-
-        memset (__data.buffer, 0, SAT_QUEUE_DATA_BUFFER_SIZE);
-        memcpy (__data.buffer, data->buffer, data->size);
-
-        if (msgsnd (object->id, (void *)&__data, data->size, 0) == -1)
-        {
-            sat_status_set (&status, false, __func__, "msgsnd failed");
-        }
-            
-    } while (false);
-
-    return status;
+    sat_status_return_on_success ();
 }
 
 sat_status_t sat_queue_ipc_receive (sat_queue_ipc_t *const object, sat_queue_data_t *const data)
 {
-    sat_status_t status = sat_status_success (&status);
+    sat_status_return_on_null (object, "null object");
+    sat_status_return_on_false (object->initialized, "not initialized");
+    sat_status_return_on_error (sat_queue_ipc_data_is_valid (data));
 
-    do
-    {
-        if (object == NULL)
-        {
-            sat_status_set (&status, false, __func__, "null object");
-            break;
-        }
+    sat_queue_data_internal_t __data = {.type = data->type};
 
-        if (object->initialized == false)
-        {
-            sat_status_set (&status, false, __func__, "not initialized");
-            break;
-        }
+    memset (__data.buffer, 0, SAT_QUEUE_DATA_BUFFER_SIZE);
 
-        status = sat_queue_ipc_data_is_valid (data);
-        sat_status_break_on_error (status);
+    sat_status_return_on_equals (msgrcv (object->id, (void *)&__data, data->size, data->type, 0), -1, "msgrcv failed");
 
-        sat_queue_data_internal_t __data = {.type = data->type};
+    memcpy (data->buffer, __data.buffer, data->size);
 
-        memset (__data.buffer, 0, SAT_QUEUE_DATA_BUFFER_SIZE);
-
-        if (msgrcv (object->id, (void *)&__data, data->size, data->type, 0) == -1)
-        {
-            sat_status_set (&status, false, __func__, "msgrcv failed");
-            break;
-        }
-
-        memcpy (data->buffer, __data.buffer, data->size);
-
-    } while (false);
-
-    return status;
+    sat_status_return_on_success ();
 }
 
 sat_status_t sat_queue_ipc_destroy (sat_queue_ipc_t *const object)
 {
-    sat_status_t status = sat_status_success (&status);
+    sat_status_return_on_null (object, "null object");
+    sat_status_return_on_false (object->initialized, "not initialized");
 
-    do
-    {
-        if (object == NULL)
-        {
-            sat_status_set (&status, false, __func__, "null object");
-            break;
-        }
+    sat_status_return_on_not_equals (msgctl (object->id, IPC_RMID, 0), 0, "msgctl failed");
 
-        if (object->initialized == false)
-        {
-            sat_status_set (&status, false, __func__, "not initialized");
-            break;
-        }
-
-        if (msgctl (object->id, IPC_RMID, 0) != 0)
-        {
-            sat_status_set (&status, false, __func__, "msgctl failed");
-        }
-
-    } while (false);
-
-    return status;
+    sat_status_return_on_success ();
 }
 
 static sat_status_t sat_queue_ipc_args_is_valid (const sat_queue_ipc_args_t *const args)
 {
-    sat_status_t status = sat_status_success (&status);
+    sat_status_return_on_null (args, "null args");
+    sat_status_return_on_less_than_or_equal (args->key, 0, "invalid key");
 
-    do
-    {
-        if (args == NULL)
-        {
-            sat_status_set (&status, false, __func__, "null args");
-            break;
-        }
-
-        if (args->key <= 0)
-        {
-            sat_status_set (&status, false, __func__, "invalid key");
-            break;
-        }
-    } while (false);
-
-    return status;
+    sat_status_return_on_success ();
 }
 
 static sat_status_t sat_queue_ipc_data_is_valid (const sat_queue_data_t *const data)
 {
-    sat_status_t status = sat_status_success (&status);
+    sat_status_return_on_null (data, "null data");
+    sat_status_return_on_less_than_or_equal (data->type, 0, "invalid type");
+    sat_status_return_on_null (data->buffer, "null buffer");
+    sat_status_return_on_less_than_or_equal (data->size, 0, "invalid size");
+    sat_status_return_on_greater_than_or_equal (data->size, SAT_QUEUE_DATA_BUFFER_SIZE, "invalid size");
 
-    do
-    {
-        if (data == NULL)
-        {
-            sat_status_set (&status, false, __func__, "null data");
-            break;
-        }
-
-        if (data->type <= 0)
-        {
-            sat_status_set (&status, false, __func__, "invalid type");
-            break;
-        }
-
-        if (data->buffer == NULL)
-        {
-            sat_status_set (&status, false, __func__, "null buffer");
-            break;
-        }
-
-        if (data->size == 0 ||
-            data->size >= SAT_QUEUE_DATA_BUFFER_SIZE)
-        {
-            sat_status_set (&status, false, __func__, "invalid size");
-        }
-
-    } while (false);
-
-    return status;
+    sat_status_return_on_success ();
 }
