@@ -33,420 +33,258 @@ static void sat_array_configure_iterator (sat_array_t *const object);
 
 sat_status_t sat_array_create (sat_array_t **const object, const sat_array_args_t *const args)
 {
-    sat_status_t status = sat_status_success (&status);
+    sat_status_return_on_null (object, "object pointer is NULL");
+    sat_status_return_on_error (sat_array_is_args_valid (args));
 
-    do
+    sat_array_t *__object = calloc (1, sizeof (struct sat_array_t));
+    sat_status_return_on_null (__object, "object allocation failed");
+
+    sat_array_set_context (__object, args);
+
+    __object->buffer = (uint8_t *) calloc (1, __object->size * __object->object_size);
+    if (__object->buffer == NULL)
     {
-        sat_status_break_if_null (status, object, "sat array error: object pointer is NULL");
+        free (__object);
+        sat_status_return_on_failure ("buffer allocation failed");
+    }
 
-        status = sat_array_is_args_valid (args);
-        sat_status_break_on_error (status);
+    sat_array_configure_iterator (__object);
 
-        sat_array_t *__object = calloc (1, sizeof (struct sat_array_t));
-        sat_status_break_if_null (status, __object, "sat array error: object allocation failed");
+    __object->initialized = true;
+    *object = __object;
 
-        sat_array_set_context (__object, args);
-
-        __object->buffer = (uint8_t *) calloc (1, __object->size * __object->object_size);
-        if (__object->buffer == NULL)
-        {
-            sat_status_failure (&status, "sat array error: buffer allocation failed");
-
-            free (__object);
-            break;
-        }
-
-        sat_array_configure_iterator (__object);
-
-        __object->initialized = true;
-        *object = __object;
-
-    } while (false);
-
-    return status;
+    sat_status_return_on_success ();
 }
 
 sat_status_t sat_array_add (sat_array_t *const object, const void *const data)
 {
-    sat_status_t status;
+    sat_status_return_on_error (sat_array_is_initialized (object));
+    sat_status_return_on_null (data, "data pointer is NULL");
 
-    do
+    if (object->mode == sat_array_mode_dynamic && object->amount == object->size)
     {
-        status = sat_array_is_initialized (object);
-        sat_status_break_on_error (status);
-
-        sat_status_break_if_null (status, data, "sat array error: data is NULL");
-
-        if (object->mode == sat_array_mode_dynamic && object->amount == object->size)
+        sat_status_return_on_error (sat_array_realloc (object));
+        // in future register a callback to handle situations where
+        // there is no more memory to allocate.
+        if (object->notification.on_increase != NULL)
         {
-            status = sat_array_realloc (object);
-            sat_status_break_on_error (status);
-            // in future register a callback to handle situations where
-            // there is no more memory to allocate.
-            if (object->notification.on_increase != NULL)
-            {
-                object->notification.on_increase (object->notification.user, object->size);
-            }
+            object->notification.on_increase (object->notification.user, object->size);
         }
+    }
 
-        // Check if there is space to add the new element
-        // if the array is static, we do not allow adding more elements than the size
-        if (object->amount >= object->size)
-        {
-            sat_status_failure (&status, "sat array error: array is full");
-            break;
-        }
+    sat_status_return_on_greater_than_or_equal (object->amount, object->size, "array is full");
 
-        memcpy (&object->buffer [object->amount * object->object_size],
-                data,
-                object->object_size);
+    memcpy (&object->buffer [object->amount * object->object_size],
+            data,
+            object->object_size);
 
-        object->amount ++;
+    object->amount ++;
 
-    } while (false);
-
-    return status;
+    sat_status_return_on_success ();
 }
 
 sat_status_t sat_array_update_by (sat_array_t *const object, const void *const data, const uint32_t index)
 {
-    sat_status_t status;
+    sat_status_return_on_error (sat_array_is_initialized (object));
+    sat_status_return_on_null (data, "data pointer is NULL");
+    sat_status_return_on_greater_than_or_equal (index, object->amount, "index out of bounds");
 
-    do
-    {
-        status = sat_array_is_initialized (object);
-        sat_status_break_on_error (status);
+    memcpy (&object->buffer [index * object->object_size], data, object->object_size);
 
-        sat_status_break_if_null (status, data, "sat array error: data is NULL");
-
-        if (index >= object->amount)
-        {
-            sat_status_failure (&status, "sat array error: index out of bounds");
-            break;
-        }
-
-        memcpy (&object->buffer [index * object->object_size], data, object->object_size);
-
-    } while (false);
-    
-    return status;
+    sat_status_return_on_success ();
 }
 
 sat_status_t sat_array_remove_by (sat_array_t *const object, uint32_t const index)
 {
-    sat_status_t status;
+    sat_status_return_on_error (sat_array_is_initialized (object));
+    sat_status_return_on_greater_than_or_equal (index, object->amount, "index out of bounds");
 
-    do
+    sat_status_return_on_equals (object->amount, 0, "no elements to remove");
+
+    memset (&object->buffer [index * object->object_size], 0, object->object_size);
+
+    for (uint32_t i = index; i < object->amount - 1; i++)
     {
-        status = sat_array_is_initialized (object);
-        sat_status_break_on_error (status);
+        memcpy (&object->buffer [i * object->object_size], 
+                &object->buffer [(i + 1) * object->object_size],
+                object->object_size);
+    }
 
-        if (index >= object->amount)
-        {
-            sat_status_failure (&status, "sat array error: index out of bounds");
-            break;
-        }
+    object->amount --;
 
-        sat_status_break_if_equals (status, object->amount, 0, "sat array error: no elements to remove");
-
-        // Clear the element at the specified index
-        memset (&object->buffer [index * object->object_size], 0, object->object_size);
-
-        // Shift elements to the left
-        for (uint32_t i = index; i < object->amount - 1; i++)
-        {
-            memcpy (&object->buffer [i * object->object_size], 
-                    &object->buffer [(i + 1) * object->object_size],
-                    object->object_size);
-        }
-
-        object->amount --;
-
-    } while (false);
-
-    return status;
+    sat_status_return_on_success ();
 }
 
 sat_status_t sat_array_remove_by_parameter (sat_array_t *const object, const void *const param, sat_array_compare_t compare , void *const data)
 {
-    sat_status_t status;
+    sat_status_return_on_error (sat_array_is_initialized (object));
+    sat_status_return_on_null (compare, "compare function pointer is NULL");
+    sat_status_return_on_null (param, "parameter pointer is NULL");
 
-    do
+    for (uint32_t i = 0; i < object->amount; i ++)
     {
-        status = sat_array_is_initialized (object);
-        sat_status_break_on_error (status);
-
-        sat_status_break_if_null (status, compare, "sat array error: compare is NULL");
-
-        sat_status_break_if_null (status, param, "sat array error: parameter is NULL");
-
-
-        sat_status_failure (&status, "sat array error: object not found");
-        for (uint32_t i = 0; i < object->amount; i ++)
+        if (compare (&object->buffer [i * object->object_size], param) == true)
         {
-            if (compare (&object->buffer [i * object->object_size], param) == true)
+            // Copy the data to the provided pointer
+            if (data != NULL)
             {
-                // Copy the data to the provided pointer
-                if (data != NULL)
-                {
-                    memset (data, 0, object->object_size);
-                    memcpy (data, &object->buffer [i * object->object_size], object->object_size);
-                }
-
-                sat_array_remove_by (object, i);
-
-                sat_status_success (&status);
-
-                break;
+                memset (data, 0, object->object_size);
+                memcpy (data, &object->buffer [i * object->object_size], object->object_size);
             }
+
+            sat_array_remove_by (object, i);
+
+            sat_status_return_on_success ();
         }
+    }
 
-    } while (false);
-
-    return status;
+    sat_status_return_on_failure ("object not found");
 }
 
 sat_status_t sat_array_get_object_by (const sat_array_t *const object, const uint32_t index, void *const data)
 {
-    sat_status_t status;
+    sat_status_return_on_error (sat_array_is_initialized (object));
+    sat_status_return_on_null (data, "data is NULL");
 
-    do
-    {
-        status = sat_array_is_initialized (object);
-        sat_status_break_on_error (status);
+    sat_status_return_on_greater_than_or_equal (index, object->amount, "index out of bounds");
 
-        sat_status_break_if_null (status, data, "sat array error: data is NULL");
+    memcpy (data, &object->buffer [index * object->object_size], object->object_size);
 
-        if (index >= object->amount)
-        {
-            sat_status_failure (&status, "sat array error: index out of bounds");
-            break;
-        }
-
-        memcpy (data, &object->buffer [index * object->object_size], object->object_size);
-
-    } while (false);
-
-    return status;
+    sat_status_return_on_success ();
 }
 
 sat_status_t sat_array_get_object_by_parameter (sat_array_t *const object, const void *const param, sat_array_compare_t compare, void *const data)
 {
-    sat_status_t status;
+    sat_status_return_on_error (sat_array_is_initialized (object));
+    sat_status_return_on_null (compare, "compare function pointer is NULL");
+    sat_status_return_on_null (param, "parameter pointer is NULL");
+    sat_status_return_on_null (data, "data pointer is NULL");
 
-    do
+    for (uint32_t i = 0; i < object->amount; i ++)
     {
-        status = sat_array_is_initialized (object);
-        sat_status_break_on_error (status);
+        sat_status_continue_on_false (compare (&object->buffer [i * object->object_size], param));
 
-        sat_status_break_if_null (status, data, "sat array error: data is NULL");
+        memset (data, 0, object->object_size);
 
-        sat_status_break_if_null (status, compare, "sat array error: compare function is NULL");
+        memcpy (data, &object->buffer [i * object->object_size], object->object_size);
 
-        sat_status_break_if_null (status, param, "sat array error: parameter is NULL");
+        sat_status_return_on_success ();
+    }
 
-        sat_status_failure (&status, "sat array error: object not found");
-        for (uint32_t i = 0; i < object->amount; i ++)
-        {
-            if (compare (&object->buffer [i * object->object_size], param) == true)
-            {
-                memset (data, 0, object->object_size);
-
-                memcpy (data, &object->buffer [i * object->object_size], object->object_size);
-
-                sat_status_success (&status);
-
-                break;
-            }
-        }
-
-    } while (false);
-
-    return status;
+    sat_status_return_on_failure ("object not found");
 }
 
 sat_status_t sat_array_get_object_ref_by_parameter (sat_array_t *const object, const void *const param, sat_array_compare_t compare, void **const data)
 {
-    sat_status_t status;
+    sat_status_return_on_error (sat_array_is_initialized (object));
+    sat_status_return_on_null (compare, "compare function pointer is NULL");
+    sat_status_return_on_null (param, "parameter pointer is NULL");
+    sat_status_return_on_null (data, "data pointer is NULL");
 
-    do
+    for (uint32_t i = 0; i < object->amount; i ++)
     {
-        status = sat_array_is_initialized (object);
-        sat_status_break_on_error (status);
+        sat_status_continue_on_false (compare (&object->buffer [i * object->object_size], param));
 
-        sat_status_break_if_null (status, data, "sat array error: data pointer is NULL");
+        *data = &object->buffer [i * object->object_size];
 
-        sat_status_break_if_null (status, compare, "sat array error: compare function is NULL");
+        sat_status_return_on_success ();
+    }
 
-        sat_status_break_if_null (status, param, "sat array error: parameter is NULL");
-
-        sat_status_failure (&status, "sat array error: object not found");
-
-        for (uint32_t i = 0; i < object->amount; i ++)
-        {
-            if (compare (&object->buffer [i * object->object_size], param) == true)
-            {
-                *data = &object->buffer [i * object->object_size];
-
-                sat_status_success (&status);
-
-                break;
-            }
-        }
-
-    } while (false);
-
-    return status;
+    sat_status_return_on_failure ("object not found");
 }
+
 
 sat_status_t sat_array_get_size (const sat_array_t *const object, uint32_t *const size)
 {
-    sat_status_t status;
+    sat_status_return_on_error (sat_array_is_initialized (object));
+    sat_status_return_on_null (size, "size pointer is NULL");
 
-    do
-    {
-        status = sat_array_is_initialized (object);
-        sat_status_break_on_error (status);
+    *size = object->amount;
 
-        sat_status_break_if_null (status, size, "sat array error: size pointer is NULL");
-
-        *size = object->amount;
-
-    } while (false);
-
-    return status;
+    sat_status_return_on_success ();
 }
 
 sat_status_t sat_array_clear (sat_array_t *const object)
 {
-    sat_status_t status;
+    sat_status_return_on_error (sat_array_is_initialized (object));
 
-    do
-    {
-        status = sat_array_is_initialized (object);
-        sat_status_break_on_error (status);
+    memset (object->buffer, 0, object->object_size * object->size);
 
-        memset (object->buffer, 0, object->object_size * object->size);
+    object->amount = 0;
 
-        object->amount = 0;
-
-    } while (false);
-
-    return status;
+    sat_status_return_on_success ();
 }
 
 
 sat_status_t sat_array_clone (const sat_array_t *const object, sat_array_t **const cloned)
 {
-    sat_status_t status;
+    sat_status_return_on_error (sat_array_is_initialized (object));
+    sat_status_return_on_null (cloned, "cloned pointer is NULL");
 
-    do
+    sat_array_args_t args =
     {
-        status = sat_array_is_initialized (object);
-        sat_status_break_on_error (status);
-
-        sat_status_break_if_null (status, cloned, "sat array error: cloned pointer is NULL");
-
-        sat_array_args_t args =
+        .size = object->size,
+        .object_size = object->object_size,
+        .mode = object->mode,
+        .notification =
         {
-            .size = object->size,
-            .object_size = object->object_size,
-            .mode = object->mode,
-            .notification =
-            {
-                .on_increase = NULL,
-                .user = NULL
-            }
-        };
+            .on_increase = NULL,
+            .user = NULL
+        }
+    };
 
-        status = sat_array_create (cloned, &args);
-        sat_status_break_on_error (status);
+    sat_status_return_on_error (sat_array_create (cloned, &args));
 
-        memcpy ((*cloned)->buffer, object->buffer, object->size * object->object_size);
-        (*cloned)->amount = object->amount;
+    memcpy ((*cloned)->buffer, object->buffer, object->size * object->object_size);
+    (*cloned)->amount = object->amount;
 
-    } while (false);
-
-    return status;
+    sat_status_return_on_success ();
 }
 
 sat_status_t sat_array_get_capacity (const sat_array_t *const object, uint32_t *const capacity)
 {
-    sat_status_t status;
+    sat_status_return_on_error (sat_array_is_initialized (object));
+    sat_status_return_on_null (capacity, "capacity pointer is NULL");
 
-    do
-    {
-        status = sat_array_is_initialized (object);
-        sat_status_break_on_error (status);
+    *capacity = object->size;
 
-        sat_status_break_if_null (status, capacity, "sat array error: capacity pointer is NULL");
-
-        // Return the current size of the array
-        *capacity = object->size;
-
-    } while (false);
-
-    return status;
+    sat_status_return_on_success ();
 }
 
 sat_status_t sat_array_destroy (sat_array_t *const object)
 {
-    sat_status_t status;
+    sat_status_return_on_error (sat_array_is_initialized (object));
 
-    do
-    {
-        status = sat_array_is_initialized (object);
-        sat_status_break_on_error (status);
-        
-        // Free the buffer and the object itself
-        free (object->buffer);
-        object->buffer = NULL;
+    free (object->buffer);
+    object->buffer = NULL;
 
-        object->initialized = false;
+    object->initialized = false;
 
-        // Free the object itself
-        free (object);
-
-    } while (false);
-
-    return status;
+    // Free the object itself
+    free (object);
+    
+    sat_status_return_on_success ();
 }
 
 static sat_status_t sat_array_is_initialized (const sat_array_t *const object)
 {
-    sat_status_t status = sat_status_success (&status);
-    do
-    {
-        sat_status_break_if_null (status, object, "sat array error: object is NULL");
+    sat_status_return_on_null (object, "object pointer is NULL");
+    sat_status_return_on_false (object->initialized, "object is not initialized");
 
-        sat_status_break_if_false (status, object->initialized, "sat array error: object is not initialized");
-
-    } while (false);
-
-    return status;
+    sat_status_return_on_success ();
 }
 
 static sat_status_t sat_array_is_args_valid (const sat_array_args_t *const args)
 {
-    sat_status_t status = sat_status_success (&status);
-
-    do
+    sat_status_return_on_null (args, "args pointer is NULL");
+    sat_status_return_on_equals (args->size, 0, "size cannot be 0");
+    sat_status_return_on_equals (args->object_size, 0, "object size cannot be 0");
+    if (args->mode != sat_array_mode_static && args->mode != sat_array_mode_dynamic)
     {
-        sat_status_break_if_null (status, args, "sat array error: args is NULL");
+        sat_status_return_on_failure ("invalid mode");
+    }
 
-        sat_status_break_if_equals (status, args->size, 0, "sat array error: size is 0");
-
-        sat_status_break_if_equals (status, args->object_size, 0, "sat array error: object size is 0");
-
-        if (args->mode != sat_array_mode_static && args->mode != sat_array_mode_dynamic)
-        {
-            sat_status_failure (&status, "sat array error: invalid mode");
-            break;
-        }
-
-    } while (false);
-
-    return status;
+    sat_status_return_on_success ();
 }
 
 static void sat_array_set_context (sat_array_t *const object, const sat_array_args_t *const args)
@@ -464,24 +302,16 @@ static void sat_array_set_context (sat_array_t *const object, const sat_array_ar
 
 static sat_status_t sat_array_realloc (sat_array_t *const object)
 {
-    sat_status_t status = sat_status_success (&status);
-    
-    do
-    {
-        uint8_t *__new = (uint8_t *) realloc (object->buffer,
+    uint8_t *__new = (uint8_t *) realloc (object->buffer,
                                           object->size * 2 * object->object_size);
+    sat_status_return_on_null (__new, "memory reallocation failed");
 
-        sat_status_break_if_null (status, __new, "sat array error: memory reallocation failed");
+    object->size *= 2;
 
-        // Update the size of the array
-        object->size *= 2;
-
-        // Update the buffer pointer to the new memory location
-        object->buffer = __new;
-
-    } while (false);
-
-    return status;
+    // Update the buffer pointer to the new memory location
+    object->buffer = __new;
+    
+    sat_status_return_on_success ();
 }
 
 static void *sat_array_next (const void *const object, const uint32_t index)
@@ -523,21 +353,13 @@ void *sat_array_get_reference_by (const sat_array_t *const object, const uint32_
 
 sat_status_t sat_array_get_buffer (const sat_array_t *const object, sat_array_buffer_t *const buffer)
 {
-    sat_status_t status;
+    sat_status_return_on_error (sat_array_is_initialized (object));
+    sat_status_return_on_null (buffer, "buffer pointer is NULL");
 
-    do
-    {
-        status = sat_array_is_initialized (object);
-        sat_status_break_on_error (status);
+    buffer->size = object->amount;
+    buffer->data = object->buffer;
 
-        sat_status_break_if_null (status, buffer, "sat array error: buffer pointer is NULL");
-
-        buffer->size = object->amount;
-        buffer->data = object->buffer;
-
-    } while (false);
-
-    return status;
+    sat_status_return_on_success ();
 }
 
 static void sat_array_configure_iterator (sat_array_t *const object)

@@ -46,6 +46,21 @@
     }
 
 /**
+ * @brief Continue to next iteration when result is false
+ *
+ * Convenience macro that checks a boolean expression and continues to the
+ * next loop iteration when the result is false. Useful for filtering items
+ * in search loops without adding extra nesting.
+ *
+ * @param result Boolean expression to evaluate
+ */
+#define sat_status_continue_on_false(result) \
+    if (result == false) \
+    { \
+        continue; \
+    }
+
+/**
  * @brief Break if value equals expected
  *
  * Convenience macro that compares a value against an expected value,
