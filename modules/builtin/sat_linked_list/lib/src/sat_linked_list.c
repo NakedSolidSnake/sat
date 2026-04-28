@@ -387,7 +387,7 @@ sat_status_t sat_linked_list_destroy (sat_linked_list_t *const object)
             free (element->data);
             free (element);
 
-            element = temp;            
+            element = temp;
         }
 
         free (object);

@@ -1,14 +1,15 @@
 ## sat_array
-- [ ] Use a return instead break
+- [x] Use a return instead break
 
 ## sat_cache
-- [ ] Use a return instead break
+- [x] Use a return instead break
 
 ## sat_channel
-- [ ] Use a return instead break
+- [x] Use a return instead break
 
 ## sat_directory
 - [ ] Use a return instead break
+- [ ] add const to a functions
 
 ## sat_discovery
 - [ ] Use a return instead break

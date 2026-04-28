@@ -47,6 +47,6 @@ sat_status_t sat_directory_exists (const char *const path);
  * @see sat_linked_list_destroy()
  * @see sat_iterator
  */
-sat_status_t sat_directory_get_files (const char *directory, sat_linked_list_t **file_list);
+sat_status_t sat_directory_get_files (const char *directory, sat_linked_list_t **const file_list);
 
 #endif /* SAT_DIRECTORY_H */
