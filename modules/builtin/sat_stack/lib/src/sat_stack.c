@@ -12,163 +12,69 @@ struct sat_stack_t
 
 sat_status_t sat_stack_create (sat_stack_t **const object, uint32_t size, uint32_t object_size)
 {
-    sat_status_t status = sat_status_success (&status);
+    sat_status_return_on_null (object, "null object pointer");
+    sat_status_return_on_equals (size, 0, "size is zero");
+    sat_status_return_on_equals (object_size, 0, "object size is zero");
 
-    do
+    *object = calloc (1, sizeof (struct sat_stack_t));
+    sat_status_return_on_null (*object, "memory allocation failed");
+
+    (*object)->buffer = calloc (1, size * object_size);
+    if ((*object)->buffer == NULL)
     {
-        if (object == NULL)
-        {
-            sat_status_failure (&status, "sat stack create null object pointer");
-            break;
-        }
+        free (*object);
+        *object = NULL;
+        sat_status_return_on_failure ("buffer memory allocation failed");
+    }
 
-        if (size == 0)
-        {
-            sat_status_failure (&status, "sat stack create size is zero");
-            break;
-        }
+    (*object)->size = size;
+    (*object)->object_size = object_size;
 
-        if (object_size == 0)
-        {
-            sat_status_failure (&status, "sat stack create object size is zero");
-            break;
-        }
-
-        *object = calloc (1, sizeof (struct sat_stack_t));
-        if (*object == NULL)
-        {
-            sat_status_failure (&status, "sat stack create memory allocation failed");
-            break;
-        }
-
-        (*object)->buffer = calloc (1, size * object_size);
-        if ((*object)->buffer == NULL)
-        {
-            free (*object);
-            *object = NULL;
-
-            sat_status_failure (&status, "sat stack create buffer memory allocation failed");
-            break;
-        }
-
-        (*object)->size = size;
-        (*object)->object_size = object_size;
-
-    } while (false);
-
-    return status;
+    sat_status_return_on_success ();
 }
 
 sat_status_t sat_stack_push (sat_stack_t *const object, const void *const data)
 {
-    sat_status_t status = sat_status_success (&status);
+    sat_status_return_on_null (object, "null object pointer");
+    sat_status_return_on_null (data, "null data pointer");
+    sat_status_return_on_greater_than_or_equal (object->amount, object->size, "stack overflow");
 
-    do
-    {
-        if (object == NULL)
-        {
-            sat_status_set (&status, false, __func__, "sat stack push null object");
-            break;
-        }
+    memcpy (object->buffer + (object->amount * object->object_size), data, object->object_size);
+    object->amount ++;
 
-        if (data == NULL)
-        {
-            sat_status_set (&status, false, __func__, "sat stack push null data");
-            break;
-        }
-
-        if (object->amount >= object->size)
-        {
-            sat_status_set (&status, false, __func__, "sat stack push stack overflow");
-            break;
-        }
-
-        memcpy (object->buffer + (object->amount * object->object_size), data, object->object_size);
-        object->amount ++;
-
-    } while (false);
-
-    return status;
+    sat_status_return_on_success ();
 }
 
 sat_status_t sat_stack_pop (sat_stack_t *const object, void *const data)
 {
-    sat_status_t status = sat_status_success (&status);
+    sat_status_return_on_null (object, "null object pointer");
+    sat_status_return_on_null (data, "null data pointer");
+    sat_status_return_on_equals (object->amount, 0, "stack underflow");
 
-    do 
-    {
-        if (object == NULL)
-        {
-            sat_status_set (&status, false, __func__, "sat stack pop null object");
-            break;
-        }
+    memcpy (data, object->buffer + ((object->amount - 1) * object->object_size), object->object_size);
 
-        if (data == NULL)
-        {
-            sat_status_set (&status, false, __func__, "sat stack pop null data");
-            break;
-        }
+    object->amount --;
 
-        if (object->amount == 0)
-        {
-            sat_status_set (&status, false, __func__, "sat stack pop stack underflow");
-            break;
-        }
-
-        memcpy (data, object->buffer + ((object->amount - 1) * object->object_size), object->object_size);
-
-        object->amount --;
-
-    } while (false);
-
-    return status;
+    sat_status_return_on_success ();
 }
 
 sat_status_t sat_stack_get_size (const sat_stack_t *const object, uint32_t *const size)
 {
-    sat_status_t status = sat_status_success (&status);
+    sat_status_return_on_null (object, "null object pointer");
+    sat_status_return_on_null (size, "null size pointer");
 
-    do
-    {
-        if (object == NULL)
-        {
-            sat_status_set (&status, false, __func__, "sat stack get size null object");
-            break;
-        }
+    *size = object->amount;
 
-        if (size == NULL)
-        {
-            sat_status_set (&status, false, __func__, "sat stack get size null size pointer");
-            break;
-        }
-
-        *size = object->amount;
-
-    } while (false);
-
-    return status;
+    sat_status_return_on_success ();
 }
 
 sat_status_t sat_stack_destroy (sat_stack_t *const object)
 {
-    sat_status_t status = sat_status_success (&status);
+    sat_status_return_on_null (object, "null object pointer");
+    sat_status_return_on_null (object->buffer, "null buffer pointer");
 
-    do
-    {
-        if (object == NULL)
-        {
-            sat_status_set (&status, false, __func__, "sat stack destroy null object");
-            break;
-        }
+    free (object->buffer);
+    free (object);
 
-        if (object->buffer != NULL)
-        {
-            free (object->buffer);
-        }
-
-        free (object);
-
-    } while (false);
-
-    return status;
+    sat_status_return_on_success ();
 }
