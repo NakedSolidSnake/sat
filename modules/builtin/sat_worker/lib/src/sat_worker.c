@@ -10,215 +10,137 @@ static void *sat_worker_thread_function (void *const args);
 
 sat_status_t sat_worker_init (sat_worker_t *const object)
 {
-    sat_status_t status = sat_status_success (&status);
+    sat_status_return_on_null (object, "null object");
 
-    do
+    memset (object, 0, sizeof (sat_worker_t));
+
+    sat_status_return_on_not_equals (pthread_mutex_init (&object->mutex, NULL), 0, "mutex initialization failed");
+
+    if (pthread_cond_init (&object->cond, NULL) != 0)
     {
-        if (object == NULL)
-        {
-            sat_status_set (&status, false, __func__, "sat worker init error: null object");
-            break;
-        }
+        pthread_mutex_destroy (&object->mutex);
+        sat_status_return_on_failure ("condition variable initialization failed");
+    }
 
-        memset (object, 0, sizeof (sat_worker_t));
-
-        if (pthread_mutex_init (&object->mutex, NULL) != 0)
-        {
-            sat_status_set (&status, false, __func__, "sat worker init error: mutex initialization failed");
-            break;
-        }
-
-        if (pthread_cond_init (&object->cond, NULL) != 0)
-        {
-            pthread_mutex_destroy (&object->mutex);
-            sat_status_set (&status, false, __func__, "sat worker init error: condition variable initialization failed");
-            break;
-        }
-
-    } while (false);
-
-    return status;
+    sat_status_return_on_success ();
 }
 
 sat_status_t sat_worker_open (sat_worker_t *const object, const sat_worker_args_t *const args)
 {
-    sat_status_t status = sat_status_success (&status);
+    sat_status_return_on_null (object, "null object");
+    sat_status_return_on_null (args, "null args");
+    sat_status_return_on_error (sat_worker_is_args_valid (args));
 
-    do
+    object->object_size = args->object_size;
+    object->threads_amount = args->pool_amount;
+    object->handler = args->handler;
+
+    sat_status_return_on_error (sat_queue_create (&object->queue, args->object_size));
+    sat_status_t status = sat_worker_threads_allocation (object, args->pool_amount);
+    if (sat_status_get_result (&status) == false)
     {
-        if (object == NULL)
-        {
-            status = sat_status_set (&status, false, __func__, "sat worker open error: null object");
-            break;
-        }
+        sat_queue_destroy (object->queue);
+        sat_status_return_on_error (status);
+    }
 
-        if (args == NULL)
-        {
-            status = sat_status_set (&status, false, __func__, "sat worker open error: null args");
-            break;
-        }
+    status = sat_worker_threads_start (object);
+    if (sat_status_get_result (&status) == false)
+    {
+        free (object->threads);
+        sat_queue_destroy (object->queue);
+        sat_status_return_on_error (status);
+    }
 
-        status = sat_worker_is_args_valid (args);
-        sat_status_break_on_error (status);
+    object->running = true;
 
-        object->object_size = args->object_size;
-        object->threads_amount = args->pool_amount;
-        object->handler = args->handler;
-        
-        status = sat_queue_create (&object->queue, args->object_size);
-        sat_status_break_on_error (status);
-
-        status = sat_worker_threads_allocation (object, args->pool_amount);
-        sat_status_break_on_error (status);
-
-        status = sat_worker_threads_start (object);
-        sat_status_break_on_error (status);
-        object->running = true;
-
-        //register on close
-
-    } while (false);
-
-    return status;
+    sat_status_return_on_success ();
 }
 
 sat_status_t sat_worker_feed (sat_worker_t *const object, const void *const data)
 {
-    sat_status_t status = sat_status_success (&status);
+    sat_status_return_on_null (object, "null object");
+    sat_status_return_on_null (data, "null data");
 
-    do
-    {
-        if (object == NULL)
-        {
-            status = sat_status_set (&status, false, __func__, "sat worker feed error: null object");
-            break;
-        }
+    pthread_mutex_lock (&object->mutex);
 
-        if (data == NULL)
-        {
-            status = sat_status_set (&status, false, __func__, "sat worker feed error: null data");
-            break;
-        }
-
-        pthread_mutex_lock (&object->mutex);
-
-        status = sat_queue_enqueue (object->queue, data);
-
-        pthread_cond_signal (&object->cond);
-        pthread_mutex_unlock (&object->mutex);
-
-    } while (false);
+    sat_status_t status = sat_queue_enqueue (object->queue, data);
+    
+    pthread_cond_signal (&object->cond);
+    pthread_mutex_unlock (&object->mutex);
 
     return status;
 }
 
 sat_status_t sat_worker_close (sat_worker_t *const object)
 {
-    sat_status_t status = sat_status_success (&status);
+    sat_status_return_on_null (object, "null object");
 
-    do
-    {
-        if (object == NULL)
-        {
-            sat_status_set (&status, false, __func__, "sat worker close error: null object");
-            break;
-        }
-
-        object->running = false;
+    object->running = false;
         
-        // Wake up all threads
-        pthread_mutex_lock (&object->mutex);
-        pthread_cond_broadcast (&object->cond);
-        pthread_mutex_unlock (&object->mutex);
+    // Wake up all threads
+    pthread_mutex_lock (&object->mutex);
+    pthread_cond_broadcast (&object->cond);
+    pthread_mutex_unlock (&object->mutex);
 
-        if (object->threads != NULL)
+    if (object->threads != NULL)
+    {
+        for (uint8_t i = 0; i < object->threads_amount; i++)
         {
-            for (uint8_t i = 0; i < object->threads_amount; i++)
-            {
-                pthread_join (object->threads [i], NULL);
-            }
-
-            free (object->threads);
+            pthread_join (object->threads [i], NULL);
         }
 
-        if (object->queue != NULL)
-        {
-            sat_queue_destroy (object->queue);
-        }
+        free (object->threads);
+    }
 
-        // Destroy mutex and condition variable
-        pthread_mutex_destroy (&object->mutex);
-        pthread_cond_destroy (&object->cond);
+    if (object->queue != NULL)
+    {
+        sat_queue_destroy (object->queue);
+    }
 
+    // Destroy mutex and condition variable
+    pthread_mutex_destroy (&object->mutex);
+    pthread_cond_destroy (&object->cond);
 
-    } while (false);
-
-    return status;
+    sat_status_return_on_success ();
 }
 
 static sat_status_t sat_worker_is_args_valid (const sat_worker_args_t *const args)
 {
-    sat_status_t status = sat_status_success (&status);
+    sat_status_return_on_null (args, "args is null");
+    sat_status_return_on_null (args->handler, "handler is null");
+    sat_status_return_on_equals (args->object_size, 0, "object size is zero");
+    sat_status_return_on_equals (args->pool_amount, 0, "pool amount is zero");
 
-    do
-    {
-        if (args == NULL)
-        {
-            sat_status_set (&status, false, __func__, "sat worker args is null");
-            break;
-        }
-
-        if (args->handler == NULL)
-        {
-            sat_status_set (&status, false, __func__, "sat worker args handler is null");
-            break;
-        }
-
-        if (args->object_size == 0)
-        {
-            sat_status_set (&status, false, __func__, "sat worker args object size is zero");
-            break;
-        }
-
-        if (args->pool_amount == 0)
-        {
-            sat_status_set (&status, false, __func__, "sat worker args pool amount is zero");
-            break;
-        }
-
-    } while (false);
- 
-    return status;
+    sat_status_return_on_success ();
 }
 
 static sat_status_t sat_worker_threads_allocation (sat_worker_t *const object, uint8_t amount)
 {
-    sat_status_t status = sat_status_success (&status);
-
     object->threads = (pthread_t *) calloc (1, sizeof (pthread_t) * amount);
 
-    if (object->threads == NULL)
-    {
-        sat_status_failure (&status, "sat worker threads allocation error: memory allocation failed");
-    }
+    sat_status_return_on_null (object->threads, "memory allocation failed");
 
-    return status;
+    sat_status_return_on_success ();
 }
 
 static sat_status_t sat_worker_threads_start (sat_worker_t *const object)
 {
-    sat_status_t status = sat_status_success (&status);
-
     for (uint8_t i = 0; i < object->threads_amount; i++)
     {
         if (pthread_create (&object->threads [i], NULL, sat_worker_thread_function, object) != 0)
         {
-            sat_status_failure (&status, "sat worker threads start error");
-            break;
+            // If thread creation fails, we need to clean up the threads that were already created
+            for (uint8_t j = 0; j < i; j++)
+            {
+                pthread_join (object->threads [j], NULL);
+            }
+            
+            free (object->threads);
+            sat_status_return_on_failure ("thread creation failed");
         }
     }
 
-    return status;
+    sat_status_return_on_success ();
 }
 
 static void *sat_worker_thread_function (void *const args)

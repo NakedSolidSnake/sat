@@ -80,7 +80,8 @@
 - [ ] Change to sat_array to store criterias
 
 ## sat_worker
-- [ ] Use a return instead break
+- [x] Use a return instead break
+- [ ] Create another struct to join pthread_t and buffer used inside the thread
 
 ## sat_curl
 - [ ] Use a return instead break
