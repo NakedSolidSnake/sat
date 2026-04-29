@@ -60,6 +60,12 @@
         continue; \
     }
 
+#define sat_status_continue_on_not_equals(result, expected) \
+    if (result != expected) \
+    { \
+        continue; \
+    }
+
 /**
  * @brief Break if value equals expected
  *

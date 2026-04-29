@@ -132,9 +132,7 @@ sat_status_t sat_array_remove_by_parameter (sat_array_t *const object, const voi
                 memcpy (data, &object->buffer [i * object->object_size], object->object_size);
             }
 
-            sat_array_remove_by (object, i);
-
-            sat_status_return_on_success ();
+            return sat_array_remove_by (object, i);
         }
     }
 

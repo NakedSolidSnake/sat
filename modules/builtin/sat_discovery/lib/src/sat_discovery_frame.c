@@ -140,7 +140,7 @@ sat_status_t sat_discovery_frame_unpack (sat_discovery_frame_t *const object, co
             break;
     }
 
-   sat_status_return_on_success ();
+    sat_status_return_on_success ();
 }
 
 void sat_discovery_frame_print (const sat_discovery_frame_t *const object)

@@ -48,22 +48,24 @@ static void sat_discovery_on_receive (char *buffer, uint32_t *size, void *data)
         return; // Ignore messages from itself
     }
 
-    // Ignores the same service announcements    
+    // Ignores the same service announcements
     if (frame.header.type == sat_discovery_frame_type_announce &&
         strcmp (frame.payload.announce.service_name, service->service_name) != 0)
     {
         sat_discovery_handle_frame_announce (service, frame);
     }
+
     else if (frame.header.type == sat_discovery_frame_type_heartbeat)
     {
         sat_discovery_handle_frame_heartbeat (service, frame);
     }
+
     else if (frame.header.type == sat_discovery_frame_type_interest)
     {
         sat_discovery_handle_frame_interest (service, frame);
     }
 
-     else if (frame.header.type == sat_discovery_frame_type_vanish)
+    else if (frame.header.type == sat_discovery_frame_type_vanish)
     {
         sat_discovery_handle_frame_vanish (service, frame);
     }
@@ -71,162 +73,114 @@ static void sat_discovery_on_receive (char *buffer, uint32_t *size, void *data)
 
 sat_status_t sat_discovery_init (sat_discovery_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, __func__, "sat discovery init error");
+    sat_status_return_on_null (object, "null object");
 
-    if (object != NULL)
-    {
-        memset (object, 0, sizeof (sat_discovery_t));
+    memset (object, 0, sizeof (sat_discovery_t));
 
-        sat_status_set (&status, true, __func__, "");
-    }
-
-    return status;
+    sat_status_return_on_success ();
 }
 
 sat_status_t sat_discovery_open (sat_discovery_t *object, sat_discovery_args_t *args)
 {
-    sat_status_t status;
 
-    do
-    {
-        status = sat_discovery_is_args_valid (args);
-        sat_status_break_on_error (status);
-
-        status = sat_discovery_server_setup (object, args);
-        sat_status_break_on_error (status);
-
-        status = sat_discovery_scheduler_setup (object);
-        sat_status_break_on_error (status);
-
-        status = sat_set_create (&object->interests, &(sat_set_args_t)
+    sat_status_return_on_null (object, "null object");
+    sat_status_return_on_error (sat_discovery_is_args_valid (args));
+    sat_status_return_on_error (sat_discovery_server_setup (object, args));
+    sat_status_return_on_error (sat_discovery_scheduler_setup (object));
+    sat_status_return_on_error (sat_set_create (&object->interests, &(sat_set_args_t)
                                 {
                                     .size = 10,
                                     .object_size = sizeof (sat_discovery_interest_t),
                                     .is_equal = sat_discovery_is_equal,
                                     .mode = sat_set_mode_dynamic
-                                });
-        sat_status_break_on_error (status);
+                                }));
 
-        status = sat_set_create (&object->nodes, &(sat_set_args_t)
+    sat_status_return_on_error (sat_set_create (&object->nodes, &(sat_set_args_t)
                                 {
                                     .size = 10,
                                     .object_size = sizeof (sat_discovery_node_t),
                                     .is_equal = sat_discovery_is_equal,
                                     .mode = sat_set_mode_dynamic
-                                });
-        sat_status_break_on_error (status);
+                                }));
 
-        status = sat_network_get_info_list (&object->interfaces);
-        sat_status_break_on_error (status);
+    sat_status_return_on_error (sat_network_get_info_list (&object->interfaces));
 
-        strncpy (object->service_name, args->service.name, SAT_DISCOVERY_SERVICE_NAME_MAX_LENGTH);
-        strncpy (object->channel.service, args->channel.service, SAT_DISCOVERY_SERVICE_MAX_LENGTH);
-        strncpy (object->channel.address, args->channel.address, SAT_DISCOVERY_ADDRESS_MAX_LENGTH);
-        strncpy (object->app_port, args->service.port, SAT_DISCOVERY_APP_PORT_SIZE);
+    strncpy (object->service_name, args->service.name, SAT_DISCOVERY_SERVICE_NAME_MAX_LENGTH);
+    strncpy (object->channel.service, args->channel.service, SAT_DISCOVERY_SERVICE_MAX_LENGTH);
+    strncpy (object->channel.address, args->channel.address, SAT_DISCOVERY_ADDRESS_MAX_LENGTH);
+    strncpy (object->app_port, args->service.port, SAT_DISCOVERY_APP_PORT_SIZE);
 
-        sat_uuid_generate_bin (object->uuid);
+    sat_uuid_generate_bin (object->uuid);
 
-    } while (false);
-
-    return status;
+    sat_status_return_on_success ();
 }
 
 sat_status_t sat_discovery_add_interest (sat_discovery_t *object, const char *service_name)
 {
-    sat_status_t status = sat_status_set (&status, false, __func__, "sat discovery add interest error");
+    sat_status_return_on_null (object, "null object");
+    sat_status_return_on_null (service_name, "null service name");
 
-    do
-    {
-        if (object == NULL || service_name == NULL)
-        {
-            sat_status_set (&status, false, __func__, "Invalid parameters");
-            break;
-        }
+    sat_discovery_interest_t interest;
 
-        sat_discovery_interest_t interest;
-        status = sat_discovery_interest_create (&interest, &(sat_discovery_interest_args_t)
-                                                            {
-                                                                .service_name = service_name,
-                                                                .uuid = NULL
-                                                            });
-        sat_status_break_on_error (status);
+    sat_status_return_on_error (sat_discovery_interest_create (&interest, &(sat_discovery_interest_args_t)
+                                                        {
+                                                            .service_name = service_name,
+                                                            .uuid = NULL
+                                                        }));
 
-        status = sat_set_add (object->interests, &interest);
-
-    } while (false);
-
-    return status;
+    return sat_set_add (object->interests, &interest);
 }
 
 sat_status_t sat_discovery_start (sat_discovery_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, __func__, "sat discovery start error");
+    sat_status_return_on_null (object, "null object");
 
-    if (object != NULL )
-    {
-        status = sat_scheduler_start (&object->scheduler);
-    }
-
-    return status;
+    return sat_scheduler_start (&object->scheduler);
 }
 
 sat_status_t sat_discovery_stop (sat_discovery_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, __func__, "sat discovery stop error");
+    sat_status_return_on_null (object, "null object");
 
-    if (object != NULL )
-    {
-        // Stop the discovery process
-        sat_discovery_service_vanish (object);
+    sat_discovery_service_vanish (object);
 
-        status = sat_scheduler_stop (&object->scheduler);
+    sat_status_return_on_error (sat_scheduler_stop (&object->scheduler));
 
-        sleep (1); // Wait a moment to ensure all messages are sent
-    }
+    sleep (1); // Wait a moment to ensure all messages are sent
 
-    return status;
+    sat_status_return_on_success ();
 }
 
 sat_status_t sat_discovery_get_service_info (sat_discovery_t *object, const char *const service, sat_discovery_service_info_t *const info)
 {
-    sat_status_t status = sat_status_set (&status, false, __func__, "sat discovery get service info error");
+    sat_status_return_on_null (object, "null object");
+    sat_status_return_on_null (service, "null service name");
+    sat_status_return_on_null (info, "null info object");
 
-    do
+    sat_iterator_t iterator;
+    sat_status_return_on_error (sat_iterator_open (&iterator, (sat_iterator_base_t *)object->nodes));
+
+    sat_discovery_node_t *node = sat_iterator_next (&iterator);
+
+    while (node != NULL)
     {
-        if (object == NULL || service == NULL || info == NULL)
+        if (strcmp (node->name, service) == 0)
         {
-            sat_status_set (&status, false, __func__, "Invalid parameters");
-            break;
+            memset (info, 0, sizeof (sat_discovery_service_info_t));
+
+            strncpy (info->name, node->name, SAT_DISCOVERY_SERVICE_NAME_MAX_LENGTH);
+            strncpy (info->address, node->address, SAT_DISCOVERY_ADDRESS_MAX_LENGTH);
+            strncpy (info->port, node->port, SAT_DISCOVERY_APP_PORT_SIZE);
+
+            sat_status_return_on_success ();
         }
 
-        sat_iterator_t iterator;
-        status = sat_iterator_open (&iterator, (sat_iterator_base_t *)object->nodes);
-        sat_status_break_on_error (status);
+        node = sat_iterator_next (&iterator);
+    }
 
-        sat_discovery_node_t *node = sat_iterator_next (&iterator);
-        while (node != NULL)
-        {
-            if (strcmp (node->name, service) == 0)
-            {
-                memset (info, 0, sizeof (sat_discovery_service_info_t));
-
-                strncpy (info->name, node->name, SAT_DISCOVERY_SERVICE_NAME_MAX_LENGTH);
-                strncpy (info->address, node->address, SAT_DISCOVERY_ADDRESS_MAX_LENGTH);
-                strncpy (info->port, node->port, SAT_DISCOVERY_APP_PORT_SIZE);
-
-                sat_status_set (&status, true, __func__, "Service info retrieved");
-                return status;
-            }
-
-            node = sat_iterator_next (&iterator);
-        }
-
-        sat_status_set (&status, false, __func__, "Service not found");
-
-    } while (false);
-
-    return status;
+    sat_status_return_on_failure ("Service not found");
 }
+
 
 void sat_discovery_registered_services (sat_discovery_t *object)
 {
@@ -246,51 +200,40 @@ void sat_discovery_registered_services (sat_discovery_t *object)
 
 static sat_status_t sat_discovery_is_args_valid (sat_discovery_args_t *args)
 {
-    sat_status_t status = sat_status_set (&status, false, __func__, "sat discovery args invalid");
+    sat_status_return_on_null (args, "null args");
+    sat_status_return_on_null (args->channel.service, "null channel service");
+    sat_status_return_on_null (args->channel.address, "null channel address");
 
-    if (args != NULL &&
-        args->channel.service != NULL &&
-        args->channel.address != NULL)      /* TODO create a function to check address */
-    {
-        // Validate the arguments
-        sat_status_set (&status, true, __func__, "");
-    }
-
-    return status;
+    sat_status_return_on_success ();
 }
 
 static sat_status_t sat_discovery_server_setup (sat_discovery_t *object, sat_discovery_args_t *args)
 {
-    sat_status_t status = sat_status_set (&status, false, __func__, "sat discovery server setup error");
+    sat_status_return_on_null (object, "null object");
 
-    if (object != NULL)
+    static char buffer [1024] = {0};
+
+    sat_udp_args_t _args = 
     {
-        static char buffer [1024] = {0};
-
-        sat_udp_args_t _args = 
+        .type = sat_udp_type_server,
+        .server = 
         {
-            .type = sat_udp_type_server,
-            .server = 
+            .service = args->channel.service,
+            .buffer = buffer,
+            .size = sizeof (buffer),
+            .events = 
             {
-                .service = args->channel.service,
-                .buffer = buffer,
-                .size = sizeof (buffer),
-                .events = 
-                {
-                    .on_receive = sat_discovery_on_receive,
-                    .on_send = NULL
-                },
-                .type = sat_udp_server_type_async,
-                .mode = sat_udp_server_mode_multicast,
-                .multicast_group = args->channel.address,
-                .data = object
-            }
-        };
+                .on_receive = sat_discovery_on_receive,
+                .on_send = NULL
+            },
+            .type = sat_udp_server_type_async,
+            .mode = sat_udp_server_mode_multicast,
+            .multicast_group = args->channel.address,
+            .data = object
+        }
+    };
 
-        status = sat_udp_open (&object->udp, &_args);
-    }
-
-    return status;
+    return sat_udp_open (&object->udp, &_args);
 }
 
 static sat_status_t sat_discovery_scheduler_setup (sat_discovery_t *object)
