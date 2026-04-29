@@ -3,36 +3,27 @@
 
 sat_status_t sat_discovery_interest_create (sat_discovery_interest_t *object, const sat_discovery_interest_args_t *const args)
 {
-    sat_status_t status = sat_status_failure (&status, "sat discovery interest create error");
+    sat_status_return_on_null (object, "null object");
+    sat_status_return_on_null (args, "null args");
 
-    if (object != NULL && args != NULL)
+    memset (object->name, 0, sizeof (sat_discovery_interest_t));
+
+    strncpy (object->name, args->service_name, SAT_DISCOVERY_INTEREST_NAME_SIZE);
+
+    if (args->uuid != NULL)
     {
-        memset (object->name, 0, sizeof (sat_discovery_interest_t));
-
-        strncpy (object->name, args->service_name, SAT_DISCOVERY_INTEREST_NAME_SIZE);
-
-        if (args->uuid != NULL)
-        {
-            memcpy (object->uuid, args->uuid, sizeof (sat_uuid_binary_t));
-        }
-
-        sat_status_success (&status);
+        memcpy (object->uuid, args->uuid, sizeof (sat_uuid_binary_t));
     }
 
-    return status;
+    sat_status_return_on_success ();
 }
 
 sat_status_t sat_discovery_interest_clear (sat_discovery_interest_t *object)
 {
-    sat_status_t status = sat_status_failure (&status, "sat discovery interest clear error");
+    sat_status_return_on_null (object, "null object");
 
-    if (object != NULL)
-    {
-        memset (object->uuid, 0, sizeof (sat_uuid_binary_t));
-        object->registered = false;
+    memset (object->uuid, 0, sizeof (sat_uuid_binary_t));
+    object->registered = false;
 
-        sat_status_success (&status);
-    }
-
-    return status;
+    sat_status_return_on_success ();
 }

@@ -238,65 +238,52 @@ static sat_status_t sat_discovery_server_setup (sat_discovery_t *object, sat_dis
 
 static sat_status_t sat_discovery_scheduler_setup (sat_discovery_t *object)
 {
-    sat_status_t status;
-
-    do
-    {
-        status = sat_scheduler_open (&object->scheduler, &(sat_scheduler_args_t){.event_amount = 5});
-        sat_status_break_on_error (status);
-
-        status = sat_scheduler_add_event (&object->scheduler, &(sat_scheduler_event_t)
+    sat_status_return_on_error (sat_scheduler_open (&object->scheduler, &(sat_scheduler_args_t){.event_amount = 5}));
+    
+    sat_status_return_on_error (sat_scheduler_add_event (&object->scheduler, &(sat_scheduler_event_t)
                                              {
                                                 .name = "discovery announce",
                                                 .object = object,
                                                 .handler = (sat_scheduler_handler_t)sat_discovery_service_announce,
                                                 .type = sat_scheduler_type_one_shot,
                                                 .timeout = 10
-                                             });
-        sat_status_break_on_error (status);
+                                             }));
 
-        status = sat_scheduler_add_event (&object->scheduler, &(sat_scheduler_event_t)
-                                             {
-                                                .name = "discovery scan",
-                                                .object = object,
-                                                .handler = (sat_scheduler_handler_t)sat_discovery_service_scan,
-                                                .type = sat_scheduler_type_periodic,
-                                                .timeout = 100
-                                             });
-        sat_status_break_on_error (status);
+    sat_status_return_on_error (sat_scheduler_add_event (&object->scheduler, &(sat_scheduler_event_t)
+                                                {
+                                                    .name = "discovery scan",
+                                                    .object = object,
+                                                    .handler = (sat_scheduler_handler_t)sat_discovery_service_scan,
+                                                    .type = sat_scheduler_type_periodic,
+                                                    .timeout = 100
+                                                }));
 
-        status = sat_scheduler_add_event (&object->scheduler, &(sat_scheduler_event_t)
-                                             {
-                                                .name = "discovery heartbeat",
-                                                .object = object,
-                                                .handler = (sat_scheduler_handler_t)sat_discovery_service_heartbeat,
-                                                .type = sat_scheduler_type_periodic,
-                                                .timeout = 5000
-                                             });
-        sat_status_break_on_error (status);
+    sat_status_return_on_error (sat_scheduler_add_event (&object->scheduler, &(sat_scheduler_event_t)
+                                                {
+                                                    .name = "discovery heartbeat",
+                                                    .object = object,
+                                                    .handler = (sat_scheduler_handler_t)sat_discovery_service_heartbeat,
+                                                    .type = sat_scheduler_type_periodic,
+                                                    .timeout = 5000
+                                                }));
 
-        status = sat_scheduler_add_event (&object->scheduler, &(sat_scheduler_event_t)
-                                             {
-                                                .name = "discovery interest",
-                                                .object = object,
-                                                .handler = (sat_scheduler_handler_t)sat_discovery_service_interest,
-                                                .type = sat_scheduler_type_periodic,
-                                                .timeout = 1000
-                                             });
+    sat_status_return_on_error (sat_scheduler_add_event (&object->scheduler, &(sat_scheduler_event_t)
+                                                {
+                                                    .name = "discovery interest",
+                                                    .object = object,
+                                                    .handler = (sat_scheduler_handler_t)sat_discovery_service_interest,
+                                                    .type = sat_scheduler_type_periodic,
+                                                    .timeout = 1000
+                                                }));
 
-        sat_status_break_on_error (status);
-
-        status = sat_scheduler_add_event (&object->scheduler, &(sat_scheduler_event_t)
-                                             {
-                                                .name = "discovery ageing",
-                                                .object = object,
-                                                .handler = (sat_scheduler_handler_t)sat_discovery_service_node_ageing,
-                                                .type = sat_scheduler_type_periodic,
-                                                .timeout = 1000
-                                             });
-
-    } while (false);
-
-    return status;
+    sat_status_return_on_error (sat_scheduler_add_event (&object->scheduler, &(sat_scheduler_event_t)
+                                                {
+                                                    .name = "discovery ageing",
+                                                    .object = object,
+                                                    .handler = (sat_scheduler_handler_t)sat_discovery_service_node_ageing,
+                                                    .type = sat_scheduler_type_periodic,
+                                                    .timeout = 1000
+                                                }));
+   sat_status_return_on_success ();
 }
 
