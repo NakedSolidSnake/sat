@@ -14,6 +14,7 @@ RUN apt-get update && \
 	iproute2 \
 	lsof \
 	man-db \
+	valgrind \
 	-y && \
     apt-get clean
 
@@ -39,6 +40,7 @@ WORKDIR /development
 RUN git clone https://github.com/civetweb/civetweb.git && \
 	mkdir -p civetweb/_build && \
 	cd civetweb/_build && \
+	git switch --detach 588860e3^ && \
 	cmake -DCMAKE_C_FLAGS="-fPIC" -DCMAKE_CXX_FLAGS="-fPIC" .. && \
 	make install && \
 	rm -rf /development/civetweb
