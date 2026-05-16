@@ -5,14 +5,14 @@ sat_file \- file I/O operations and file management utilities
 .nf
 .B #include <sat_file.h>
 .PP
-.BI "bool sat_file_open(sat_file_t *" object ", const char *" filename ", sat_file_mode_t " mode );
-.BI "bool sat_file_read(sat_file_t *" object ", void *" buffer ", uint32_t " size );
-.BI "bool sat_file_readline(sat_file_t *" object ", void *" buffer ", uint32_t " size );
-.BI "bool sat_file_write(sat_file_t *" object ", const void *" buffer ", uint32_t " size );
-.BI "uint32_t sat_file_get_size(sat_file_t *" object );
-.BI "bool sat_file_exists(const char *" filename );
-.BI "bool sat_file_read_to_buffer(const char *" filename ", void **" buffer ", uint32_t " size );
-.BI "bool sat_file_close(sat_file_t *" object );
+.BI "sat_status_t sat_file_open(sat_file_t *" object ", const char *" filename ", sat_file_mode_t " mode );
+.BI "sat_status_t sat_file_read(const sat_file_t *" object ", void *" buffer ", uint32_t " size );
+.BI "sat_status_t sat_file_readline(const sat_file_t *" object ", void *" buffer ", uint32_t " size );
+.BI "sat_status_t sat_file_write(const sat_file_t *" object ", const void *" buffer ", uint32_t " size );
+.BI "sat_status_t sat_file_get_size(const sat_file_t *" object ", uint32_t *" size );
+.BI "sat_status_t sat_file_exists(const char *" filename );
+.BI "sat_status_t sat_file_read_to_buffer(const char *" filename ", void **" buffer ", uint32_t " size );
+.BI "sat_status_t sat_file_close(sat_file_t *" object );
 .BI "sat_status_t sat_file_copy(const char *" source ", const char *" destination );
 .BI "sat_status_t sat_file_move(const char *" source ", const char *" destination );
 .BI "sat_status_t sat_file_get_permissions(const char *" filename ", uint32_t *" permissions );
@@ -25,25 +25,25 @@ Link with \fI\-lsat_file\fP.
 .SH DESCRIPTION
 The
 .B sat_file
-module provides comprehensive file I/O operations and file management utilities.
-It offers both low-level operations with explicit file handles and high-level
-convenience functions for common file tasks.
+module provides file I/O operations and file management helpers using the
+.B sat_status_t
+status model used across SAT.
 .PP
 The module supports:
 .IP \(bu 2
-File opening with multiple access modes
+File opening with read, write, and append modes
 .IP \(bu 2
-Binary and text file reading/writing
+Buffered reading and writing through an explicit file handle
 .IP \(bu 2
-Line-by-line file reading
+Line-by-line reading
 .IP \(bu 2
 File copying and moving with permission preservation
 .IP \(bu 2
 Permission management
 .IP \(bu 2
-File existence and extension checking
+File existence and extension checks
 .IP \(bu 2
-Convenient buffer reading functions
+Reading file contents into a dynamically allocated buffer
 .SS Types
 .TP
 .B sat_file_mode_t
@@ -51,382 +51,311 @@ Enumeration for file access modes:
 .RS
 .IP \(bu 2
 .B sat_file_mode_read
-\- Open existing file for reading
+\- Open an existing file for reading
 .IP \(bu 2
 .B sat_file_mode_write
-\- Create or truncate file for writing
+\- Create or truncate a file for writing
 .IP \(bu 2
 .B sat_file_mode_append
-\- Open or create file for appending at end
+\- Open or create a file for appending
 .RE
 .TP
 .B sat_file_t
-Opaque structure representing an open file handle. Contains:
-.RS
-.IP \(bu 2
+Structure representing an open file handle. Its
 .B handle
-\- Internal FILE* pointer
-.RE
+member stores the internal
+.BR FILE * .
 .SS Basic File Operations
 .TP
 .BR sat_file_open ()
-Opens a file in the specified mode. In write mode, existing files are truncated.
-In append mode, writes occur at the end of the file. The file object is
-initialized and ready for I/O operations.
+Opens a file in the specified mode and initializes the file object.
 .RS
 .PP
-Returns true if the file was successfully opened, false otherwise. Always call
-.BR sat_file_close ()
-when finished to prevent resource leaks.
+Returns success when the file is opened successfully. In write mode, existing
+files are truncated. In append mode, writes are performed at the end of the
+file.
 .RE
 .TP
 .BR sat_file_read ()
-Reads up to the specified number of bytes from an open file into the buffer.
-The file position is advanced by the number of bytes read.
+Reads up to
+.I size
+bytes from an open file into
+.IR buffer .
 .RS
 .PP
-Returns true if the read succeeded, false on error or EOF. Reading fewer bytes
-than requested is not considered an error. The buffer must be large enough to
-hold the requested number of bytes.
+Returns failure when the object, handle, or buffer is invalid, when
+.I size
+is zero, or when no bytes are read. Reading fewer bytes than requested is not
+treated as an error.
 .RE
 .TP
 .BR sat_file_readline ()
-Reads a line from the file, including the newline character if present. Reading
-stops when a newline is encountered, EOF is reached, or the buffer is filled.
+Reads a line from the file into
+.IR buffer .
 .RS
 .PP
-The buffer is null-terminated. Returns true if a line was read, false on error
-or EOF. Use this function in a loop to read all lines from a file.
+The buffer is cleared before reading and remains null-terminated. Returns
+failure when EOF is reached before a new line is read or when an input error
+occurs.
 .RE
 .TP
 .BR sat_file_write ()
-Writes the specified number of bytes from the buffer to the file. Data is
-automatically flushed to disk after writing to ensure durability.
+Writes
+.I size
+bytes from
+.I buffer
+to the file and flushes the handle.
 .RS
 .PP
-Returns true if all data was written successfully, false if fewer bytes than
-requested were written or an error occurred.
+Returns failure when the object, handle, or buffer is invalid, when
+.I size
+is zero, or when fewer bytes are written than requested.
 .RE
 .TP
 .BR sat_file_get_size ()
-Determines the size of the file in bytes by seeking to the end. After
-determining the size, the file position is reset to the beginning.
+Obtains the file size in bytes.
 .RS
 .PP
-Returns the file size in bytes, or 0 if the object is invalid.
+The size is written to the output pointer passed in
+.IR size .
+The function seeks to the end of the file, stores the size, and rewinds the
+file position to the beginning before returning.
 .RE
 .TP
 .BR sat_file_close ()
-Closes the file handle and releases associated resources. Flushes any buffered
-data before closing. After calling this function, the file object is no longer
-valid for I/O operations.
+Closes the underlying file handle and sets the stored handle to
+.BR NULL .
 .RS
 .PP
-Returns true if closed successfully, false if the object is invalid. Always
-call this function when done with a file.
+Always call this function after a successful
+.BR sat_file_open ()
+to release resources.
 .RE
 .SS Utility Functions
 .TP
 .BR sat_file_exists ()
-Tests whether a file exists and is accessible by attempting to open it for
-reading. The file is immediately closed if it exists.
+Checks whether a file can be opened for reading.
 .RS
 .PP
-Returns true if the file exists and is accessible, false otherwise. Note that
-this returns false if the file exists but is not readable.
+Returns success only when the file exists and is readable. A file that exists
+but cannot be opened for reading still returns failure.
 .RE
 .TP
 .BR sat_file_read_to_buffer ()
-Convenience function that opens a file, reads its entire contents (or up to
-a specified size) into a newly allocated buffer, and closes the file.
+Opens a file, allocates a buffer, reads up to
+.I size
+bytes, and closes the file.
 .RS
 .PP
-If
+The output buffer is allocated with
+.BR calloc (3)
+using the full file size plus one extra byte, so unread bytes remain zeroed.
+The
 .I size
-is 0, reads the entire file. The buffer is null-terminated. The caller must
-free the allocated buffer using
-.BR free (3)
-when finished.
-.PP
-Returns true if successful, false otherwise. The buffer pointer is set to
-NULL on failure.
+argument must be greater than zero. The caller owns the returned buffer and
+must release it with
+.BR free (3).
 .RE
 .SS File Management Functions
 .TP
 .BR sat_file_copy ()
-Copies the source file to the destination, preserving file permissions. If
-the destination exists, it is overwritten. Uses a 4KB buffer for efficient
-copying.
+Copies the source file to the destination and then applies the source
+permissions to the destination.
 .RS
 .PP
-The file permissions are retrieved from the source using
-.BR stat (2)
-and applied to the destination using
-.BR chmod (2).
-.PP
-Returns a status indicating success or failure. Common failure reasons include
-source file not found, destination not writable, or permission operation failed.
+Returns failure if either file cannot be opened or if permission retrieval or
+application fails.
 .RE
 .TP
 .BR sat_file_move ()
-Moves a file from source to destination by copying and then removing the
-source. Permissions are preserved.
+Moves a file by copying it to the destination and then removing the source.
 .RS
 .PP
-This is implemented as
-.BR sat_file_copy ()
-followed by
-.BR sat_file_remove ().
-If the copy succeeds but the delete fails, both files will exist. If the copy
-fails, attempts to clean up by removing the destination.
-.PP
-Returns a status indicating success or failure.
+If copying fails, the implementation attempts to remove the destination path.
+This is not a direct rename operation.
 .RE
 .TP
 .BR sat_file_get_permissions ()
-Retrieves the permission bits of a file using
-.BR stat (2).
-The returned value includes the full st_mode field, which contains both
-permissions and file type information.
-.RS
-.PP
-Returns a status indicating success or failure. Fails if the file doesn't
-exist or stat() fails.
+Retrieves the file mode using
+.BR stat (2)
+and stores it in
+.IR permissions .
 .RE
 .TP
 .BR sat_file_set_permissions ()
-Sets the permission bits of a file using
+Applies the supplied permission bits using
 .BR chmod (2).
-.RS
-.PP
-Common permission values:
-.IP \(bu 2
-.B 0644
-\- rw-r--r-- (owner read/write, others read)
-.IP \(bu 2
-.B 0755
-\- rwxr-xr-x (owner all, others read/execute)
-.IP \(bu 2
-.B 0600
-\- rw------- (owner read/write only)
-.PP
-Returns a status indicating success or failure.
 .RE
 .TP
 .BR sat_file_check_extension ()
-Validates that a filename ends with the specified extension. The comparison
-is case-sensitive.
-.RS
-.PP
-The extension parameter should not include the dot (e.g., "txt", not ".txt").
-.PP
-Returns a status indicating success (extension matches) or failure (no match).
+Checks whether the filename ends with the supplied extension string, without
+including the dot in
+.IR extension .
+The comparison is case-sensitive.
 .RE
 .TP
 .BR sat_file_remove ()
-Permanently deletes the specified file from the filesystem using
+Deletes the file using
 .BR remove (3).
-.RS
-.PP
-Returns a status indicating success or failure. Fails if the file doesn't
-exist or cannot be deleted due to permissions.
 .RE
 .SH RETURN VALUE
-Functions returning
-.B bool
-return true on success and false on failure.
-.PP
-Functions returning
-.B sat_status_t
-provide detailed error information through the status structure.
-.PP
-.BR sat_file_get_size ()
-returns the file size in bytes as
-.BR uint32_t ,
-or 0 on error.
+All functions in this module return
+.BR sat_status_t .
+Use
+.BR sat_status_get_result (3)
+to test whether the operation succeeded and
+.BR sat_status_get_motive (3)
+to inspect the failure reason.
 .SH EXAMPLES
 .SS Basic File Reading
 .nf
 #include <sat_file.h>
+#include <sat_status.h>
 #include <stdio.h>
-#include <stdlib.h>
 
-void read_file_example(void) {
+void read_file_example (void)
+{
     sat_file_t file;
-    
-    if (sat_file_open(&file, "data.txt", sat_file_mode_read)) {
-        char buffer[1024];
-        
-        if (sat_file_read(&file, buffer, sizeof(buffer) - 1)) {
-            buffer[sizeof(buffer) - 1] = '\\0';
-            printf("Content: %s\\n", buffer);
+    char buffer[1024] = {0};
+    sat_status_t status = sat_file_open (&file, "data.txt", sat_file_mode_read);
+
+    if (sat_status_get_result (&status) == true)
+    {
+        status = sat_file_read (&file, buffer, sizeof (buffer) - 1);
+        if (sat_status_get_result (&status) == true)
+        {
+            printf ("Content: %s\\n", buffer);
         }
-        
-        sat_file_close(&file);
-    } else {
-        fprintf(stderr, "Failed to open file\\n");
+
+        sat_file_close (&file);
     }
 }
 .fi
 .SS Line-by-Line Reading
 .nf
 #include <sat_file.h>
+#include <sat_status.h>
 #include <stdio.h>
 
-void read_lines_example(void) {
+void read_lines_example (void)
+{
     sat_file_t file;
-    
-    if (sat_file_open(&file, "lines.txt", sat_file_mode_read)) {
-        char line[256];
-        int line_number = 1;
-        
-        while (sat_file_readline(&file, line, sizeof(line))) {
-            printf("Line %d: %s", line_number++, line);
-        }
-        
-        sat_file_close(&file);
+    char line[256];
+    int line_number = 1;
+    sat_status_t status = sat_file_open (&file, "lines.txt", sat_file_mode_read);
+
+    if (sat_status_get_result (&status) == false)
+    {
+        return;
     }
+
+    while (true)
+    {
+        status = sat_file_readline (&file, line, sizeof (line));
+        if (sat_status_get_result (&status) == false)
+        {
+            break;
+        }
+
+        printf ("Line %d: %s", line_number++, line);
+    }
+
+    sat_file_close (&file);
 }
 .fi
 .SS Writing to a File
 .nf
 #include <sat_file.h>
+#include <sat_status.h>
+#include <stdio.h>
 #include <string.h>
 
-void write_file_example(void) {
+void write_file_example (void)
+{
     sat_file_t file;
-    
-    if (sat_file_open(&file, "output.txt", sat_file_mode_write)) {
+    sat_status_t status = sat_file_open (&file, "output.txt", sat_file_mode_write);
+
+    if (sat_status_get_result (&status) == true)
+    {
         const char *data = "Hello, World!\\n";
-        
-        if (sat_file_write(&file, data, strlen(data))) {
-            printf("Data written successfully\\n");
+
+        status = sat_file_write (&file, data, strlen (data));
+        if (sat_status_get_result (&status) == true)
+        {
+            printf ("Data written successfully\\n");
         }
-        
-        sat_file_close(&file);
+
+        sat_file_close (&file);
     }
 }
 .fi
-.SS Reading Entire File to Buffer
+.SS Reading to an Allocated Buffer
 .nf
 #include <sat_file.h>
+#include <sat_status.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-void read_entire_file(void) {
+void read_file_buffer_example (void)
+{
     void *buffer = NULL;
-    
-    if (sat_file_read_to_buffer("config.json", &buffer, 0)) {
-        printf("File contents:\\n%s\\n", (char *)buffer);
-        free(buffer);  // Don't forget to free!
-    } else {
-        fprintf(stderr, "Failed to read file\\n");
-    }
-}
-.fi
-.SS Copying and Moving Files
-.nf
-#include <sat_file.h>
-#include <sat_status.h>
+    sat_status_t status = sat_file_read_to_buffer ("config.json", &buffer, 4096);
 
-void file_operations_example(void) {
-    sat_status_t status;
-    
-    // Copy file with permission preservation
-    status = sat_file_copy("original.txt", "backup.txt");
-    if (sat_status_is_ok(status)) {
-        printf("File copied successfully\\n");
-    }
-    
-    // Move file
-    status = sat_file_move("temp.dat", "archive/data.dat");
-    if (sat_status_is_ok(status)) {
-        printf("File moved successfully\\n");
+    if (sat_status_get_result (&status) == true)
+    {
+        printf ("File contents:\\n%s\\n", (char *) buffer);
+        free (buffer);
     }
 }
 .fi
-.SS Managing File Permissions
+.SS Getting File Size
 .nf
 #include <sat_file.h>
 #include <sat_status.h>
 #include <stdio.h>
 
-void permissions_example(void) {
-    uint32_t perms;
-    
-    // Get current permissions
-    if (sat_status_is_ok(sat_file_get_permissions("file.txt", &perms))) {
-        printf("Current permissions: 0%o\\n", perms & 0777);
-    }
-    
-    // Set new permissions (rw-r--r--)
-    if (sat_status_is_ok(sat_file_set_permissions("file.txt", 0644))) {
-        printf("Permissions updated\\n");
-    }
-}
-.fi
-.SS File Validation
-.nf
-#include <sat_file.h>
-#include <sat_status.h>
+void size_example (const char *filename)
+{
+    sat_file_t file;
+    uint32_t size = 0;
+    sat_status_t status = sat_file_open (&file, filename, sat_file_mode_read);
 
-void validate_file(const char *filename) {
-    // Check existence
-    if (!sat_file_exists(filename)) {
-        printf("File does not exist\\n");
-        return;
-    }
-    
-    // Check extension
-    if (sat_status_is_ok(sat_file_check_extension(filename, "txt"))) {
-        printf("File is a text file\\n");
-        
-        // Get file size
-        sat_file_t file;
-        if (sat_file_open(&file, filename, sat_file_mode_read)) {
-            uint32_t size = sat_file_get_size(&file);
-            printf("File size: %u bytes\\n", size);
-            sat_file_close(&file);
+    if (sat_status_get_result (&status) == true)
+    {
+        status = sat_file_get_size (&file, &size);
+        if (sat_status_get_result (&status) == true)
+        {
+            printf ("File size: %u bytes\\n", size);
         }
-    } else {
-        printf("Not a .txt file\\n");
+
+        sat_file_close (&file);
     }
 }
 .fi
 .SH NOTES
 .IP \(bu 2
-Always close files with
-.BR sat_file_close ()
-to prevent resource leaks.
-.IP \(bu 2
-In write mode, existing files are truncated. Use append mode to preserve
-existing content.
+All operations use
+.B sat_status_t
+instead of boolean return values.
 .IP \(bu 2
 .BR sat_file_read_to_buffer ()
-allocates memory that must be freed by the caller.
+requires a non-zero
+.I size
+argument.
 .IP \(bu 2
 .BR sat_file_get_size ()
-rewinds the file position to the beginning after determining size.
-.IP \(bu 2
-File operations are not atomic. For concurrent access, implement external
-locking.
+rewinds the file position to the beginning before returning.
 .IP \(bu 2
 .BR sat_file_move ()
-is implemented as copy + delete, not a true rename operation.
-For same-filesystem moves, consider using
-.BR rename (2)
-directly.
+is implemented as copy plus delete rather than
+.BR rename (2).
 .IP \(bu 2
-Permission values use octal notation (e.g., 0644, 0755).
-.IP \(bu 2
-Extension checking is case-sensitive.
-.IP \(bu 2
-Binary files should be opened in read/write mode but data should be treated
-as binary (no text processing).
+Extension matching is case-sensitive.
 .SH SEE ALSO
 .BR sat_status (3),
 .BR fopen (3),
 .BR fread (3),
+.BR fgets (3),
 .BR fwrite (3),
 .BR fclose (3),
 .BR stat (2),

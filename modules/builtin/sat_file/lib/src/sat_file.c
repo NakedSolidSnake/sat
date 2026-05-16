@@ -7,135 +7,139 @@
 
 static char *sat_file_get_mode_by (sat_file_mode_t mode);
 
-bool sat_file_open (sat_file_t *object, const char *filename, sat_file_mode_t mode)
+sat_status_t sat_file_open (sat_file_t *const object, const char *const filename, sat_file_mode_t mode)
 {
-    bool status = false;
+    sat_status_return_on_null (object, "object pointer is null");
+    sat_status_return_on_null (filename, "filename pointer is null");
+    sat_status_return_on_equals (strlen (filename), 0, "filename is empty");
 
-    if (object != NULL && filename != NULL)
-    {
-        object->handle = fopen (filename, sat_file_get_mode_by (mode));
-        if (object->handle != NULL)
-        {
-            status = true;
-        }
-    }
+    object->handle = fopen (filename, sat_file_get_mode_by (mode));
+    sat_status_return_on_null (object->handle, "failed to open file");
 
-    return status;
+    sat_status_return_on_success ();
 }
 
-bool sat_file_read (sat_file_t *object, void *buffer, uint32_t size)
+sat_status_t sat_file_read (const sat_file_t *const object, void *const buffer, uint32_t size)
 {
-    bool status = false;
     size_t read_size = 0;
+    
+    sat_status_return_on_null (object, "object pointer is null");
+    sat_status_return_on_null (object->handle, "file handle is null");
+    sat_status_return_on_null (buffer, "buffer pointer is null");
+    sat_status_return_on_equals (size, 0, "size is zero");
 
-    if (object != NULL && object->handle != NULL && buffer != NULL && size > 0)
-    {
-        read_size = fread (buffer, 1, size, object->handle);
-        status = read_size > 0 && read_size <= size ? true : false;
-    }
+    read_size = fread (buffer, 1, size, object->handle);
 
-    return status;
+    sat_status_return_on_equals (read_size, 0, "failed to read from file");
+    sat_status_return_on_greater_than (read_size, size, "read size exceeds buffer size");
+
+    sat_status_return_on_success ();
 }
 
-bool sat_file_readline (sat_file_t *object, void *buffer, uint32_t size)
+sat_status_t sat_file_readline (const sat_file_t *const object, void *const buffer, uint32_t size)
 {
-    bool status = false;
+    sat_status_return_on_null (object, "object pointer is null");
+    sat_status_return_on_null (object->handle, "file handle is null");
+    sat_status_return_on_null (buffer, "buffer pointer is null");
+    sat_status_return_on_equals (size, 0, "size is zero");
 
-    if (object != NULL && object->handle != NULL && buffer != NULL && size > 0)
-    {
-        memset (buffer, 0, size);
-        status = fgets (buffer, size - 1, object->handle) != NULL ? true : false;
-    }
+    memset (buffer, 0, size);
 
-    return status; 
+    sat_status_return_on_null (fgets (buffer, size - 1, object->handle), "failed to read line from file");
+
+    sat_status_return_on_success ();
 }
 
-bool sat_file_write (sat_file_t *object, const void *buffer, uint32_t size)
+sat_status_t sat_file_write (const sat_file_t *const object, const void *buffer, uint32_t size)
 {
-    bool status = false;
     size_t write_size = 0;
 
-    if (object != NULL && object->handle != NULL && buffer != NULL && size > 0)
-    {
-        write_size = fwrite (buffer, 1, size, object->handle);
+    sat_status_return_on_null (object, "object pointer is null");
+    sat_status_return_on_null (object->handle, "file handle is null");
+    sat_status_return_on_null (buffer, "buffer pointer is null");
+    sat_status_return_on_equals (size, 0, "size is zero");
 
-        fflush (object->handle);
+    write_size = fwrite (buffer, 1, size, object->handle);
+    
+    sat_status_return_on_not_equals (write_size, size, "failed to write all data to file");
 
-        status = write_size == size ? true : false;
-    }
+    fflush (object->handle);
 
-    return status;
+    sat_status_return_on_success ();
 }
 
-uint32_t sat_file_get_size (sat_file_t *object)
+sat_status_t sat_file_get_size (const sat_file_t *const object, uint32_t *const size)
 {
-    uint32_t size = 0;
+    sat_status_return_on_null (object, "object pointer is null");
+    sat_status_return_on_null (object->handle, "file handle is null");
+    sat_status_return_on_null (size, "size pointer is null");
 
-    if (object != NULL && object->handle != NULL)
-    {
-        fseek (object->handle, 0, SEEK_END);
-        size = ftell (object->handle);
-        rewind (object->handle);     
-    }
+    fseek (object->handle, 0, SEEK_END);
+    *size = ftell (object->handle);
+    rewind (object->handle);
 
-    return size;
+    sat_status_return_on_success ();
 }
 
-bool sat_file_exists (const char *filename)
+sat_status_t sat_file_exists (const char *filename)
 {
-    bool status = false;
-
     sat_file_t file;
 
-    if (sat_file_open (&file, filename, sat_file_mode_read) == true)
-    {
-        sat_file_close (&file);
+    sat_status_return_on_error (sat_file_open (&file, filename, sat_file_mode_read));
 
-        status = true;
-    }
+    sat_status_return_on_error (sat_file_close (&file));
 
-    return status;
+    sat_status_return_on_success ();
 }
 
-bool sat_file_read_to_buffer (const char *filename, void **buffer, uint32_t size)
+sat_status_t sat_file_read_to_buffer (const char *const filename, void **const buffer, uint32_t size)
 {
-    bool status = false;
-
     sat_file_t file;
+    uint32_t file_size;
 
-    if (buffer != NULL && sat_file_open (&file, filename, sat_file_mode_read) == true)
+    sat_status_return_on_null (buffer, "buffer pointer is null");
+    sat_status_return_on_equals (size, 0, "size is zero");
+    sat_status_return_on_error (sat_file_open (&file, filename, sat_file_mode_read));
+
+    sat_status_t status = sat_file_get_size (&file, &file_size);
+    if (sat_status_get_result (&status) == false)
     {
-
-        uint32_t __size = sat_file_get_size (&file);
-
-        void *__buffer = calloc (1, __size + 1);
-
-        if (__buffer != NULL)
-        {
-            sat_file_read (&file, __buffer, fmin (size, __size));
-
-            *buffer = __buffer;
-
-            status = true;
-        }
-
         sat_file_close (&file);
+        return status;
     }
 
-    return status;
+    void *__buffer = calloc (1, file_size + 1);
+
+    if (__buffer == NULL)
+    {
+        sat_file_close (&file);
+        sat_status_return_on_failure ("failed to allocate buffer for file contents");
+    }
+    
+    status = sat_file_read (&file, __buffer, fmin (size, file_size));
+    if (sat_status_get_result (&status) == false)
+    {
+        free (__buffer);
+        sat_file_close (&file);
+        return status;
+    }
+
+    *buffer = __buffer;
+
+    sat_file_close (&file);
+    
+    sat_status_return_on_success ();
 }
 
-bool sat_file_close (sat_file_t *object)
+sat_status_t sat_file_close (sat_file_t *const object)
 {
-    bool status = false;
+    sat_status_return_on_null (object, "object pointer is null");
+    sat_status_return_on_null (object->handle, "file handle is null");
 
-    if (object != NULL && object->handle != NULL)
-    {
-        fclose (object->handle);
-        status = true;
-    }
+    fclose (object->handle);
+    object->handle = NULL;
 
-    return status;
+    sat_status_return_on_success ();
 }
 
 sat_status_t sat_file_copy (const char *const source, const char *const destination)

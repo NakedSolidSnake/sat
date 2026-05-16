@@ -21,12 +21,19 @@
  * @usage_example
  * @code
  * sat_file_t file;
- * if (sat_file_open(&file, "data.txt", sat_file_mode_read)) {
- *     char buffer[1024];
- *     if (sat_file_read(&file, buffer, sizeof(buffer))) {
+ * sat_status_t status = sat_file_open (&file, "data.txt", sat_file_mode_read);
+ *
+ * if (sat_status_get_result (&status) == true)
+ * {
+ *     char buffer[1024] = {0};
+ *
+ *     status = sat_file_read (&file, buffer, sizeof (buffer));
+ *     if (sat_status_get_result (&status) == true)
+ *     {
  *         // Process file data
  *     }
- *     sat_file_close(&file);
+ *
+ *     sat_file_close (&file);
  * }
  * @endcode
  */
@@ -70,14 +77,14 @@ typedef struct
  * @param[out] object File object to initialize with the open file handle
  * @param[in] filename Path to the file (relative or absolute)
  * @param[in] mode Access mode (read, write, or append)
- * @return true if file opened successfully, false otherwise
+ * @return Status of the file open operation
  * 
  * @note In write mode, existing files are truncated
  * @note In append mode, writes occur at the end of the file
  * @note Always call sat_file_close() when done
  * @see sat_file_close()
  */
-bool sat_file_open (sat_file_t *object, const char *filename, sat_file_mode_t mode);
+sat_status_t sat_file_open (sat_file_t *const object, const char *const filename, sat_file_mode_t mode);
 
 /**
  * @brief Read data from an open file
@@ -88,13 +95,13 @@ bool sat_file_open (sat_file_t *object, const char *filename, sat_file_mode_t mo
  * @param[in] object Opened file object
  * @param[out] buffer Buffer to store read data
  * @param[in] size Maximum number of bytes to read
- * @return true if read succeeded, false on error or EOF
+ * @return Status of the read operation
  * 
  * @note Reading less than requested bytes is not considered an error
  * @note Buffer must be large enough to hold size bytes
  * @see sat_file_readline(), sat_file_read_to_buffer()
  */
-bool sat_file_read (sat_file_t *object, void *buffer, uint32_t size);
+sat_status_t sat_file_read (const sat_file_t *const object, void *const buffer, uint32_t size);
 
 /**
  * @brief Read a line from an open file
@@ -105,13 +112,14 @@ bool sat_file_read (sat_file_t *object, void *buffer, uint32_t size);
  * @param[in] object Opened file object
  * @param[out] buffer Buffer to store the line
  * @param[in] size Size of the buffer (including space for null terminator)
- * @return true if a line was read, false on error or EOF
+ * @return Status of the line read operation
  * 
  * @note The buffer is null-terminated
+ * @note Returns failure when EOF is reached before a line is read
  * @note Use in a loop to read all lines from a file
  * @see sat_file_read()
  */
-bool sat_file_readline (sat_file_t *object, void *buffer, uint32_t size);
+sat_status_t sat_file_readline (const sat_file_t *const object, void *const buffer, uint32_t size);
 
 /**
  * @brief Write data to an open file
@@ -122,13 +130,13 @@ bool sat_file_readline (sat_file_t *object, void *buffer, uint32_t size);
  * @param[in] object Opened file object
  * @param[in] buffer Data to write
  * @param[in] size Number of bytes to write
- * @return true if all data was written successfully, false otherwise
+ * @return Status indicating success or failure
  * 
- * @note Returns false if fewer bytes than requested were written
+ * @note Returns failure if fewer bytes than requested were written
  * @note Data is automatically flushed to disk
  * @see sat_file_open()
  */
-bool sat_file_write (sat_file_t *object, const void *buffer, uint32_t size);
+sat_status_t sat_file_write (const sat_file_t *const object, const void *const buffer, uint32_t size);
 
 /**
  * @brief Get the size of an open file
@@ -137,12 +145,13 @@ bool sat_file_write (sat_file_t *object, const void *buffer, uint32_t size);
  * to the beginning after determining the size.
  * 
  * @param[in] object Opened file object
- * @return File size in bytes, or 0 if object is invalid
+ * @param[out] size Pointer to receive the file size
+ * @return Status of the operation
  * 
  * @note The file position is rewound to the beginning
  * @see sat_file_open()
  */
-uint32_t sat_file_get_size (sat_file_t *object);
+sat_status_t sat_file_get_size (const sat_file_t *const object, uint32_t *const size);
 
 /**
  * @brief Check if a file exists
@@ -150,31 +159,31 @@ uint32_t sat_file_get_size (sat_file_t *object);
  * Tests whether a file exists and is accessible by attempting to open it.
  * 
  * @param[in] filename Path to the file to check
- * @return true if file exists and is accessible, false otherwise
+ * @return Status indicating success when the file can be opened for reading
  * 
  * @note This function opens and immediately closes the file
- * @note Returns false if the file exists but is not readable
+ * @note Returns failure if the file exists but is not readable
  */
-bool sat_file_exists (const char *filename);
+sat_status_t sat_file_exists (const char *const filename);
 
 /**
- * @brief Read entire file into a dynamically allocated buffer
+ * @brief Read file contents into a dynamically allocated buffer
  * 
- * Opens a file, reads its contents (or up to a specified size) into a
+ * Opens a file, reads up to the specified size into a
  * newly allocated buffer, and closes the file. The caller is responsible
  * for freeing the buffer.
  * 
  * @param[in] filename Path to the file to read
  * @param[out] buffer Pointer to receive the allocated buffer
- * @param[in] size Maximum size to read (0 for entire file)
- * @return true if successful, false otherwise
+ * @param[in] size Maximum number of bytes to read
+ * @return Status indicating success or failure
  * 
  * @note Caller must free the allocated buffer using free()
- * @note Buffer is null-terminated
- * @note If size is 0, reads the entire file
+ * @note The allocated buffer is zero-initialized, so unread bytes remain zero
+ * @note Size must be greater than zero
  * @see sat_file_read()
  */
-bool sat_file_read_to_buffer (const char *filename, void **buffer, uint32_t size);
+sat_status_t sat_file_read_to_buffer (const char *const filename, void **const buffer, uint32_t size);
 
 /**
  * @brief Close an open file
@@ -183,13 +192,13 @@ bool sat_file_read_to_buffer (const char *filename, void **buffer, uint32_t size
  * this function, the file object is no longer valid for I/O operations.
  * 
  * @param[in,out] object File object to close
- * @return true if closed successfully, false if object is invalid
+ * @return Status indicating success or failure
  * 
  * @note Always call this function when done with a file
  * @note Flushes any buffered data before closing
  * @see sat_file_open()
  */
-bool sat_file_close (sat_file_t *object);
+sat_status_t sat_file_close (sat_file_t *const object);
 
 /**
  * @brief Copy a file to a new location
