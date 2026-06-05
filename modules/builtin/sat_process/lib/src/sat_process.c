@@ -11,91 +11,49 @@ static void process_get_args_list (const sat_process_t *const object, char **con
 
 sat_status_t sat_process_create (sat_process_t *const object, const sat_process_args_t *const args)
 {
-    sat_status_t status = sat_status_success (&status);
+    sat_status_return_on_null (object, "sat process create error: null object");
+    sat_status_return_on_null (args, "sat process create error: null args");
+    sat_status_return_on_equals (strlen (args->name), 0, "sat process create error: name is zeroed");
 
-    do
+    memset (object, 0, sizeof (sat_process_t));
+
+    strncpy (object->name, args->name, SAT_PROCESS_NAME_SIZE);
+
+    if (strlen (args->args) > 0)
     {
-        if (object == NULL)
-        {
-            sat_status_set (&status, false, __func__, "sat process create error: null object");
-            break;
-        }
+        strncpy (object->args, args->args, SAT_PROCESS_ARGS_SIZE);
+        object->type = sat_process_spawn_type_with_args;
+    }
 
-        if (args == NULL)
-        {
-            sat_status_set (&status, false, __func__, "sat process create error: null args");
-            break;
-        }
+    object->initialized = true;
+    object->mode = args->mode;
 
-        if (args->name == NULL)
-        {
-            sat_status_set (&status, false, __func__, "sat process create error: null name");
-            break;
-        }
-
-        if (strlen (args->name) == 0)
-        {
-            sat_status_set (&status, false, __func__, "sat process create error: name is zeroed");
-            break;
-        }
-
-        memset (object, 0, sizeof (sat_process_t));
-
-        strncpy (object->name, args->name, SAT_PROCESS_NAME_SIZE);
-
-        if (args->args != NULL && strlen (args->args) > 0)
-        {
-            strncpy (object->args, args->args, SAT_PROCESS_ARGS_SIZE);
-            object->type = sat_process_spawn_type_with_args;
-        }
-
-        object->initialized = true;
-        object->mode = args->mode;
-
-    } while (false);
-
-    return status;
+    sat_status_return_on_success ();
 }
 
 sat_status_t sat_process_spawn (sat_process_t *object)
 {
-    sat_status_t status = sat_status_set (&status, false, __func__, "sat process spawn error");
+    sat_status_return_on_null (object, "sat process spawn error: null object");
+    sat_status_return_on_false (object->initialized, "sat process spawn error: object not initialized");
 
-    do
+    pid_t pid = fork ();
+
+    switch (pid)
     {
-        if (object == NULL)
-        {
-            sat_status_set (&status, false, __func__, "sat process spawn error: null object");
-            break;
-        }
+        case -1:
+            sat_status_return_on_failure ("sat process spawn child error");
+        break;
 
-        if (object->initialized == false)
-        {
-            sat_status_set (&status, false, __func__, "sat process spawn error: object not initialized");
-            break;
-        }
+        case 0:
+            sat_process_spawn_by (object);
+        break;
 
-        pid_t pid = fork ();
+        default:
+            object->pid = pid;            
+        break;
+    }
 
-        switch (pid)
-        {
-            case -1:
-                sat_status_failure (&status, "sat process spawn child error");
-            break;
-
-            case 0:
-                sat_process_spawn_by (object);
-            break;
-
-            default:
-                object->pid = pid;
-                sat_status_success (&status);
-            break;
-        }
-
-    } while (false);
-
-    return status;
+    sat_status_return_on_success ();
 }
 
 static void sat_process_spawn_by (const sat_process_t *const object)
